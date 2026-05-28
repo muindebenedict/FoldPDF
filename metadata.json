@@ -1,0 +1,8 @@
+{
+  "name": "FoldPDF",
+  "description": "All your PDF tools in one fast AI workspace. Compress, merge, convert, summarize, and edit PDFs instantly.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
