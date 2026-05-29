@@ -1443,14 +1443,14 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
           {/* BELOW BLOCK SUMMARY ARTICLES */}
           <div className="rounded-3xl border border-gray-150 p-6 sm:p-8 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 text-left">
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-4">
-              📌 About {tool.name}
+              About {tool.name}
             </h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
               {tool.longDesc}
             </p>
 
             <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-3">
-              🚀 Benefits of our FoldPDF System:
+              Benefits of our FoldPDF System:
             </h4>
             <ul className="space-y-2 mb-8 text-sm">
               {tool.benefits.map((b, idx) => (
@@ -1461,7 +1461,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             </ul>
 
             <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-3">
-              📝 Easy step-by-step usage Instructions:
+              Easy step-by-step usage Instructions:
             </h4>
             <ol className="space-y-3 mb-8 text-sm text-neutral-600 dark:text-neutral-400 list-decimal pl-5">
               {tool.stepInstructions.map((step, idx) => (

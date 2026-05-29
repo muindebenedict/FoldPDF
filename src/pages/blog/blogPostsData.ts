@@ -549,7 +549,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
       <p>Scanned PDFs are just static images, making the text unsearchable. OCR solves this by mapping characters, but uploading files to typical cloud tools exposes your data to major security risks.</p>
       
       <h2>Edge Intelligence: Running OCR in Browser WebAssembly</h2>
-      <p>FoldPDF runs OCR engines locally. By using your browser's WebAssembly, FoldPDF maps character grids directly on your device, keeping your information fully secure and offline.</p>
+      <p>FoldPDF runs OCR engines locally. By using your browser's WebAssembly, FoldPDF maps character grids directly on your device, keeping your information fully secure and localized.</p>
       
       <h2>Building a High-Speed, Private Archiving Process</h2>
       <p>Process your scans locally to create searchable PDFs, easily copy text layers without lag, and index large documents securely without sending data to the cloud.</p>
@@ -649,7 +649,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
       },
       {
         question: "Do tax files travel to the cloud during local conversion?",
-        answer: "No. All conversion is processed locally in browser RAM, ensuring client data remains fully private and offline."
+        answer: "No. All conversion is processed locally in browser RAM, ensuring client data remains fully private and securely isolated."
       }
     ],
     content: `
@@ -680,12 +680,12 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
     ],
     faqs: [
       {
-        question: "Are offline-first browser apps safe from malware?",
+        question: "Are client-side in-browser apps safe from malware?",
         answer: "Yes, because browser-based apps run in an isolated sandbox, they cannot install malicious software on your computer."
       },
       {
         question: "How can I verify if a PDF tool is running locally?",
-        answer: "You can turn off your internet connection. If the tool still converts and edits files offline, it is running completely on your device."
+        answer: "You can open your browser's Developer Tools network inspect tab. When you process a file, you can verify that no document data or content is transmitted over the network."
       }
     ],
     content: `
@@ -720,8 +720,8 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
         answer: "Yes, they run inside any modern browser, offering high-speed document operations on almost any office device."
       },
       {
-        question: "Can I process private files without network access?",
-        answer: "Yes, FoldPDF is designed to work fully offline, letting you edit, merge, and split files safely without internet access."
+        question: "Does FoldPDF store my private files on its servers?",
+        answer: "No, FoldPDF processes files entirely in-memory on your device. We do not store, scan, or log any of your file contents."
       }
     ],
     content: `

@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Keep existing auth rules untouched
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    // Subscribers collection - allow logged-in users only
+    match /subscribers/{document} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

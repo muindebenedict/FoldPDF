@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { readAB, readURL, getPdfJs, getJSZip, getPdfLib, renderPage, fmt } from "./PdfScriptLoader";
+import { readAB, readURL, getPdfJs, getJSZip, getPdfLib, renderPage, fmt, getOutputFile } from "./PdfScriptLoader";
 import { Proc, Done } from "./SharedComponents";
 
 interface ToolProps {
@@ -26,7 +26,7 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
       const blob = await new Promise<Blob>((resolve) => {
         cv.toBlob((b) => resolve(b || new Blob()), `image/${targetFormat === "webp" ? "webp" : targetFormat}`, targetFormat === "jpeg" ? qual : undefined);
       });
-      return { blob, name: `foldpdf-page-1.${targetFormat === "jpeg" ? "jpg" : targetFormat === "png" ? "png" : "webp"}` };
+      return { blob, name: getOutputFile(files[0]?.name, "page-1", targetFormat === "jpeg" ? ".jpg" : targetFormat === "png" ? ".png" : ".webp") };
     }
 
     const JSZipLib = await getJSZip();
@@ -42,7 +42,7 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
     }
     prog(95, "Zipping all images…");
     const zb = await zip.generateAsync({ type: "blob" });
-    return { blob: zb, name: `foldpdf-images-${Date.now()}.zip`, info: `${tot} images extracted inside ZIP` };
+    return { blob: zb, name: getOutputFile(files[0]?.name, "images", ".zip"), info: `${tot} images extracted inside ZIP` };
   }, [targetFormat, scale, qual]);
 
   return (
@@ -157,7 +157,7 @@ export const ImgToPdfTool = ({ accept = ".jpg,.jpeg,.png,.webp", onSuccess, tool
 
     prog(95, "Serializing clean PDF blocks…");
     const bytes = await doc.save();
-    return { blob: new Blob([bytes], { type: "application/pdf" }), name: `foldpdf-converted-image-${Date.now()}.pdf`, info: `${files.length} photo(s) compiled` };
+    return { blob: new Blob([bytes], { type: "application/pdf" }), name: getOutputFile(files[0]?.name, "converted", ".pdf"), info: `${files.length} photo(s) compiled` };
   }, [ps]);
 
   return (

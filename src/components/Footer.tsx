@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import * as Lucide from "lucide-react";
 import { FoldPdfLogo } from "./FoldPdfLogo";
+import { db, auth } from "../lib/firebase";
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface FooterProps {
   navigate: (path: string) => void;
@@ -10,16 +12,60 @@ export function Footer({ navigate }: FooterProps) {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const handleLinkClick = (path: string) => {
     navigate(path);
   };
 
-  const handleSubscribeSubmit = (e: React.FormEvent) => {
+  const handleSubscribeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim().length > 3) {
+    setErrorMsg("");
+
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      setErrorMsg("Please enter a valid email");
+      return;
+    }
+
+    if (!auth.currentUser) {
+      setErrorMsg("Please sign in to subscribe to policy updates.");
+      return;
+    }
+    
+    setSubscribing(true);
+
+    try {
+      const normalizedEmail = trimmedEmail.toLowerCase();
+      
+      // Query Firestore to verify if the email already exists in subscribers collection
+      const subscribersRef = collection(db, "subscribers");
+      const q = query(subscribersRef, where("email", "==", normalizedEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setErrorMsg("You're already subscribed!");
+        setSubscribing(false);
+        return;
+      }
+
+      // Add subscriber document
+      await addDoc(subscribersRef, {
+        email: normalizedEmail,
+        subscribedAt: serverTimestamp()
+      });
+
+      setSuccessMsg("Subscribed successfully!");
       setSubscribed(true);
       setEmail("");
+    } catch (err: any) {
+      console.error("Firestore subscription error:", err);
+      setErrorMsg("Something went wrong. Please try again.");
+    } finally {
+      setSubscribing(false);
     }
   };
 
@@ -152,26 +198,35 @@ export function Footer({ navigate }: FooterProps) {
             </p>
             {subscribed ? (
               <div className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-xs px-4 py-2.5 rounded-xl border border-emerald-100 flex items-center gap-1.5 animate-in zoom-in-95 duration-200">
-                <Lucide.CheckCircle2 className="h-4.5 w-4.5" /> Successfully subscribed! Secure inbox transmission verified.
+                <Lucide.CheckCircle2 className="h-4.5 w-4.5" /> {successMsg}
               </div>
             ) : (
-              <form onSubmit={handleSubscribeSubmit} className="flex gap-2 max-w-md">
-                <input 
-                  type="email" 
-                  required
-                  placeholder="name@organization.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl border border-slate-205 py-2 px-3.5 text-xs dark:bg-slate-900 border-none outline-none ring-1 ring-slate-250 dark:ring-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-505 w-full bg-slate-50/50"
-                  aria-label="Newsletter email address"
-                />
-                <button 
-                  type="submit"
-                  className="rounded-xl bg-indigo-600 text-white font-semibold py-2 px-4 text-xs hover:bg-indigo-750 transition cursor-pointer"
-                >
-                  Subscribe
-                </button>
-              </form>
+              <div className="space-y-1.5 max-w-md">
+                <form onSubmit={handleSubscribeSubmit} className="flex gap-2 w-full">
+                  <input 
+                    type="email" 
+                    required
+                    placeholder="name@organization.com"
+                    value={email}
+                    disabled={subscribing}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="rounded-xl border border-slate-205 py-2 px-3.5 text-xs dark:bg-slate-900 border-none outline-none ring-1 ring-slate-250 dark:ring-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-505 w-full bg-slate-50/50 disabled:opacity-60"
+                    aria-label="Newsletter email address"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={subscribing}
+                    className="rounded-xl bg-indigo-600 text-white font-semibold py-2 px-4 text-xs hover:bg-indigo-750 transition cursor-pointer disabled:opacity-60 shrink-0 min-w-[80px]"
+                  >
+                    {subscribing ? "Wait..." : "Subscribe"}
+                  </button>
+                </form>
+                {errorMsg && (
+                  <p className="text-[11px] text-rose-500 font-medium animate-in fade-in-50 duration-200">
+                    ⚠️ {errorMsg}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 

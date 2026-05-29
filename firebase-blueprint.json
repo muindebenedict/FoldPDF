@@ -1,0 +1,26 @@
+{
+  "entities": {
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "A mailing list subscriber email with subscription date",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email address of the subscriber"
+        },
+        "subscribedAt": {
+          "type": "object",
+          "description": "Firestore server timestamp when subscription occurred"
+        }
+      },
+      "required": ["email", "subscribedAt"]
+    }
+  },
+  "firestore": {
+    "subscribers": {
+      "schema": "Subscriber",
+      "description": "Mailing list for policy updates"
+    }
+  }
+}

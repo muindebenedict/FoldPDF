@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import * as Lucide from "lucide-react";
+import { TOOLS_DATA } from "../toolsData";
 
 interface ToolSeoData {
   title: string;
@@ -25,7 +26,7 @@ const SEO_CONTENT_MAP: Record<string, ToolSeoData> = {
   },
   "protect-pdf": {
     title: "Military-Grade Client-Side PDF Protection",
-    description: "Locking legal documents and personal folders requires absolute trust in the protective engine. Our PDF protect utility conducts full standard 128-bit and 256-bit AES encryption inside your browser. By generating mathematical security keys locally, FoldPDF seals the file framework and guarantees that unauthorized systems cannot decrypt or alter document layouts. Standard online locker scripts receive your key and original text streams onto their servers, raising safety concerns; our tool runs entirely offline, meaning your passwords and file bytes never traverse the wire. Enforcing lock parameters locally maintains standard HIPAA and corporate regulatory compliance.",
+    description: "Locking legal documents and personal folders requires absolute trust in the protective engine. Our PDF protect utility conducts full standard 128-bit and 256-bit AES encryption inside your browser. By generating mathematical security keys locally, FoldPDF seals the file framework and guarantees that unauthorized systems cannot decrypt or alter document layouts. Standard online locker scripts receive your key and original text streams onto their servers, raising safety concerns; our tool runs entirely in-browser, meaning your passwords and file bytes never traverse the wire. Enforcing lock parameters locally maintains standard HIPAA and corporate regulatory compliance.",
     features: [
       { icon: "Lock", title: "Local AES Encryption", desc: "Applies rigid password constraints natively on the client level using standard math models." },
       { icon: "EyeOff", title: "Zero Key Logging", desc: "We hold zero registers. If you forget your chosen password string, we cannot retrieve it." },
@@ -60,7 +61,7 @@ const SEO_CONTENT_MAP: Record<string, ToolSeoData> = {
       { icon: "Cpu", title: "Zero Processing Queues", desc: "No queue queues exist. OCR tasks run continuously directly inside local hardware cores." }
     ],
     faqs: [
-      { q: "Which language templates does the offline character compiler support?", a: "It currently features deep support for English, Latin characters, and common Western European scripts, running entirely client-side." },
+      { q: "Which language templates does the client-side character compiler support?", a: "It currently features deep support for English, Latin characters, and common Western European scripts, running entirely client-side." },
       { q: "Does running OCR locally consume heavy server resources?", a: "No, it utilizes your local computer hardware. Performance is determined entirely by your device processor and page counts." },
       { q: "Can I export OCR outcomes into standard text layouts?", a: "Yes, our compiler lets you download either searchable PDFs or isolated text drafts." }
     ]
@@ -85,12 +86,17 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
       { icon: "Cpu" as const, title: "WebAssembly Compiler", desc: "Heavy layout transformations run locally at Peak CPU speeds inside browser sandbox sandboxes." },
       { icon: "Lock" as const, title: "Regulatory Conformity", desc: "Safely complies with HIPAA, SOC-2, and GDPR standards by omitting physical data collections." }
     ],
-    faqs: [
-      { q: `Does ${toolId.replace('-', ' ')} require paid account memberships?`, a: "No. Core features are 100% free and open, letting users execute documents endlessly without limits." },
-      { q: "Are temporary file backups compiled on FoldPDF cloud systems?", a: "Absolutely not. Our server-free architecture ensures documents never write to external hard disk databases." },
-      { q: "Can I process documents on mobile browser tabs?", a: "Yes. FoldPDF is responsive and executes comfortably within modern iOS, Android, and tablet sandboxes." }
-    ]
+    faqs: []
   };
+
+  const matchedTool = TOOLS_DATA.find(t => t.id === normalizedId);
+  const displayFaqs = matchedTool?.faqs && matchedTool.faqs.length > 0
+    ? matchedTool.faqs.map(f => ({ q: f.question, a: f.answer }))
+    : (SEO_CONTENT_MAP[normalizedId]?.faqs || [
+        { q: `Does ${toolId.replace('-', ' ')} require paid account memberships?`, a: "No. Core features are 100% free and open, letting users execute documents endlessly without limits." },
+        { q: "Are temporary file backups compiled on FoldPDF cloud systems?", a: "Absolutely not. Our server-free architecture ensures documents never write to external hard disk databases." },
+        { q: "Can I process documents on mobile browser tabs?", a: "Yes. FoldPDF is responsive and executes comfortably within modern iOS, Android, and tablet sandboxes." }
+      ]);
 
   return (
     <div className="mt-16 border-t border-slate-150 dark:border-slate-800/80 pt-12 space-y-12 max-w-6xl mx-auto pb-10 font-body animate-in fade-in" id="tool-seo-resource">
@@ -98,7 +104,7 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
       {/* Title & Wordy Description Card */}
       <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-premium-sm">
         <h2 className="font-display text-xl sm:text-2.5xl font-black text-slate-850 dark:text-white mb-4">
-          📊 Educational Overview: {selectedData.title}
+          Educational Overview: {selectedData.title}
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           {selectedData.description}
@@ -128,7 +134,7 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
           🛡️ Secure Frequently Asked Questions
         </h3>
         <div className="space-y-3">
-          {selectedData.faqs.map((faq, idx) => (
+          {displayFaqs.map((faq, idx) => (
             <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-850 rounded-2xl p-4 shadow-premium-sm">
               <button
                 onClick={() => setActiveIdx(activeIdx === idx ? null : idx)}

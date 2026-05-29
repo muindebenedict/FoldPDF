@@ -75,7 +75,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
           How Browser-Based PDF Processing Works
         </h1>
         <p className="mt-4 text-slate-505 dark:text-slate-405 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-          FoldPDF does not process documents like traditional cloud software. Learn how WebAssembly and browser sandboxing enable high-fidelity manipulations offline.
+          FoldPDF does not process documents like traditional cloud software. Learn how WebAssembly and browser sandboxing enable high-fidelity manipulations entirely within your browser.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
               Unlike typical SaaS utilities that force uploads onto remote hosts, FoldPDF turns your web browser into an isolated, hyper-secure document workstation. By shifting execution loads to your local hardware, we prevent data leakage and bypass server wait queues.
             </p>
             <div className="border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-955/20 p-4 rounded-r-2xl text-xs text-slate-600 dark:text-slate-350">
-              💡 <strong>Developer audit note:</strong> You can completely disconnect your web connection lines while executing conversions. Our code runs perfectly offline!
+              💡 <strong>Developer audit note:</strong> All file reading, conversion, and assembly operates in-memory. No document content is ever sent to any remote server or API endpoint.
             </div>
           </div>
 

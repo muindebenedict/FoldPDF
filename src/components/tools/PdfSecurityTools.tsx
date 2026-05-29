@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { PDFDocument } from "@cantoo/pdf-lib";
 import * as Lucide from "lucide-react";
-import { readAB, getPdfLib, getPdfJs, renderPage, readURL, fmt, dl } from "./PdfScriptLoader";
-import { Proc, Done, Bar, Err, Spin } from "./SharedComponents";
+import { readAB, getPdfLib, getPdfJs, renderPage, readURL, fmt, dl, getOutputFile } from "./PdfScriptLoader";
+import { Proc, Done, Bar, Err, Spin, validateUploadedFiles } from "./SharedComponents";
 
 interface ToolProps {
   onSuccess?: (fileName: string, toolName: string) => void;
@@ -58,8 +58,9 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
   // ─── FILE HANDLER ───
   const handleFile = async (selectedFile: File) => {
     if (!selectedFile) return;
-    if (selectedFile.type !== "application/pdf" && !selectedFile.name.endsWith(".pdf")) {
-      setErrorMsg("Only PDF files are accepted.");
+    const vRes = validateUploadedFiles([selectedFile], ".pdf");
+    if (!vRes.isValid) {
+      setErrorMsg(vRes.error || "Please upload a PDF file.");
       setStatus("error");
       return;
     }
@@ -138,11 +139,12 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
       // BLOB MUST USE encryptedBytes, NOT original arrayBuffer
       const blob = new Blob([encryptedBytes], { type: "application/pdf" });
       setOutputBlob(blob);
-      setOutputName(fileName.replace(/\.pdf$/i, "") + "_protected.pdf");
+      const optName = getOutputFile(fileName, "protected", ".pdf");
+      setOutputName(optName);
       setStatus("done");
 
       if (onSuccess) {
-        onSuccess(fileName.replace(/\.pdf$/i, "") + "_protected.pdf", toolName);
+        onSuccess(optName, toolName);
       }
     } catch (err: any) {
       console.error(err);
@@ -363,6 +365,12 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
   // ─── FILE HANDLER ───
   const handleFile = async (selectedFile: File) => {
     if (!selectedFile) return;
+    const vRes = validateUploadedFiles([selectedFile], ".pdf");
+    if (!vRes.isValid) {
+      setErrorMsg(vRes.error || "Please upload a PDF file.");
+      setStatus("error");
+      return;
+    }
     setFile(selectedFile);
     setFileName(selectedFile.name);
     setStatus("checking");
@@ -423,11 +431,12 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
       const blob = new Blob([decryptedBytes], { type: "application/pdf" });
 
       setOutputBlob(blob);
-      setOutputName(fileName.replace(/\.pdf$/i, "") + "_unlocked.pdf");
+      const optName = getOutputFile(fileName, "unlocked", ".pdf");
+      setOutputName(optName);
       setStatus("done");
 
       if (onSuccess) {
-        onSuccess(fileName.replace(/\.pdf$/i, "") + "_unlocked.pdf", toolName);
+        onSuccess(optName, toolName);
       }
     } catch (err: any) {
       console.error(err);
@@ -605,7 +614,7 @@ export const RepairTool = ({ onSuccess, toolName }: ToolProps) => {
     const bytes = await doc.save();
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
-      name: `foldpdf-repaired-${Date.now()}.pdf`,
+      name: getOutputFile(files[0]?.name, "repaired", ".pdf"),
       info: "PDF structure and offset tables regenerated cleanly."
     };
   }, []);
@@ -650,7 +659,7 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
       const blob = new Blob([extTxt], { type: "text/plain" });
       setRes({
         blob,
-        name: `foldpdf-ocr-${Date.now()}.txt`,
+        name: getOutputFile(f.name, "ocr", ".txt"),
         info: `Scanned ${tot} pages & compiled text`
       });
       setSt("done");
@@ -682,8 +691,16 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-          if (f) go(f);
+          const filesArray = Array.from(e.dataTransfer.files) as File[];
+          if (filesArray.length > 0) {
+            const vRes = validateUploadedFiles(filesArray, ".pdf");
+            if (!vRes.isValid) {
+              setErr(vRes.error || "Please upload a PDF file.");
+              return;
+            }
+            setErr("");
+            go(filesArray[0]);
+          }
         }}
         onClick={() => inputRef.current?.click()}
         className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
@@ -694,7 +711,16 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
           accept=".pdf"
           className="hidden"
           onChange={(e) => {
-            if (e.target.files && e.target.files[0]) go(e.target.files[0]);
+            if (e.target.files && e.target.files[0]) {
+              const filesArray = [e.target.files[0]];
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              go(e.target.files[0]);
+            }
           }}
         />
         <div className="text-3xl mb-1.5 animate-bounce">👁️</div>
@@ -863,7 +889,7 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
       const bytes = await doc.save();
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
-        name: `foldpdf-signed-${Date.now()}.pdf`,
+        name: getOutputFile(theFile?.name, "signed", ".pdf"),
         info: "Prp certified visual stamp applied to document layers."
       });
       setSt("done");
@@ -965,24 +991,41 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
             ✓ Ink sealed correctly! Next, load your destination PDF:
           </div>
           <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-              if (f) loadPdf(f);
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const filesArray = Array.from(e.dataTransfer.files) as File[];
+            if (filesArray.length > 0) {
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              loadPdf(filesArray[0]);
+            }
+          }}
+          onClick={() => document.getElementById("sig-pdf-loader")?.click()}
+          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition"
+        >
+          <input
+            id="sig-pdf-loader"
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                const filesArray = [e.target.files[0]];
+                const vRes = validateUploadedFiles(filesArray, ".pdf");
+                if (!vRes.isValid) {
+                  setErr(vRes.error || "Please upload a PDF file.");
+                  return;
+                }
+                setErr("");
+                loadPdf(e.target.files[0]);
+              }
             }}
-            onClick={() => document.getElementById("sig-pdf-loader")?.click()}
-            className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition"
-          >
-            <input
-              id="sig-pdf-loader"
-              type="file"
-              accept=".pdf"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) loadPdf(e.target.files[0]);
-              }}
-            />
+          />
             <div className="text-3xl mb-1.5 animate-bounce">📄</div>
             <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
               Drop your PDF file here to sign or click to browse

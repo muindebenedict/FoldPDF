@@ -32,6 +32,8 @@ export const loadScript = (url: string, globalName?: string): Promise<any> => {
 
 export const getPdfLib = () => loadScript("https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js", "PDFLib");
 
+export const getFontkit = () => loadScript("https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js", "fontkit");
+
 export const getPdfJs = () => loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", "pdfjsLib").then(lib => {
   if (lib && lib.GlobalWorkerOptions && !lib.GlobalWorkerOptions.workerSrc) {
     lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -74,6 +76,12 @@ export const readTxt = (f: File): Promise<string> => new Promise((r, j) => {
 export const fmt = (b: number): string => 
   b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(2) + " MB";
 
+export const getOutputFile = (originalName: string | undefined, suffix: string, extWithDot: string): string => {
+  if (!originalName) return `foldpdf-${suffix}-${Date.now()}${extWithDot}`;
+  const base = originalName.replace(/\.[^/.]+$/, "");
+  return `${base}-${suffix}${extWithDot}`;
+};
+
 export const dl = (blob: Blob, name: string): void => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -100,11 +108,119 @@ export async function renderPage(pdfDoc: any, n: number, scale: number = 1.5): P
 export async function extractText(ab: ArrayBuffer): Promise<{ text: string; numPages: number }> {
   const lib = await getPdfJs();
   const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
-  let txt = "";
+  let fullText = "";
+  
   for (let i = 1; i <= doc.numPages; i++) {
     const pg = await doc.getPage(i);
     const tc = await pg.getTextContent();
-    txt += tc.items.map((x: any) => x && 'str' in x ? x.str : "").join(" ") + "\n\n";
+    
+    // Extract items with readable strings and layout metrics
+    const items = tc.items
+      .filter((x: any) => x && typeof x.str === "string")
+      .map((x: any) => {
+        const matrix = x.transform || [1, 0, 0, 1, 0, 0];
+        // transform[3] represents scaleY (font size in standard text coordinates)
+        const fontSize = Math.abs(matrix[3]) || x.height || 10;
+        return {
+          text: x.str,
+          x: matrix[4], // horizontal translation
+          y: matrix[5], // vertical translation
+          fontSize,
+          width: x.width || 0,
+          height: x.height || fontSize,
+          item: x
+        };
+      });
+
+    if (items.length === 0) {
+      continue;
+    }
+
+    // Sort items by Y descending (PDF coordinates: bottom-up, so top of page has highest Y)
+    items.sort((a, b) => b.y - a.y);
+
+    // Group items into rows/lines with vertical tolerance
+    const lines: Array<{ y: number; fontSize: number; items: typeof items }> = [];
+    for (const item of items) {
+      let foundLine = false;
+      for (const line of lines) {
+        // If the Y coordinate of the item is close enough to the line Y, add it to this line
+        const tolerance = Math.max(item.fontSize, line.fontSize) * 0.45;
+        if (Math.abs(item.y - line.y) < tolerance) {
+          line.items.push(item);
+          foundLine = true;
+          break;
+        }
+      }
+      if (!foundLine) {
+        lines.push({
+          y: item.y,
+          fontSize: item.fontSize,
+          items: [item]
+        });
+      }
+    }
+
+    // Since items were initially sorted by Y descending, lines are already in top-to-bottom order.
+    // Within each line, sort items by X coordinate ascending (left-to-right)
+    for (const line of lines) {
+      line.items.sort((a, b) => a.x - b.x);
+    }
+
+    // Reconstruct the text for this page preserving spacing and word integrity
+    let pageText = "";
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      const line = lines[lineIndex];
+      let lineStr = "";
+      
+      for (let j = 0; j < line.items.length; j++) {
+        const curr = line.items[j];
+        if (j === 0) {
+          lineStr += curr.text;
+        } else {
+          const prev = line.items[j - 1];
+          // Heuristic to estimate character width if not provided
+          const approxCharWidth = curr.fontSize * 0.38;
+          const prevWidth = prev.width || (prev.text.length * approxCharWidth);
+          const gap = curr.x - (prev.x + prevWidth);
+          
+          const endsWithSpace = /\s$/.test(prev.text);
+          const startsWithSpace = /^\s/.test(curr.text);
+          
+          if (endsWithSpace || startsWithSpace) {
+            lineStr += curr.text;
+          } else if (gap > curr.fontSize * 1.5) {
+            // Large horizontal gap: likely a column separation or tab
+            lineStr += "\t" + curr.text;
+          } else if (gap > curr.fontSize * 0.16) {
+            // Normal spacing between words
+            lineStr += " " + curr.text;
+          } else {
+            // Very small/negative gap: split character/word chunking merge directly
+            lineStr += curr.text;
+          }
+        }
+      }
+
+      pageText += lineStr;
+
+      // Handle vertical formatting to reconstruct paragraph/block spacing
+      if (lineIndex < lines.length - 1) {
+        const nextLine = lines[lineIndex + 1];
+        const yGap = line.y - nextLine.y; // positive since sorted top-to-bottom
+        const verticalTolerance = Math.max(line.fontSize, nextLine.fontSize) * 1.6;
+        if (yGap > verticalTolerance) {
+          pageText += "\n\n"; // Double-height gap translates to paragraph break
+        } else {
+          pageText += "\n";   // Standard line break
+        }
+      } else {
+        pageText += "\n";
+      }
+    }
+
+    fullText += pageText + "\n";
   }
-  return { text: txt, numPages: doc.numPages };
+  
+  return { text: fullText.trim(), numPages: doc.numPages };
 }

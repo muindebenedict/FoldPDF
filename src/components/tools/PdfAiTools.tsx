@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { readAB, extractText, fmt, dl } from "./PdfScriptLoader";
-import { Spin, Err } from "./SharedComponents";
+import { readAB, extractText, fmt, dl, getOutputFile } from "./PdfScriptLoader";
+import { Spin, Err, validateUploadedFiles } from "./SharedComponents";
 
 
 interface ToolProps {
@@ -24,9 +24,11 @@ export const AiSumTool = ({ onSuccess, toolName }: ToolProps) => {
   const [res, setRes] = useState<any>(null);
   const [st, setSt] = useState<"idle" | "processing" | "done" | "error">("idle");
   const [err, setErr] = useState("");
+  const [fileName, setFileName] = useState("");
   const ref = useRef<HTMLInputElement>(null);
 
   const go = async (f: File) => {
+    setFileName(f.name);
     setSt("processing");
     setErr("");
     try {
@@ -75,7 +77,6 @@ export const AiSumTool = ({ onSuccess, toolName }: ToolProps) => {
       setSt("done");
       if (onSuccess) onSuccess(f.name, toolName);
 
-
     } catch (e: any) {
       setErr(e.message || "Summarization failed.");
       setSt("error");
@@ -89,7 +90,7 @@ export const AiSumTool = ({ onSuccess, toolName }: ToolProps) => {
       `EXECUTIVE SUMMARY:\n${res.exec}\n\n` +
       `PRIMARY HIGHLIGHTS:\n${res.pts.map((s: string, idx: number) => `${idx + 1}. ${s}`).join("\n")}\n\n` +
       `CORE INDEX KEY TERMS:\n${res.keyTerms.join(", ")}`;
-    dl(new Blob([summaryText], { type: "text/plain" }), `foldpdf-summary-${Date.now()}.txt`);
+    dl(new Blob([summaryText], { type: "text/plain" }), getOutputFile(fileName, "summary", ".txt"));
   };
 
   if (st === "done" && res) {
@@ -172,8 +173,16 @@ export const AiSumTool = ({ onSuccess, toolName }: ToolProps) => {
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-          if (f) go(f);
+          const filesArray = Array.from(e.dataTransfer.files) as File[];
+          if (filesArray.length > 0) {
+            const vRes = validateUploadedFiles(filesArray, ".pdf");
+            if (!vRes.isValid) {
+              setErr(vRes.error || "Please upload a PDF file.");
+              return;
+            }
+            setErr("");
+            go(filesArray[0]);
+          }
         }}
         onClick={() => ref.current?.click()}
         className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
@@ -184,7 +193,16 @@ export const AiSumTool = ({ onSuccess, toolName }: ToolProps) => {
           accept=".pdf"
           className="hidden"
           onChange={(e) => {
-            if (e.target.files && e.target.files[0]) go(e.target.files[0]);
+            if (e.target.files && e.target.files[0]) {
+              const filesArray = [e.target.files[0]];
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              go(e.target.files[0]);
+            }
           }}
         />
         <div className="text-3xl mb-1.5 animate-bounce">🤖</div>
@@ -541,9 +559,11 @@ export const ContractTool = ({ onSuccess, toolName }: ToolProps) => {
   const [res, setRes] = useState<any>(null);
   const [st, setSt] = useState<"idle" | "processing" | "done" | "error">("idle");
   const [err, setErr] = useState("");
+  const [fileName, setFileName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const go = async (f: File) => {
+    setFileName(f.name);
     setSt("processing");
     setErr("");
     try {
@@ -586,7 +606,7 @@ export const ContractTool = ({ onSuccess, toolName }: ToolProps) => {
   const dlSimplified = () => {
     if (!res) return;
     const cleanOutput = res.simplifies.join("\n\n");
-    dl(new Blob([cleanOutput], { type: "text/plain" }), `foldpdf-simplified-${Date.now()}.txt`);
+    dl(new Blob([cleanOutput], { type: "text/plain" }), getOutputFile(fileName, "simplified", ".txt"));
   };
 
   if (st === "done" && res) {
@@ -657,8 +677,16 @@ export const ContractTool = ({ onSuccess, toolName }: ToolProps) => {
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-          if (f) go(f);
+          const filesArray = Array.from(e.dataTransfer.files) as File[];
+          if (filesArray.length > 0) {
+            const vRes = validateUploadedFiles(filesArray, ".pdf");
+            if (!vRes.isValid) {
+              setErr(vRes.error || "Please upload a PDF file.");
+              return;
+            }
+            setErr("");
+            go(filesArray[0]);
+          }
         }}
         onClick={() => inputRef.current?.click()}
         className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
@@ -669,7 +697,16 @@ export const ContractTool = ({ onSuccess, toolName }: ToolProps) => {
           accept=".pdf"
           className="hidden"
           onChange={(e) => {
-            if (e.target.files && e.target.files[0]) go(e.target.files[0]);
+            if (e.target.files && e.target.files[0]) {
+              const filesArray = [e.target.files[0]];
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              go(e.target.files[0]);
+            }
           }}
         />
         <div className="text-3xl mb-1.5 animate-bounce">⚖️</div>

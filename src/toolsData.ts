@@ -20,7 +20,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Merge and download your compiled PDF.'
     ],
     faqs: [
-      { question: 'Will my image quality drop?', answer: 'Our converter keeps the pristine quality of your original JPG pixels while bundling them safely into pages.' }
+      { question: 'Will my image quality drop?', answer: 'Our converter keeps the pristine quality of your original JPG pixels while bundling them safely into pages.' },
+      { question: 'Can I combine multiple JPG files into a single PDF document?', answer: 'Yes, you can upload as many JPG images as you want and arrange their sequence visually to combine them into one multi-page PDF.' },
+      { question: 'What page sizes and layout dimensions are supported?', answer: 'It supports mixed aspect ratios, landscape and portrait orientations, and offers Letter, A4, or custom page fit options with auto-margins.' },
+      { question: 'Are there any limits on file count uploads?', answer: 'No artificial limits are imposed. However, browser memory applies for massive sets, so we recommend up to 100 images per batch.' },
+      { question: 'Is my personal information inside the photos safe?', answer: 'Completely. Because all rendering happens inside your local browser sandbox in-memory, our servers never see, store, or process your photos.' }
     ],
     benefits: ['Compresses photo sizes inside the target PDF', 'Supports drag-and-drop order sorting', 'Perfect for compiling receipts and scanned bills']
   },
@@ -37,10 +41,14 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Upload the target PDF.',
       'Select "Convert Entire Page" or "Extract Images Only".',
       'Generate image slices.',
-      'Download a tidy ZIP package of JPG graphics.'
+      'Download a tidy ZIP package of JPG graphics.',
     ],
     faqs: [
-      { question: 'What is the DPI of the output images?', answer: 'Our generator renders high-definition JPG slices at 300 DPI for ultra-crisp output.' }
+      { question: 'What is the DPI of the output images?', answer: 'Our generator renders high-definition JPG slices at 300 DPI for ultra-crisp output.' },
+      { question: 'Can I convert specific individual pages or must I convert the whole PDF?', answer: 'You can convert the entire document to structured JPGs or visually select a precise custom page range to render.' },
+      { question: 'If my PDF has transparent artwork, will it black out?', answer: 'No, transparent segments are automatically composited onto a clean, high-contrast white background so the resulting JPEG remains perfectly legible.' },
+      { question: 'How are the generated images packaged for download?', answer: 'If converting multiple pages, the compiler bundles all of your JPG files into a single, clean ZIP archive for easy, organized extraction.' },
+      { question: 'Does this converter work with password-secured PDF documents?', answer: 'Yes, if you enter the correct user passcode, our compiler decodes the stream locally and proceeds with the high-resolution image rendering.' }
     ],
     benefits: ['Crisp 300 DPI crop rendering', 'Option to isolate embedded illustrations', 'Superb for high-resolution graphics']
   },
@@ -59,7 +67,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your vector rendering.'
     ],
     faqs: [
-      { question: 'Is transparency supported?', answer: 'Yes, PNG transparent alpha channels are fully handled and rendered relative to the PDF grid page background.' }
+      { question: 'Is transparency supported?', answer: 'Yes, PNG transparent alpha channels are fully handled and rendered relative to the PDF grid page background.' },
+      { question: 'Can I change the page orientation for different sized PNGs?', answer: 'Yes, you can choose Auto-detect, Portrait, or Landscape. Auto-detect formats each PDF page\'s aspect ratio to match its input PNG.' },
+      { question: 'Is there an automatic layout padding or margin option?', answer: 'Yes, you can toggle between "No Margins", "Small Margins", and "Large Margins" to frame your design prototypes and graphics perfectly.' },
+      { question: 'Does this tool support dragging to reorder screenshots?', answer: 'Absolutely! Once you load your PNG files, drag and drop the visual cards into any sequence before committing the PDF compile.' },
+      { question: 'Will convert times slow down for dozens of screenshots?', answer: 'Not at all. WebAssembly renders standard transparent graphics in milliseconds, bypassing server queues entirely.' }
     ],
     benefits: ['Keeps visual edge-crispness intact', 'Option to scale to standard physical pages', 'High graphic output']
   },
@@ -78,7 +90,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download processed PNG layouts.'
     ],
     faqs: [
-      { question: 'Does it support transparent backgrounds?', answer: 'Yes! It exports pages with lossless transparent backing option perfect for digital overlay graphics.' }
+      { question: 'Does it support transparent backgrounds?', answer: 'Yes! It exports pages with lossless transparent backing option perfect for digital overlay graphics.' },
+      { question: 'Why should I choose PNG over JPEG when exporting pages?', answer: 'PNG utilizes lossless compression, making it ideal for web presentation sliders, design mockups, and interfaces where pixel-perfect readability is required.' },
+      { question: 'What is the maximum resolution scale supported?', answer: 'Our tool supports up to a 3x resolution multiplier (around 300 DPI) to ensure that fine text and raster logos are completely crisp.' },
+      { question: 'Can I extract only the embedded images instead of full pages?', answer: 'Yes, our tool can scan the PDF structure and extract the actual underlying bitmap image files in their original dimensions.' },
+      { question: 'How does the ZIP download work on different systems?', answer: 'The system creates a standard ZIP file containing all pages as PNG files, which decompression utilities in Windows, macOS, and iOS open natively.' }
     ],
     benefits: ['Lossless pixel rendering configurations', 'Extracts standalone objects', 'Perfect Web transparency support']
   },
@@ -97,7 +113,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your lossless PNG files.'
     ],
     faqs: [
-      { question: 'Why convert JPG to PNG?', answer: 'PNG utilizes lossless compression which prevents any subsequent generation loss if you plan on editing the design later.' }
+      { question: 'Why convert JPG to PNG?', answer: 'PNG utilizes lossless compression which prevents any subsequent generation loss if you plan on editing the design later.' },
+      { question: 'Does this tool alter the original color space profile?', answer: 'No. It preserves your embedded RGB color profiles and gamma settings, guaranteeing colors look exactly identical post-conversion.' },
+      { question: 'Can I batch convert large collections of photos?', answer: 'Yes, you can drop fifty or more JPEG assets at once and process them simultaneously inside a couple of seconds.' },
+      { question: 'Is there any file size limitation?', answer: 'Because all conversion runs in-memory directly on the client machine, the size is limited only by your browser\'s allocated RAM—usually multiple gigabytes.' },
+      { question: 'Will background transparency be added?', answer: 'JPEG does not support transparency, but once converted to PNG, you can open it in standard editors to utilize transparent layers immediately.' }
     ],
     benefits: ['100% secure in-memory conversion stability', 'Preserves original color gamuts', 'Batch convert multiple files seamlessly']
   },
@@ -116,7 +136,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Grab your optimized JPG file.'
     ],
     faqs: [
-      { question: 'What happens to transparent regions?', answer: 'Our converter automatically fills transparent pixels with a clean solid white background for the JPEG output.' }
+      { question: 'What happens to transparent regions?', answer: 'Our converter automatically fills transparent pixels with a clean solid white background for the JPEG output.' },
+      { question: 'Why does the file size usually shrink after converting to JPEG?', answer: 'JPEG uses lossy, high-frequency compression that significantly reduces the file footprint, which is perfect for web speed optimization and email.' },
+      { question: 'Can I adjust the balance between image quality and compression?', answer: 'Yes, a granular quality slider lets you configure the precise compression ratio from draft (lightweight) to maximum fidelity.' },
+      { question: 'Will my PNG EXIF metadata be retained?', answer: 'Our client-side editor strips unnecessary spatial metadata by default to maximize privacy and reduce the output file footprint further.' },
+      { question: 'Does this conversion happen on a server?', answer: 'Absolutely not. Like all FoldPDF utilities, the entire process runs directly in-browser memory—no files leave your system.' }
     ],
     benefits: ['Significantly shrinks photo storage footprint', 'Custom compression level adjustment', 'High speed browser processing']
   },
@@ -134,7 +158,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Click translate to compile files.',
       'Download page output.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'What is WEBP and why convert it to PDF?', answer: 'WEBP is a modern web-optimized graphic format. We convert it to standard PDF sheets so you can easily package web mockups or interfaces into print-ready portfolios.' },
+      { question: 'Can I combine several WEBP files into one single PDF?', answer: 'Yes! Arrange them visually by dragging thumbnails inside the layout board and compile them into a unified PDF file.' },
+      { question: 'Does it support page scale fitting?', answer: 'Yes, our local conversion engine can stretch or shrink WEBP page boundaries to seamlessly fit standard A4 or Letter sizes.' },
+      { question: 'Will transparent backgrounds in web banners look okay?', answer: 'Yes. Any alpha channel transparency is composited onto high-contrast white pages to preserve perfect icon/text legibility.' },
+      { question: 'How secure is the WEBP-to-PDF compiler?', answer: 'Highly secure. Bypassing cloud uploads entirely means your design assets run purely inside local client memory.' }
+    ],
     benefits: ['Fast web rendering translations', 'Streamlined design layout reviews', 'No compression losses']
   },
   {
@@ -150,7 +180,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Choose image density presets.',
       'Download optimized WEBP assets.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'Why is WEBP preferred over other image formats for websites?', answer: 'WEBP offers modern compression that is up to 30% lighter than standard PNG or JPEG, significantly boosting your Google PageSpeed scores.' },
+      { question: 'Can I choose the pixel scale of the exported WebP frames?', answer: 'Yes, you can specify custom resolution scales to optimize the output graphics for mobile viewports or wide-desktop displays.' },
+      { question: 'How are multi-page PDFs compiled?', answer: 'It loops through every page, rendering each slide as a standalone WEBP file, and packages them in a single fast ZIP archive.' },
+      { question: 'Will internal hyperlinks remain active?', answer: 'No, WebP is a flat raster graphic format, so interactive PDF functions are converted to high-definition static pictures.' },
+      { question: 'Does converting use cellular mobile data?', answer: 'Only to fetch the web page initially. After that, the local WebAssembly compiler runs entirely on your device with zero network usage.' }
+    ],
     benefits: ['Extremely compact graphics sizes', 'Boosts Google PageSpeed indicators', 'No web conversion delays']
   },
   {
@@ -166,7 +202,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Convert individual sheets or combine them as single sheets.',
       'Download converted files instantly.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'What are HEIC files and are they readable on Windows/Android?', answer: 'HEIC is Apple\'s high-efficiency image container. Since many platforms lack native support, converting HEIC to PDF lets any system view your camera photos easily.' },
+      { question: 'Can I bundle several HEIC photos into one PDF photo-book?', answer: 'Yes, upload multiple HEIC records together, order them visually on the board, and compile them into a single PDF.' },
+      { question: 'Will this HEIC conversion operate faster than cloud processors?', answer: 'Definitely. By eliminating file uploads and server queues, FoldPDF renders HEICs locally in milliseconds.' },
+      { question: 'Does it preserve the raw iPhone camera color gamut?', answer: 'Yes, we map Apple\'s wide HEIC color matrices perfectly to universal sRGB color targets inside the output PDF structure.' },
+      { question: 'Will my converted photos have a watermark?', answer: 'Never. FoldPDF is a free open tool and never injects watermarks, margins, or platform branding into your document files.' }
+    ],
     benefits: ['Excellent formatting compatibility', 'Compresses Apple camera payload sizes', 'No cloud storage delays']
   },
 
@@ -189,7 +231,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your executable DOCX word document.'
     ],
     faqs: [
-      { question: 'Will the generated Word document look identical?', answer: 'Yes, we map font classifications and placement parameters closely to ensure formatting scales seamlessly back to office packages.' }
+      { question: 'Will the generated Word document look identical?', answer: 'Yes, we map font classifications and placement parameters closely to ensure formatting scales seamlessly back to office packages.' },
+      { question: 'How does FoldPDF avoid creating uneditable floating boxes in Word?', answer: 'Cheap converters dump text into absolute-positioned blocks. Our engine reads paragraph flows and column bounds to reconstruct flowing text lines.' },
+      { question: 'Can I convert tables from PDF into Excel formulas here?', answer: 'This tool exports to Word DOCX. If you specifically need spreadsheet cells, we recommend using our PDF to Excel tool.' },
+      { question: 'What happens to embedded graphic decorations and shapes?', answer: 'Vector drawings are extracted as high-fidelity shapes or rasterized PNG assets, layered snugly behind the text flow.' },
+      { question: 'Is there a page count limit on DOCX conversion?', answer: 'Our client-side system handles standard textbooks and reports up to 200 pages without memory lag.' }
     ],
     benefits: ['Re-editable text paragraphs', 'Stretches tables to standard tables', 'Unlocks scanned tables cleanly']
   },
@@ -208,7 +254,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Preview the preview file structure.',
       'Download your pristine PDF report.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'Why should I convert Word documents to PDF?', answer: 'Word formatting shifts easily between Microsoft Office versions or custom screen monitors. PDF locks structures and font elements permanently.' },
+      { question: 'Is BOTH .doc and .docx formats supported?', answer: 'Yes, the client converter fully supports modern OpenXML (.docx) files as well as classic binary MS Word (.doc) structures.' },
+      { question: 'Will lists, bullet tags, and tables translate correctly?', answer: 'Yes, our local parser matches paragraph tags, nested billing grids, headers, footers, and page numbers cleanly.' },
+      { question: 'Are hyperlinks preserved in the final output?', answer: 'Absolutely. Web links, email addresses, and internal TOC anchor tags remain perfectly active.' },
+      { question: 'Do you require special fonts to be installed locally?', answer: 'Common standard fonts are fully supported. For rare proprietary fonts, we recommend compiling on the machine where the font is active.' }
+    ],
     benefits: ['Locks original formatting and text styles', 'Supports complex nested layouts', 'Includes active hyperlink support']
   },
   {
@@ -225,7 +277,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Assemble editable PPTX presentations.',
       'Save the slideshow document.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'How are PDF pages transformed into PowerPoint slides?', answer: 'Each page becomes a distinct slide, and our parser reconstructs paragraphs as moveable, editable text boxes on your slides.' },
+      { question: 'Can I resize or drag vectors and graphics in PPTX?', answer: 'Yes. Underlying diagrams, tables, and vector blocks are separated as individual design components for easy editing.' },
+      { question: 'What default slide layout aspect ratio is utilized?', answer: 'Widescreen 16:9 is the default, ensuring complete compatibility with laptop monitors, screens, and projectors.' },
+      { question: 'Will converted slides lose their original style properties?', answer: 'Our engine identifies colors, relative sizing, and positioning matrices to keep the slide visual design intact.' },
+      { question: 'How secure are corporate slides parsed this way?', answer: 'Totally secure. All slides compile within local sandbox threads without third-party network exposure.' }
+    ],
     benefits: ['Convert back to editable timeline text', 'Repurposes graphics and diagrams easily', 'Fits standard laptop aspect ratios']
   },
   {
@@ -241,7 +299,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Let FoldPDF map vector layouts and slide nodes.',
       'Download standardized high-resolution PDF handouts.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'Why lock PPTX slides as PDF prior to presenting?', answer: 'Device misalignments can mess up slide layouts and font sizes. A PDF ensures your exact design is displayed flawlessly on any device.' },
+      { question: 'Are slide transitions and animations saved in the PDF?', answer: 'No, PDF is a static document standard. Each slide is captured as a high-fidelity vector page.' },
+      { question: 'What page dimensions does the exported PDF map to?', answer: 'The sheets map exactly to the original PPTX layout bounds (usually modern 16:9 or traditional 4:3 widescreen proportions).' },
+      { question: 'Are hidden slides or notes extracted?', answer: 'No. The tool prints only the active visible slide content, keeping your internal planning notes fully private.' },
+      { question: 'Is the exported slide PDF too heavy to email?', answer: 'Our system subsets resources and compresses images, yielding a lightweight, highly-shareable presentation handout.' }
+    ],
     benefits: ['Keeps precise slide dimensions intact', 'Excellent vector element rendering', 'Compact presentation files']
   },
   {
@@ -258,7 +322,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Compile table matrices.',
       'Download your clean XLSX file.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'How does the converter map unstructured PDF rows into Excel coordinates?', answer: 'Our engine scans horizontal and vertical text alignments, using coordinate clustering to detect the tabular grids and output them into clean rows and columns.' },
+      { question: 'Will mathematical formulas be restored, or is it raw text?', answer: 'Since PDFs only contain static character positions, formulas cannot be extracted directly. However, we format all cells as numbers (rather than text-images) so you can easily write sum formulas immediately.' },
+      { question: 'Can I extract multiple table grids from separate pages onto a single sheet?', answer: 'Yes, you can choose to compile all parsed tables into one continuous spreadsheet, or split separate pages into distinct workbook tabs.' },
+      { question: 'How does it handle merged column header fields?', answer: 'Merged headings are detected and converted back into native Excel merged cells, preserving the ledger layout.' },
+      { question: 'Is this safe for processing private payroll or ledger balances?', answer: 'Completely. Because all code packages compile in-browser, no accounting records are uploaded or transmitted to anyone.' }
+    ],
     benefits: ['Keeps tabular rows aligned perfectly', 'Converts currency values correctly', 'Aids rapid accounting workflows']
   },
   {
@@ -275,7 +345,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Generate grid previews.',
       'Download your structured PDF financial report.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'How do I prevent wide column ranges from cutting off on PDF pages?', answer: 'We offer specialized page layout fitting options like "Fit to Single Page Width" to ensure your columns scale beautifully onto US Letter or A4 sheets.' },
+      { question: 'Will gridlines show up in the final PDF report?', answer: 'Yes, you can toggle Excel gridlines on or off depending on whether you want a clean minimalist look or standard accounting border grids.' },
+      { question: 'Are Excel formulas, charts, and bar graphs preserved?', answer: 'Yes, all visual chart elements are rendered at pristine vector resolution and nested neatly beside cell rows in the output document.' },
+      { question: 'Can I select a subset of spreadsheet tabs to convert?', answer: 'Yes, you can choose to compile only the active worksheet sheet or print the entire workbook package with multi-tab formats.' },
+      { question: 'Does compiling very large accounting journals cause lag?', answer: 'The engine processes thousands of tables and coordinates locally in fractions of a second, with zero lag.' }
+    ],
     benefits: ['Prevents cell columns cutting off', 'Renders formulas and charts cleanly', 'Perfect for business accounting statements']
   },
   {
@@ -292,7 +368,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Extract text layers.',
       'Save clean text files.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'Why would I convert structured PDF pages to a plain TXT file?', answer: 'It is highly useful for feeding clean raw texts into AI LLM prompts, indexing tools, or coding scripts without layout styles and image overhead.' },
+      { question: 'Are header or footer contents extracted?', answer: 'Our smart text extractor has a toggle to automatically ignore header margins and footer page numbers to leave you with continuous, untrashed body text.' },
+      { question: 'What character formatting does the output text document utilize?', answer: 'The tool uses standard UTF-8 text encoding, guaranteeing 100% reading compatibility with Notepad, TextEdit, and terminal environments.' },
+      { question: 'Can I extract text out of multi-column layouts?', answer: 'Yes, our semantic parser tracks standard reading directions (left-to-right columns) to read text threads in natural order.' },
+      { question: 'Does pdf-to-txt support OCR scanned documents?', answer: 'This is for standard native vector text. If you have non-searchable scan files, utilize our OCR Scanned PDF tool to read text pixels.' }
+    ],
     benefits: ['Ultra-lightweight text extraction file sizes', 'Removes annoying alignment artifacts', 'Superb for pasting into local models']
   },
   {
@@ -309,7 +391,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Generate visual page sheets.',
       'Save the parsed ebook.'
     ],
-    faqs: [],
+    faqs: [
+      { question: 'How does plain text gain page formatting in this tool?', answer: 'Classic flat logs or notepad drafts are rendered with gorgeous typography layouts. You can easily configure page sizes, spacing heights, and margins.' },
+      { question: 'Can I convert developer scripts or console log entries?', answer: 'Absolutely. Choose monospace font presets and standard coding layouts to beautifully wrap your code sequences in PDF formats.' },
+      { question: 'How are multi-page documents managed?', answer: 'We automatically wrap lines and paginate text cleanly based on your chosen line height, page margins, and physical canvas height.' },
+      { question: 'What paper specifications are supported?', answer: 'You can output your text-built PDF directly to US Letter, A4, page size booklets, or custom widescreen proportions.' },
+      { question: 'Is there an input length cap?', answer: 'No. The engine paginates even heavy text volumes containing hundreds of thousands of words in a second.' }
+    ],
     benefits: ['Adds elegant formatting layouts on raw text', 'Option to insert layout headings', 'Ideal for software dev text logs']
   },
 
@@ -332,7 +420,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your brand new lightweight PDF file instantly!'
     ],
     faqs: [
-      { question: 'Will my compressed images look pixelated?', answer: 'Our "Recommended" setting safely scales DPI and compresses JPG segments to maintain maximum crispness for human readers while deflating storage footprint.' }
+      { question: 'Will my compressed images look pixelated?', answer: 'Our "Recommended" setting safely scales DPI and compresses JPG segments to maintain maximum crispness for human readers while deflating storage footprint.' },
+      { question: 'Does compressing a PDF strip editable text elements?', answer: 'Not at all. Your vector text layer is left fully intact, keeping text copies, hyperlinks, and tables readable.' },
+      { question: 'Can I choose standard compression levels?', answer: 'Yes, toggle between Extreme (smallest, layout draft density), Recommended (optimal density), and High Graphic (pristine print specs).' },
+      { question: 'Does this compress interactive signature boxes or forms?', answer: 'Our compressor protects interactive fields, metadata, and crypt signatures while shrinking heavy image blocks.' },
+      { question: 'Is client-side compression faster than cloud servers?', answer: 'By a mile. You bypass standard upload queues entirely, completing bulk compressions locally inside fragments of seconds.' }
     ],
     benefits: ['Drastically saves email storage space', 'Extremely quick processing speed', 'Maintains visual page clarity']
   },
@@ -352,7 +444,11 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Grab your unified single PDF file with one press.'
     ],
     faqs: [
-      { question: 'Is there a limit on how many PDFs I can combine?', answer: 'You can merge up to 50 PDF files simultaneously completely for free on FoldPDF.' }
+      { question: 'Is there a limit on how many PDFs I can combine?', answer: 'You can merge up to 100 PDF files simultaneously completely for free on FoldPDF.' },
+      { question: 'Will the merged PDF keep all original links and outline indices?', answer: 'Yes. Our local merger parses structural trees, preserving your internal hyperlinks, web addresses, and bookmarks.' },
+      { question: 'Can I compile files with different canvas sizes?', answer: 'Yes, different aspect ratios (such as mixing Letters and A4s) are merged seamlessly without forced scale cropping.' },
+      { question: 'How does the visual board organizer help?', answer: 'Our visual board allows you to easily drag-and-drop page tiles to organize the exact file sequence before downloading.' },
+      { question: 'What if one of my PDFs is encrypted with a password?', answer: 'You will be prompted to enter the password locally, allowing our engine to decrypt and stitch pages neatly in-memory.' }
     ],
     benefits: ['Tidy, interactive slide rearrangement view', 'Keeps original links intact', 'Fast 1-click execution']
   },
@@ -372,6 +468,10 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your requested custom page segments.'
     ],
     faqs: [
+      { question: 'Can I split non-consecutive page numbers?', answer: 'Yes! You can specify exact custom ranges (such as 3, 7, 10-15) to compile customized page booklets.' },
+      { question: 'Is there an option to split every single page into distinct sheets?', answer: 'Yes, select our "Split All Pages" utility to instantly decompile your PDF into separate files, conveniently packaged in a ZIP archive.' },
+      { question: 'Do the output pages keep their embedded font files?', answer: 'Yes, all split fragments contain their required embedded subsets, maintaining perfect layout styling everywhere.' },
+      { question: 'How quick does the page splitter operate?', answer: 'Splitting is instant. Because your documents do not upload over network queues, processing takes under 100 milliseconds.' },
       { question: 'Can I split password locked PDFs?', answer: 'Yes! Just provide your document passkey first, then proceed to extract pages.' }
     ],
     benefits: ['Zero-friction page range selection', 'Export to separate single-page files', 'Maintains internal fonts and styles'],
@@ -392,6 +492,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Click Inject Watermark.',
       'Download your customized stamped PDF.'
     ],
+    faqs: [
+      { question: 'Can I customize the font, size, and orientation of the watermark?', answer: 'Yes, you can type custom text, select beautiful typography, rotate it diagonally (e.g. 45 degrees), and choose any theme color.' },
+      { question: 'Does the watermark block the readability of text underneath?', answer: 'You can adjust the opacity slider (e.g., from 10% to 50%) to ensure it remains a subtle background marker without blocking layout content.' },
+      { question: 'Can I choose to stamp only specific pages?', answer: 'Absolutely. You can choose to stamp all pages, only the first page, or configure a precise custom page range.' },
+      { question: 'Is the watermark permanently burned into the PDF vectors?', answer: 'Yes! Our local compiler renders the watermark directly into the PDF layout draw commands, making it extremely difficult to remove.' },
+      { question: 'Does it support adding transparent logo images?', answer: 'Yes, you can upload transparent PNG or JPEG logos to stamp your company branding onto layouts.' }
+    ],
     benefits: ['Supports custom text styling', 'Adjust opacity to protect text clarity', 'Runs completely in-memory']
   },
   {
@@ -407,6 +514,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Choose numbering layout presets and corner positions.',
       'Mark skipping of the first title page if desired.',
       'Download your numbered document.'
+    ],
+    faqs: [
+      { question: 'In what formats can I number my PDF pages?', answer: 'You can use classic Arabic numerals, Roman numerals, or customized formats like "Page X of Y" or "Document Index - Page X".' },
+      { question: 'Can I skip numbering the title/cover page?', answer: 'Absolutely. Simply check the "Skip First Page" option to start numbering on page two while keeping your cover slide completely clean.' },
+      { question: 'Where on the page can I position the numbers?', answer: 'You can select from 6 custom margin positions, covering any top or bottom corner or center alignments of your pages.' },
+      { question: 'Will the numbers overlap with my existing page content?', answer: 'You can adjust the margin offsets of the page numbers to position them snugly outside your content margins.' },
+      { question: 'Can I customize the font styling of the numbers?', answer: 'Yes, you can choose from elegant serif, modern sans-serif, or technical monospace typography to match your layout style.' }
     ],
     benefits: ['Bypass title pages easily', 'Support multiple layouts like N/T', 'Instant visual alignment']
   },
@@ -424,6 +538,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Hit Apply Rotation.',
       'Download your perfectly oriented PDF file.'
     ],
+    faqs: [
+      { question: 'Can I rotate only single misaligned pages instead of the whole file?', answer: 'Yes! Our visual board spreads your page tiles, letting you select and rotate specific pages individually, which is perfect for correcting flipped scraps.' },
+      { question: 'What rotation angles are supported?', answer: 'You can rotate pages 90 degrees clockwise or counterclockwise, or flip them 180 degrees upside down to fix alignment.' },
+      { question: 'Does rotating reduce the visual quality of PDF pages?', answer: 'No. We adjust the file\'s orientation metadata records without rendering layers to raster images, maintaining 100% vector-sharp text.' },
+      { question: 'Is there a bulk action to rotate all pages simultaneously?', answer: 'Yes, we provide shortcut controls to rotate all pages in the document clockwise or counterclockwise in a single click.' },
+      { question: 'How long does it take to compile the rotated document?', answer: 'Since it is a simple metadata adjustment running in-memory locally, compile and download happen in under 1 second.' }
+    ],
     benefits: ['Dynamic visual page previews', 'Bulk rotate option for all pages', 'Zero compression loss']
   },
   {
@@ -439,6 +560,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Tap on pages instantly to mark them for removal.',
       'Click Erase Pages to compile.',
       'Download your clean pruned PDF.'
+    ],
+    faqs: [
+      { question: 'How do I choose which pages to delete from the PDF?', answer: 'Our visual board spreads your PDF pages into a thumbnail grid. Simply hover and click on the page cards you want to delete to mark them for removal.' },
+      { question: 'Can I undo a deletion mark before compiling?', answer: 'Yes, you can toggle pages on and off visually. No pages are destroyed until you hit the "Erase Pages" commit button.' },
+      { question: 'Does deleting pages overwrite the original file on my computer?', answer: 'No, we read your file locally and generate a brand-new, cropped PDF file. Your source file is never modified or overwritten.' },
+      { question: 'Will the output PDF file weight be smaller afterwards?', answer: 'Yes, removing unnecessary pages strips their embedded stream assets, rendering the output file much lighter and easy to email.' },
+      { question: 'Is it safe to prune sensitive company files this way?', answer: 'Perfectoly safe. Because the evaluation logic runs entirely in your local browser sandbox, private page contents are never leaked.' }
     ],
     benefits: ['Visual trash can overlays', 'Verify selections easily', 'Prunes files perfectly']
   },
@@ -457,6 +585,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Drag, drop, and resize your signature template on the A4 page preview.',
       'Stamp and download your signed document.'
     ],
+    faqs: [
+      { question: 'How do I create my digital signature in this tool?', answer: 'You can draw a signature smoothly with your touchpad, mouse, or touchscreen on our interactive drawing board, or type your name stylized in elegant handwriting.' },
+      { question: 'Can I place my signature block anywhere on the document?', answer: 'Absolutely. You can drag and drop your signature mark visually, resize it, and position it on any page of the PDF preview.' },
+      { question: 'Does FoldPDF store my signature or documents on a cloud database?', answer: 'Never! Your hand-drawn signature resides strictly in volatile browser RAM and is completely erased the moment you close the tab.' },
+      { question: 'Can I sign multiple pages inside the same document?', answer: 'Yes, you can generate your signature once and stamp it on as many pages and positions as needed.' },
+      { question: 'Is a signed PDF compatible with other PDF viewer applications?', answer: 'Yes, the signature is embedded as a standard interactive element readable by Adobe Acrobat, Apple Preview, and mobile devices.' }
+    ],
     benefits: ['Smooth interactive vector drawing board', 'Drag & drop signature visual positioning', 'Certified look & feel stamp seals']
   },
   {
@@ -472,6 +607,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Type and confirm your password key indicator.',
       'Adjust printing and clipboard copy rights.',
       'Encrypt and download your protected PDF.'
+    ],
+    faqs: [
+      { question: 'What level of security does the encryption provide?', answer: 'It uses standard 128-bit or 256-bit AES encryption, which is the gold standard for protecting corporate and governmental files.' },
+      { question: 'Can I disable printing while letting people read my PDF?', answer: 'Yes! You can toggle separate user permission locks: disable document printing, text copying, page rearranging, or form editing individually.' },
+      { question: 'What is the difference between a user password and an owner password?', answer: 'A user password restricts opening and viewing the file, while an owner password restricts permissions like printing and editing.' },
+      { question: 'If I forget my configured password, can FoldPDF recover it?', answer: 'No. Because we operate under a zero-knowledge local arch wherein no passwords or files touch our systems, we cannot recover your passwords or unlock files for you.' },
+      { question: 'Are these protected files cross-platform compatible?', answer: 'Yes, the encrypted files follow standard PDF ISO specifications and open securely on all PDF programs upon typing the password.' }
     ],
     benefits: ['Sovereign AES-128 bit protection standard', 'Optional restriction permissions toggle', 'Runs strictly inside your local browser']
   },
@@ -489,6 +631,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Strip standard security tables.',
       'Save clean unlocked document drafts.'
     ],
+    faqs: [
+      { question: 'Can this lock extractor crack a PDF password if I forgot it?', answer: 'If the file has an "Open/User" password limit, you must provide it. Our utility removes "Edit/Print" restrictions automatically without keys.' },
+      { question: 'Does unlocking a file reduce the resolution of the pages?', answer: 'No. The local decryptor modifies internal permission tables and metadata, returning your file at 100% original quality.' },
+      { question: 'Can I decrypt multiple locked PDFs simultaneously?', answer: 'Yes, you can drag and drop multiple encrypted files, provide their passcode keys, and unlock them in batch-mode.' },
+      { question: 'Is this tool compliant with legal security and HIPAA guidelines?', answer: 'Yes, since there are no remote servers decrypting the files or saving credentials, your files are immune to database leaks.' },
+      { question: 'Will text copy-paste functionality be restored after unlocking?', answer: 'Yes, extracting print and copy-paste blocks returns full access to the underlying text layers for your convenience.' }
+    ],
     benefits: ['Quickly strips user constraints', '100% compliant with standard reader suites', 'Restores copy and paste capability']
   },
   {
@@ -505,6 +654,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Compile corrected pages.',
       'Download restored file copies.'
     ],
+    faqs: [
+      { question: 'What kinds of PDF corruption can this tool fix?', answer: 'It repairs broken cross-reference tables (XREFs), reconstructs missing catalog dictionaries, recovers unclosed files, and corrects byte offset offsets.' },
+      { question: 'Why do PDFs get corrupted in the first place?', answer: 'Corruption usually occurs due to incomplete download actions, network drops during email attachments, or sudden system crashes in third-party editors.' },
+      { question: 'Will all layout images and custom fonts be recovered?', answer: 'The repair script tries to rebuild as many active streams as possible. If some sectors are physically empty, it recovers all other surviving nodes.' },
+      { question: 'Can I repair PDFs that are password-protected?', answer: 'Yes, once you provide the correct user password locally to confirm access permissions, the script repairs the underlying encryption stream.' },
+      { question: 'Is there any diagnostic fee or watermark added?', answer: 'No. FoldPDF diagnostic parses and repair compilations are 100% free with no watermark or branded overlays added.' }
+    ],
     benefits: ['Cleans offset stream tables', 'Prevents reader crashes', 'Free diagnostic parse']
   },
   {
@@ -520,6 +676,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Tesseract OCR analyzes pixel matrices directly in browser grids.',
       'Check page text highlights.',
       'Download converted TXT file outputs.'
+    ],
+    faqs: [
+      { question: 'What is OCR and why is it needed for scanned documents?', answer: 'Scanned files are actually just flat images. OCR (Optical Character Recognition) scans the mathematical pixels to rebuild active searchable and selectable text lines.' },
+      { question: 'Does this OCR tool process files on a remote cloud server?', answer: 'No! It compiles character recognition locally inside your browser sandbox via WebAssembly. Your files and private data never travel over standard networks.' },
+      { question: 'Can I search for terms inside my PDF after running local OCR?', answer: 'Yes! Our tool embeds a searchable text overlay snug over the original scan pixels, enabling standard "Ctrl+F" search actions.' },
+      { question: 'Which languages are supported by the local OCR engine?', answer: 'Tesseract has supreme accuracy for English, standard Latin scripts, numbers, symbols, and Western European accents.' },
+      { question: 'How quick does the page OCR process finish?', answer: 'It takes just a few seconds per page, utilizing your computer\'s multi-core processing threads directly in-browser.' }
     ],
     benefits: ['Runs local neural OCR scans', 'No data leaks over external networks', 'Crisp text results']
   },
@@ -538,6 +701,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Review Executive Abstract and keyword lists.',
       'Download comprehensive TXT summary logs.'
     ],
+    faqs: [
+      { question: 'How does the local AI summarize my document?', answer: 'Our semantic analyzer compiles sentence mappings and structural headers to isolate high-frequency topic clusters and compose executive lists.' },
+      { question: 'Can I customize the length of the summary output?', answer: 'Yes, you can toggle configurations to fetch a quick scannable bullet list, an intermediate abstract outline, or detailed page-by-page concept logs.' },
+      { question: 'Is my confidential contract data sent to external AI servers?', answer: 'No! Summaries are computed locally inside browser cache RAM, guaranteeing absolute confidentiality.' },
+      { question: 'What output formats can I download the summary to?', answer: 'You can instantly copy summaries to your operating system clipboard, or save them as clean scannable TXT index logs.' },
+      { question: 'Can it summarize scanned PDF books?', answer: 'Yes, but for non-searchable scan files we highly recommend running our local OCR tool first to extract raw text layers.' }
+    ],
     benefits: ['Categorizes documents automatically', 'Calculates weighted summary highlights', 'Saves hours of reading time']
   },
   {
@@ -554,6 +724,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Let FoldPDF index structural content cells.',
       'Type and ask your questions directly in the sandbox.',
       'Get precise mapped answers.'
+    ],
+    faqs: [
+      { question: 'How does chatting with a PDF document actually work?', answer: 'The engine parses page elements, builds a local index list in-memory, and acts as a secure search assistant to answer your questions.' },
+      { question: 'Is my document text indexed in remote databases?', answer: 'Never. Index trees and active chat logs live strictly inside your active browser session RAM, disappearing when you close the tab.' },
+      { question: 'Can I query extremely long PDF manuals?', answer: 'Yes, our local indexer handles long textbooks and company manuals without standard cloud network bottlenecks.' },
+      { question: 'How can I verify that the AI\'s answer is accurate?', answer: 'Our AI includes page citations and text extracts from the source document, letting you double-check assertions effortlessly.' },
+      { question: 'Does the chat require high-speed internet to operate?', answer: 'Only to load the static web app code. Chat parsing and querying execute 100% locally inside your browser cache.' }
     ],
     benefits: ['Fully secure in-memory sandbox execution', 'Instantly query huge user guides', 'Simple scannable chat controls']
   },
@@ -572,6 +749,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Review suggestions and score progress.',
       'Adjust sections to land your interview.'
     ],
+    faqs: [
+      { question: 'What is an ATS and how does this optimizer help?', answer: 'ATS (Applicant Tracking Systems) are scanners used by employers to screen applications. We scan formatting grids, keywords, and action verbs to maximize your score.' },
+      { question: 'Will my CV layout formatting shift or change?', answer: 'No. The optimizer reads a copy of your text layers in-memory to provide detailed feedback suggestions without modifying your design structure.' },
+      { question: 'What specific attributes does the resume analyzer grade?', answer: 'It audits action verb counts, optimal word density, standard resume section presence, and syntax strength indicators.' },
+      { question: 'Is uploading my personal resume details (phone, email) safe?', answer: 'Perfectoly safe. All personal contacts, positions, and history are scanned inside private browser memory and never leave your machine.' },
+      { question: 'Can I export the optimization recommendations?', answer: 'Yes, you can copy the actionable spelling, keyword, and bullet feedback reports directly to your local editor.' }
+    ],
     benefits: ['Grade action verb impact counts', 'Check optimal length targets', 'Find missing essential sections']
   },
   {
@@ -587,6 +771,13 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Our simplified database parses legal clauses.',
       'Hover over marked jargon keywords.',
       'Download plain English simplified agreements.'
+    ],
+    faqs: [
+      { question: 'How does this tool simplify complex legal terms?', answer: 'It matching standard legalese clauses against a friendly translation database, showing plain-English insights upon hovering over paragraphs.' },
+      { question: 'Can it highlight high-risk or problematic clauses?', answer: 'Yes, it highlights common risk categories like perpetual renewals, excessive liability limits, or strict termination timelines.' },
+      { question: 'Is the simplified English considered official legal advice?', answer: 'No. This is a local comprehension assistant designed to help you quickly understand agreements. Always consult an attorney for official decisions.' },
+      { question: 'Will this work with scanned contract pictures?', answer: 'It is built for vector PDF texts. If you have scan pictures, run our OCR Scanned PDF tool first to extract standard text layers.' },
+      { question: 'Are my private corporate contracts uploaded?', answer: 'No. The contract analysis is completed 100% inside your current browser session RAM, preserving corporate confidentiality.' }
     ],
     benefits: ['Highlights heavy legalese terms', 'Shows explanations on visual tooltips', 'Maintains contract context']
   }

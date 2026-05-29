@@ -500,7 +500,7 @@ export default function App() {
                 </h1>
                 
                 <p className="mx-auto mt-5 max-w-3xl text-sm sm:text-base md:text-lg text-slate-650 dark:text-slate-300 leading-relaxed font-body">
-                  Process medical records, financial files, legal certificates, and personal documents completely inside your browser sandbox. Your data never touches our servers—guaranteeing 100% zero-knowledge client-side processing, absolute privacy, and offline-level security.
+                  Process medical records, financial files, legal certificates, and personal documents completely inside your browser sandbox. Your data never touches our servers—guaranteeing 100% zero-knowledge client-side processing, absolute privacy, and sandbox-isolated security.
                 </p>
 
                 {/* 2 COMPLEMENTARY CTAs */}
@@ -818,7 +818,7 @@ export default function App() {
                         Why Browser-Based PDF Tools Are More Secure
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Standard online PDF converters present immediate security vulnerabilities because they require uploading files onto third-party cloud engines. When a document transfers, it crosses unsecure networks and resides on server disks. In contrast, browser-based tools isolate processing right inside your machine's local RAM. Utilizing standard WebAssembly binaries, FoldPDF executes file conversions, compression, or page merges inside a private browser thread. Since no files stream to a network endpoint, your sensitive data remains completely isolated and immune to network sniffers or datacenter breaches. Traditional systems compile massive server logs containing metadata and original file names; local browser architectures run completely stateless, meaning no record of your documents or actions leaves your browser cache. This protects companies against regulatory exposure while giving developers a fast, efficient, and offline-compatible document compiler. By taking advantage of client-side multi-threading, modern laptops can execute heavy rasterizations and layout adjustments locally, without the latency associated with waiting on crowded public queue structures. This client-native approach removes standard bottlenecks, providing a safe alternative that guarantees absolute security by design. When you utilize browser-only tools, you can confirm that your data remains safe by inspecting active outgoing connections in your browser developer console, confirming that files never upload. Decoupled from public SaaS datacenters, you are protected against third-party service interruptions or target server compromise. Choose sovereign data controls today.
+                        Standard online PDF converters present immediate security vulnerabilities because they require uploading files onto third-party cloud engines. When a document transfers, it crosses unsecure networks and resides on server disks. In contrast, browser-based tools isolate processing right inside your machine's local RAM. Utilizing standard WebAssembly binaries, FoldPDF executes file conversions, compression, or page merges inside a private browser thread. Since no files stream to a network endpoint, your sensitive data remains completely isolated and immune to network sniffers or datacenter breaches. Traditional systems compile massive server logs containing metadata and original file names; local browser architectures run completely stateless, meaning no record of your documents or actions leaves your browser cache. This protects companies against regulatory exposure while giving developers a fast, efficient, and privacy-focused document compiler. By taking advantage of client-side multi-threading, modern laptops can execute heavy rasterizations and layout adjustments locally, without the latency associated with waiting on crowded public queue structures. This client-native approach removes standard bottlenecks, providing a safe alternative that guarantees absolute security by design. When you utilize browser-only tools, you can confirm that your data remains safe by inspecting active outgoing connections in your browser developer console, confirming that files never upload. Decoupled from public SaaS datacenters, you are protected against third-party service interruptions or target server compromise. Choose sovereign data controls today.
                       </p>
                     </div>
                   </section>
@@ -924,7 +924,7 @@ export default function App() {
                         </div>
                         <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2">Local Allocation</h4>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Your PDF files dissolve into a localized virtual Javascript ArrayBuffer. Files remain offline, unlinked from external channels.
+                          Your PDF files dissolve into a localized virtual Javascript ArrayBuffer. Files remain fully local, unlinked from external channels.
                         </p>
                       </div>
                     </div>

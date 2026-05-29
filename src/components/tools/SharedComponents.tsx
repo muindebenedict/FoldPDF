@@ -12,7 +12,7 @@ export const Spin = ({ msg = "" }: { msg?: string }) => (
 export const Bar = ({ v, msg }: { v: number; msg?: string }) => (
   <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
     <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-bold">
-      <span>{msg || "Processing…"}</span>
+      {msg ? <span>{msg}</span> : <div />}
       <span>{v}%</span>
     </div>
     <div className="h-2.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
@@ -46,7 +46,8 @@ export const Done = ({
   info,
   onReset,
   onSuccess,
-  toolName
+  toolName,
+  toolId
 }: {
   blob?: Blob;
   name: string;
@@ -55,6 +56,7 @@ export const Done = ({
   onReset: () => void;
   onSuccess?: (fileName: string, toolName: string) => void;
   toolName: string;
+  toolId?: string;
 }) => {
   const onSuccessRef = useRef(onSuccess);
   useEffect(() => {
@@ -68,6 +70,8 @@ export const Done = ({
     }
   }, [name, toolName]);
 
+  const isCompressor = toolId === "compress-pdf" || toolName?.toLowerCase().includes("compress");
+
   return (
     <div className="text-center py-8 px-4 animate-in zoom-in-95 duration-300">
       <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-premium-sm">
@@ -80,11 +84,19 @@ export const Done = ({
         {name}
       </p>
       
-      {origSize && blob && origSize > blob.size && (
+      {isCompressor && origSize && blob ? (
         <p className="text-xs text-slate-500 mb-2 font-medium">
-          {fmt(origSize)} → <strong className="text-emerald-600">{fmt(blob.size)}</strong>
-          <span className="text-emerald-600 font-bold"> ({Math.round((1 - blob.size / origSize) * 100)}% smaller)</span>
+          {fmt(origSize)} → <strong className={blob.size < origSize ? "text-emerald-600" : "text-neutral-700 dark:text-neutral-300"}>{fmt(blob.size)}</strong>
+          {origSize > blob.size && (
+            <span className="text-emerald-600 font-bold"> ({Math.round((1 - blob.size / origSize) * 100)}% smaller)</span>
+          )}
         </p>
+      ) : (
+        blob && (
+          <p className="text-xs text-slate-500 mb-2 font-medium">
+            Size: {fmt(blob.size)}
+          </p>
+        )
       )}
       {info && <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">{info}</div>}
       
@@ -107,6 +119,49 @@ export const Done = ({
     </div>
   );
 };
+
+export function validateUploadedFiles(files: File[], accept: string): { isValid: boolean; error?: string } {
+  if (!accept) return { isValid: true };
+  const allowedSpecs = accept.split(",")
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  
+  if (allowedSpecs.length === 0) return { isValid: true };
+
+  for (const file of files) {
+    const nameLower = file.name.toLowerCase();
+    const ext = "." + nameLower.split(".").pop();
+    
+    const isAllowed = allowedSpecs.some(spec => {
+      if (spec === "*") return true;
+      if (spec.startsWith(".") && ext === spec) return true;
+      if (spec.includes("/") && file.type && (file.type === spec || file.type.startsWith(spec.replace("*", "")))) return true;
+      return false;
+    });
+
+    if (!isAllowed) {
+      let friendlyExpected = "";
+      if (accept.includes(".jpg") || accept.includes(".jpeg")) friendlyExpected = "JPG";
+      else if (accept.includes(".png")) friendlyExpected = "PNG";
+      else if (accept.includes(".webp")) friendlyExpected = "WebP";
+      else if (accept.includes(".heic")) friendlyExpected = "HEIC";
+      else if (accept.includes(".pdf")) friendlyExpected = "PDF";
+      else if (accept.includes(".docx")) friendlyExpected = "Word";
+      else if (accept.includes(".xlsx") || accept.includes(".xls") || accept.includes(".csv")) friendlyExpected = "Excel/Spreadsheet";
+      else {
+        friendlyExpected = allowedSpecs.map(e => e.replace(".", "").toUpperCase()).join("/");
+      }
+
+      const uploadedExt = ext.replace(".", "").toUpperCase() || "unknown";
+      return {
+        isValid: false,
+        error: `Please upload a ${friendlyExpected} file instead of a ${uploadedExt} file.`
+      };
+    }
+  }
+
+  return { isValid: true };
+}
 
 interface ProcProps {
   id: string;
@@ -179,10 +234,19 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
     if (!fl) return;
     const a = Array.from(fl);
     if (!multi && a.length > 1) a.splice(1);
+    
+    const vRes = validateUploadedFiles(a, accept);
+    if (!vRes.isValid) {
+      setFiles([]);
+      setErr(vRes.error || "Invalid file format.");
+      setSt("idle");
+      return;
+    }
+
     setFiles(a);
     setErr("");
     setSt("idle");
-  }, [multi]);
+  }, [multi, accept]);
 
   if (st === "done" && res) {
     return (
@@ -194,6 +258,7 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
         onReset={reset}
         onSuccess={onSuccess}
         toolName={toolName}
+        toolId={id}
       />
     );
   }
@@ -258,7 +323,7 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
         </button>
       )}
       
-      {(st === "reading" || st === "processing") && <Bar v={pct} msg={pmsg || "Processing…"} />}
+      {(st === "reading" || st === "processing") && <Bar v={pct} msg={id === "compress-pdf" ? "" : (pmsg || "Processing…")} />}
       <Err msg={err} onClose={() => setErr("")} />
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Check } from "lucide-react";
-import { readAB, getPdfLib, getPdfJs, getJSZip, renderPage, fmt, dl } from "./PdfScriptLoader";
-import { Proc, Done, Bar, Err } from "./SharedComponents";
+import { readAB, getPdfLib, getPdfJs, getJSZip, renderPage, fmt, dl, getOutputFile } from "./PdfScriptLoader";
+import { Proc, Done, Bar, Err, validateUploadedFiles } from "./SharedComponents";
 
 interface ToolProps {
   onSuccess?: (fileName: string, toolName: string) => void;
@@ -52,56 +52,17 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     const xNewSize = response.headers.get("X-New-Size") || response.headers.get("x-new-size");
     
     const finalOriginalSize = xOriginalSize ? parseInt(xOriginalSize, 10) : originalSizeVal;
-    const finalNewSize = xNewSize ? parseInt(xNewSize, 10) : pdfBlob.size;
+    const finalNewSize = xNewSize ? parseInt(xNewSize, 15) : pdfBlob.size;
     
     const savingsPercent = (((finalOriginalSize - finalNewSize) / finalOriginalSize) * 100).toFixed(1);
-    const finalFilename = `foldpdf-compressed-${Date.now()}.pdf`;
+    const finalFilename = getOutputFile(file.name, "compressed", ".pdf");
     
     // Trigger automatic browser download
     dl(pdfBlob, finalFilename);
     
-    const infoNode = (
-      <div className="space-y-3 mt-3 select-none text-left bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-150 dark:border-slate-800 rounded-xl max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="flex justify-between items-center text-xs text-slate-700 dark:text-slate-350 border-b pb-1.5 dark:border-slate-800 font-semibold font-mono">
-          <span className="uppercase tracking-wide font-bold">Compression Summary</span>
-          <span className="rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 text-[10px] uppercase font-bold">
-            {config.label}
-          </span>
-        </div>
-        
-        <div className="space-y-1 text-xs text-slate-650 dark:text-slate-300 animate-in fade-in duration-500">
-          <div className="flex justify-between text-indigo-600 dark:text-indigo-400">
-            <span className="text-slate-500 font-medium font-mono uppercase tracking-tight text-[10px]">Strategy:</span>
-            <span className="font-bold">Hybrid Vercel Server Compression</span>
-          </div>
-          
-          <div className="flex justify-between pt-1.5">
-            <span className="text-slate-550 font-medium font-mono uppercase tracking-tight text-[10px]">Original Size:</span>
-            <span className="font-bold">{fmt(finalOriginalSize)}</span>
-          </div>
-          <div className="flex justify-between font-bold">
-            <span className="text-slate-550 font-medium font-mono uppercase tracking-tight text-[10px]">Compressed Size:</span>
-            <span className="text-emerald-600 dark:text-emerald-400">{fmt(finalNewSize)}</span>
-          </div>
-          <div className="flex justify-between font-bold">
-            <span className="text-slate-550 font-medium font-mono uppercase tracking-tight text-[10px]">Reduction:</span>
-            <span className="text-emerald-600 dark:text-emerald-400">{savingsPercent}%</span>
-          </div>
-        </div>
-        
-        <div className="border-t dark:border-slate-800 pt-2 text-[10px] space-y-1 text-slate-550 dark:text-slate-400 leading-relaxed font-semibold">
-          <div className="flex items-start gap-1 text-emerald-600 dark:text-emerald-500">
-            <span className="text-xs">✅</span>
-            <span>True server-side layout compression applied. Vector and text elements remain fully selectable and crystal clear!</span>
-          </div>
-        </div>
-      </div>
-    );
-    
     return {
       blob: pdfBlob,
-      name: finalFilename,
-      info: infoNode as any
+      name: finalFilename
     };
   }, [lvl]);
 
@@ -186,7 +147,14 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
 
   const add = (fl: FileList | null) => {
     if (!fl) return;
-    setList((p) => [...p, ...Array.from(fl).filter((f) => f.type === "application/pdf" || f.name.endsWith(".pdf"))]);
+    const filesArray = Array.from(fl);
+    const vRes = validateUploadedFiles(filesArray, ".pdf");
+    if (!vRes.isValid) {
+      setErr(vRes.error || "Please upload a PDF file.");
+      return;
+    }
+    setErr("");
+    setList((p) => [...p, ...filesArray]);
   };
 
   const rem = (i: number) => {
@@ -216,7 +184,7 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
       const bytes = await merged.save();
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
-        name: `foldpdf-merged-${Date.now()}.pdf`,
+        name: getOutputFile(list[0]?.name, "merged", ".pdf"),
         info: `${list.length} separate PDFs merged into a unified document`
       });
       setSt("done");
@@ -426,7 +394,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
         const bytes = await nd.save();
         setRes({
           blob: new Blob([bytes], { type: "application/pdf" }),
-          name: `foldpdf-split-${Date.now()}.pdf`,
+          name: getOutputFile(theFile?.name, "split", ".pdf"),
           info: `Extracted ${sets[0].length} selected pages`
         });
       } else {
@@ -445,7 +413,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
         const zb = await zip.generateAsync({ type: "blob" });
         setRes({
           blob: zb,
-          name: `foldpdf-split-${Date.now()}.zip`,
+          name: getOutputFile(theFile?.name, "split", ".zip"),
           info: `Zipped split files archive — ${sets.length} segments`
         });
       }
@@ -484,8 +452,16 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
-            const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-            if (f) loadThumbs(f);
+            const filesArray = Array.from(e.dataTransfer.files) as File[];
+            if (filesArray.length > 0) {
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              loadThumbs(filesArray[0]);
+            }
           }}
           onClick={() => document.getElementById("split-input-loader")?.click()}
           className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
@@ -496,7 +472,16 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
             accept=".pdf"
             className="hidden"
             onChange={(e) => {
-              if (e.target.files && e.target.files[0]) loadThumbs(e.target.files[0]);
+              if (e.target.files && e.target.files[0]) {
+                const filesArray = [e.target.files[0]];
+                const vRes = validateUploadedFiles(filesArray, ".pdf");
+                if (!vRes.isValid) {
+                  setErr(vRes.error || "Please upload a PDF file.");
+                  return;
+                }
+                setErr("");
+                loadThumbs(e.target.files[0]);
+              }
             }}
           />
           <div className="text-3xl mb-1.5 animate-bounce">✂️</div>
@@ -681,7 +666,7 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
       const bytes = await doc.save();
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
-        name: `foldpdf-rotated-${Date.now()}.pdf`
+        name: getOutputFile(theFile?.name, "rotated", ".pdf")
       });
       setSt("done");
       setPct(100);
@@ -717,8 +702,16 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
-            const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-            if (f) load(f);
+            const filesArray = Array.from(e.dataTransfer.files) as File[];
+            if (filesArray.length > 0) {
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              load(filesArray[0]);
+            }
           }}
           onClick={() => document.getElementById("rot-input-loader")?.click()}
           className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
@@ -729,7 +722,16 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
             accept=".pdf"
             className="hidden"
             onChange={(e) => {
-              if (e.target.files && e.target.files[0]) load(e.target.files[0]);
+              if (e.target.files && e.target.files[0]) {
+                const filesArray = [e.target.files[0]];
+                const vRes = validateUploadedFiles(filesArray, ".pdf");
+                if (!vRes.isValid) {
+                  setErr(vRes.error || "Please upload a PDF file.");
+                  return;
+                }
+                setErr("");
+                load(e.target.files[0]);
+              }
             }}
           />
           <div className="text-3xl mb-1.5 animate-bounce">🔄</div>
@@ -877,7 +879,7 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
       const bytes = await nd.save();
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
-        name: `foldpdf-cleaned-${Date.now()}.pdf`,
+        name: getOutputFile(theFile?.name, "removed", ".pdf"),
         info: `Removed ${marked.length} pages: ${npg - marked.length} pages remaining`
       });
       setSt("done");
@@ -914,8 +916,16 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
-            const f = (Array.from(e.dataTransfer.files) as File[]).find((fi) => fi.type === "application/pdf" || fi.name.endsWith(".pdf"));
-            if (f) load(f);
+            const filesArray = Array.from(e.dataTransfer.files) as File[];
+            if (filesArray.length > 0) {
+              const vRes = validateUploadedFiles(filesArray, ".pdf");
+              if (!vRes.isValid) {
+                setErr(vRes.error || "Please upload a PDF file.");
+                return;
+              }
+              setErr("");
+              load(filesArray[0]);
+            }
           }}
           onClick={() => document.getElementById("rm-input-loader")?.click()}
           className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
@@ -926,7 +936,16 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
             accept=".pdf"
             className="hidden"
             onChange={(e) => {
-              if (e.target.files && e.target.files[0]) load(e.target.files[0]);
+              if (e.target.files && e.target.files[0]) {
+                const filesArray = [e.target.files[0]];
+                const vRes = validateUploadedFiles(filesArray, ".pdf");
+                if (!vRes.isValid) {
+                  setErr(vRes.error || "Please upload a PDF file.");
+                  return;
+                }
+                setErr("");
+                load(e.target.files[0]);
+              }
             }}
           />
           <div className="text-3xl mb-1.5 animate-bounce">🗑️</div>
@@ -1038,7 +1057,7 @@ export const WatermarkTool = ({ onSuccess, toolName }: ToolProps) => {
     const bytes = await doc.save();
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
-      name: `foldpdf-watermarked-${Date.now()}.pdf`
+      name: getOutputFile(files[0]?.name, "watermarked", ".pdf")
     };
   }, [text, op, fs, col]);
 
@@ -1154,7 +1173,7 @@ export const PageNumTool = ({ onSuccess, toolName }: ToolProps) => {
     const bytes = await doc.save();
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
-      name: `foldpdf-numbered-${Date.now()}.pdf`
+      name: getOutputFile(files[0]?.name, "numbered", ".pdf")
     };
   }, [fmt2, pos, start, skip]);
 

@@ -32,7 +32,7 @@ export default function AboutPage({ navigate }: AboutProps) {
   const roadmapSteps = [
     { phase: "Phase 1: Foundation", status: "Completed", desc: "Release over 25 core client-side converter utilities with high-performance WebAssembly runtimes." },
     { phase: "Phase 2: AI Autopilot", status: "Current", desc: "Embed real-time document summarizers, ATS resume checkers, and legalese simplifiers via secure Express APIs." },
-    { phase: "Phase 3: Zero-knowledge OCR", status: "Active", desc: "Enable full offline optical character recognition running entirely on browser WebGL layers." },
+    { phase: "Phase 3: Zero-knowledge OCR", status: "Active", desc: "Enable full client-side optical character recognition running entirely on browser WebGL layers." },
     { phase: "Phase 4: Collaborative Sync", status: "Upcoming", desc: "Build secure, local-first end-to-end encrypted rooms for team document evaluations." }
   ];
 
@@ -175,7 +175,7 @@ export default function AboutPage({ navigate }: AboutProps) {
         </p>
         <button 
           onClick={() => navigate("/contact")}
-          className="rounded-full bg-white text-indigo-655 text-xs sm:text-sm font-extrabold px-6 py-3 cursor-pointer hover:bg-slate-50 transition shadow-md"
+          className="rounded-full bg-white text-indigo-600 text-xs sm:text-sm font-extrabold px-6 py-3 cursor-pointer hover:bg-slate-50 transition shadow-md"
         >
           Contact Support Staff
         </button>
