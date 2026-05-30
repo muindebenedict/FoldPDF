@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FoldPDF</title>
+    <script id="theme-initializer">
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="h-full bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100 font-sans">
     <div id="root" class="h-full"></div>

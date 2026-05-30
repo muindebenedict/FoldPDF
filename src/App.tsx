@@ -174,8 +174,8 @@ export default function App() {
   
   // Theme Toggle State
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem('theme') === 'dark' || 
-      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    // Default to light mode (false) if no theme preference is explicitly stored
+    return localStorage.getItem('theme') === 'dark';
   });
 
   // Authentication State
