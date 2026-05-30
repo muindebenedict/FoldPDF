@@ -1094,10 +1094,8 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       
       {/* 1. BREADCRUMBS FOR STRONG INTERNAL LINKING AND SEO */}
-      <nav className="mb-6 flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-450 font-medium">
+      <nav className="mb-6 flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-450 font-medium font-sans">
         <span onClick={() => navigate('/')} className="hover:text-indigo-600 cursor-pointer">FoldPDF Home</span>
-        <Lucide.ChevronRight className="h-3 w-3" />
-        <span className="capitalize">{tool.category.replace('-', ' ')}</span>
         <Lucide.ChevronRight className="h-3 w-3" />
         <span className="font-semibold text-indigo-600 dark:text-indigo-400 font-display">{tool.name}</span>
       </nav>
@@ -1109,9 +1107,6 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             
             {/* Header of Tool */}
             <div className="mb-6">
-              <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-indigo-700 uppercase dark:bg-indigo-950/30 dark:text-indigo-455 font-display">
-                ⭐ {tool.category.replace('-', ' ')}
-              </span>
               <h1 className="mt-2 text-2.5xl font-extrabold tracking-tight text-slate-905 dark:text-white sm:text-3xl font-display">
                 {tool.name}
               </h1>

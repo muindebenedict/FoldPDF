@@ -1,5 +1,55 @@
 import React, { useState } from 'react';
 import * as Lucide from 'lucide-react';
+import { db, auth } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid || null,
+      email: auth.currentUser?.email || null,
+      emailVerified: auth.currentUser?.emailVerified || null,
+      isAnonymous: auth.currentUser?.isAnonymous || null,
+      tenantId: auth.currentUser?.tenantId || null,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  const jsonStr = JSON.stringify(errInfo);
+  console.error('Firestore Error: ', jsonStr);
+  throw new Error(jsonStr);
+}
 
 interface LegalPagesProps {
   page: 'about' | 'contact' | 'privacy' | 'terms' | 'dmca';
@@ -7,13 +57,58 @@ interface LegalPagesProps {
 }
 
 export function LegalPages({ page, navigate }: LegalPagesProps) {
-  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Select a Category', message: '' });
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Billing & Payment Scope', message: '' });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!contactForm.name || !contactForm.email || !contactForm.message) return;
-    setFormSubmitted(true);
+    setFormError(null);
+
+    const nameVal = contactForm.name.trim();
+    const emailVal = contactForm.email.trim();
+    const messageVal = contactForm.message.trim();
+
+    // 1. Validate all fields are filled in
+    if (!nameVal || !emailVal || !messageVal) {
+      setFormError('Please fill in all fields.');
+      return;
+    }
+
+    // 2. Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailVal)) {
+      setFormError('Please enter a valid email address.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const ticketData = {
+        fullName: nameVal,
+        email: emailVal,
+        category: contactForm.subject,
+        message: messageVal,
+        submittedAt: serverTimestamp(),
+        status: 'open'
+      };
+
+      await addDoc(collection(db, 'support_tickets'), ticketData);
+
+      // On success: clear the form and show success message
+      setContactForm({ name: '', email: '', subject: 'Billing & Payment Scope', message: '' });
+      setFormSubmitted(true);
+    } catch (error) {
+      try {
+        handleFirestoreError(error, OperationType.CREATE, 'support_tickets');
+      } catch (e) {
+        console.error('Firestore insertion failed: ', e);
+      }
+      setFormError('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 1. ABOUT PAGE
@@ -23,7 +118,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
           Our Vision & Mission
         </span>
-        <h1 className="mt-2 text-3.5xl font-extrabold tracking-tight text-neutral-900 dark:text-white sm:text-4.5xl font-sans mb-6">
+        <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
           Meet FoldPDF Workspace
         </h1>
         <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-8 leading-relaxed">
@@ -74,10 +169,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
   if (page === 'contact') {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 dark:text-neutral-200">
-        <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
-          Connect With Humans
-        </span>
-        <h1 className="mt-2 text-3.5xl font-extrabold text-neutral-950 dark:text-white mb-4 font-sans">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-4">
           Contact FoldPDF Support
         </h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8 max-w-xl">
@@ -88,18 +180,23 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
           <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/25 p-8 border border-emerald-100 dark:border-emerald-900 text-center animate-in zoom-in duration-200">
             <Lucide.CheckCircle className="h-14 w-14 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Message Received Successfully!</h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-450 mb-6 max-w-sm mx-auto">
-              Thank you, {contactForm.name}. A customer service expert will review your request at <strong>{contactForm.email}</strong> and respond shortly.
+            <p className="text-sm text-neutral-600 dark:text-neutral-450 mb-6 max-w-sm mx-auto font-medium">
+              Your ticket has been submitted! We'll respond within 12 hours.
             </p>
             <button 
-              onClick={() => { setFormSubmitted(false); setContactForm({ name: '', email: '', subject: 'Select a Category', message: '' }); }}
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-850 dark:text-indigo-455"
+              onClick={() => { setFormSubmitted(false); setFormError(null); }}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-850 dark:text-indigo-455 hover:underline"
             >
               Submit Another Inquiry
             </button>
           </div>
         ) : (
           <form onSubmit={handleContactSubmit} className="space-y-5 rounded-2xl border border-gray-150 p-6 dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
+            {formError && (
+              <div className="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 p-4 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                {formError}
+              </div>
+            )}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-350 uppercase mb-1.5">Your Full Name</label>
@@ -153,9 +250,17 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
             <button 
               type="submit"
-              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-3 text-sm hover:bg-indigo-700 transition shadow-md"
+              disabled={isLoading}
+              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-3 text-sm hover:bg-indigo-700 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Send Support Ticket
+              {isLoading ? (
+                <>
+                  <Lucide.Loader2 className="h-4 w-4 animate-spin" />
+                  Sending Support Ticket...
+                </>
+              ) : (
+                'Send Support Ticket'
+              )}
             </button>
           </form>
         )}
@@ -166,9 +271,14 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
   // 3. PRIVACY POLICY
   if (page === 'privacy') {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 dark:text-neutral-250 leading-relaxed text-sm">
-        <h1 className="text-3.5xl font-extrabold text-neutral-950 dark:text-white mb-6">Privacy Policy</h1>
-        <p className="text-neutral-500 dark:text-neutral-455 mb-6">Last Revised: May 21, 2026</p>
+      <div className="mx-auto max-w-4xl px-4 py-16 dark:text-neutral-200 leading-relaxed text-sm">
+        <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
+          User Data Protection & Privacy
+        </span>
+        <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
+          Privacy Policy
+        </h1>
+        <p className="text-sm text-neutral-500 dark:text-neutral-455 mb-8">Last Revised: May 21, 2026</p>
 
         <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">1. File Deletion Security Guarantee</h2>
         <p className="mb-4">
@@ -191,9 +301,14 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
   // 4. TERMS OF SERVICE
   if (page === 'terms') {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 dark:text-neutral-250 leading-relaxed text-sm">
-        <h1 className="text-3.5xl font-extrabold text-neutral-950 dark:text-white mb-6">Terms of Service</h1>
-        <p className="text-neutral-500 dark:text-neutral-455 mb-6">Last Revised: May 21, 2026</p>
+      <div className="mx-auto max-w-4xl px-4 py-16 dark:text-neutral-200 leading-relaxed text-sm">
+        <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
+          Agreement of Usage
+        </span>
+        <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
+          Terms of Service
+        </h1>
+        <p className="text-sm text-neutral-500 dark:text-neutral-455 mb-8">Last Revised: May 21, 2026</p>
 
         <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">1. Permitted Uses</h2>
         <p className="mb-4">
@@ -210,9 +325,14 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
   // 5. DMCA POLICY
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 dark:text-neutral-250 leading-relaxed text-sm">
-      <h1 className="text-3.5xl font-extrabold text-neutral-950 dark:text-white mb-6">DMCA Takedown Procedures</h1>
-      <p className="mb-6 text-neutral-500">FoldPDF complies with standard copyright procedures.</p>
+    <div className="mx-auto max-w-4xl px-4 py-16 dark:text-neutral-200 leading-relaxed text-sm">
+      <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
+        Copyright Compliance Registry
+      </span>
+      <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
+        DMCA Takedown Procedures
+      </h1>
+      <p className="mb-8 text-sm text-neutral-500">Last Revised: May 21, 2026</p>
       <p className="mb-4">
         Since our system operates as an **on-the-fly, immediate file-handling service**, we do NOT store or compile archives of documents on our servers. As a result, there are no online copyright-infringing files maintained inside our domain registry.
       </p>

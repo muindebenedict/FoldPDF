@@ -84,19 +84,11 @@ export function Footer({ navigate }: FooterProps) {
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
               <strong>Our Mission:</strong> FoldPDF delivers high-speed, secure, and 100% cloud-free document conversions directly inside your browser RAM. Decrypting, merging, and editing PDFs locally prevents physical file caching, ensuring complete data sovereignty.
             </p>
-            {/* Social Icons */}
-            <div className="flex gap-3 text-slate-400 dark:text-slate-500">
-              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition" aria-label="Twitter Header Link">
-                <Lucide.Twitter className="h-4.5 w-4.5" />
-              </a>
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition" aria-label="GitHub Repository Link">
-                <Lucide.Github className="h-4.5 w-4.5" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition" aria-label="LinkedIn Profile Link">
-                <Lucide.Linkedin className="h-4.5 w-4.5" />
-              </a>
-              <a href="/security" onClick={(e) => { e.preventDefault(); handleLinkClick("/security"); }} className="hover:text-emerald-500 transition" aria-label="Security Framework Details">
-                <Lucide.ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
+            {/* Security Verification Link */}
+            <div className="pt-2">
+              <a href="/security" onClick={(e) => { e.preventDefault(); handleLinkClick("/security"); }} className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition" aria-label="Security Framework Details">
+                <Lucide.ShieldCheck className="h-4.5 w-4.5" />
+                <span>Zero-Knowledge Verified</span>
               </a>
             </div>
           </div>
@@ -132,9 +124,9 @@ export function Footer({ navigate }: FooterProps) {
             </h3>
             <ul className="space-y-2.5 text-xs">
               {[
-                { name: "🛡️ PDF Security Guides", path: "/blog" },
-                { name: "💡 Privacy Tips & Best Practices", path: "/blog" },
-                { name: "⚙️ Product Updates & WASM", path: "/blog" },
+                { name: "PDF Security Guides", path: "/blog" },
+                { name: "Privacy Tips & Best Practices", path: "/blog" },
+                { name: "Product Updates & WASM", path: "/blog" },
                 { name: "View All Blog Articles", path: "/blog" }
               ].map((item, i) => (
                 <li key={i}>

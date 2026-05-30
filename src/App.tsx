@@ -428,8 +428,16 @@ export default function App() {
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
       } catch (err: any) {
         console.error("Firebase login failure:", err);
-        // Display exactly as requested: "Password or Email Incorrect"
-        setAuthError('Password or Email Incorrect');
+        const code = (err?.code || '').toLowerCase();
+        const msg = (err?.message || '').toLowerCase();
+        if (code.includes('api-key-not-valid') || msg.includes('api-key-not-valid') || code.includes('invalid-api-key') || msg.includes('invalid-api-key')) {
+          setAuthError('Firebase Configuration Error: The API Key is invalid or blocked.');
+        } else if (code.includes('network-request-failed') || msg.includes('network-request-failed')) {
+          setAuthError('Network error. Please check your internet connection.');
+        } else {
+          // Display exactly as requested: "Password or Email Incorrect"
+          setAuthError('Password or Email Incorrect');
+        }
       }
     }
   };
@@ -876,11 +884,11 @@ export default function App() {
               <div className="mt-24 border-t border-slate-150 dark:border-slate-800/80 pt-16 space-y-20 max-w-6xl mx-auto" id="trust-authority-portal">
                 
                 {/* 1. Founder Note & Mission Statement */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-855 rounded-3xl p-6 sm:p-10 shadow-premium-md relative">
-                  <div className="absolute top-6 right-6 hidden sm:flex text-slate-150 dark:text-slate-850 font-display text-8xl font-black select-none pointer-events-none">
+                <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-855 rounded-3xl p-6 sm:p-10 shadow-premium-md relative overflow-hidden">
+                  <div className="absolute top-2 right-2 sm:top-4 sm:right-6 text-slate-100/50 dark:text-slate-800/20 font-display text-[14vw] sm:text-7xl md:text-8xl lg:text-[10rem] font-black select-none pointer-events-none z-0">
                     WHY
                   </div>
-                  <div className="max-w-3xl">
+                  <div className="max-w-3xl relative z-10">
                     <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-650 dark:bg-indigo-950/40 dark:text-indigo-400 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">
                       Message from our Founders
                     </span>
@@ -955,7 +963,7 @@ export default function App() {
 
                     <div className="bg-white dark:bg-slate-900 border border-slate-15s dark:border-slate-855 p-5 rounded-2xl shadow-premium-sm text-left relative flex flex-col justify-between">
                       <div>
-                        <div className="h-8 w-8 bg-rose-50 dark:bg-rose-955/30 text-rose-500 rounded-xl flex items-center justify-center mb-4 text-xs font-bold shadow-sm">
+                        <div className="h-8 w-8 bg-indigo-50 dark:bg-indigo-955/40 text-indigo-605 rounded-xl flex items-center justify-center mb-4 text-xs font-bold shadow-sm">
                           04
                         </div>
                         <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2">Garbage Purge</h4>

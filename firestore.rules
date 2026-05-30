@@ -9,5 +9,10 @@ service cloud.firestore {
     match /subscribers/{document} {
       allow read, write: if request.auth != null;
     }
+    // Support tickets collection rules
+    match /support_tickets/{document} {
+      allow create: if true;
+      allow read, write, delete: if request.auth != null;
+    }
   }
 }
