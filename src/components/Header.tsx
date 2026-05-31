@@ -308,29 +308,6 @@ export function Header({
                       ))}
                     </div>
                   </div>
-
-                  <div>
-                    <div className="text-[10px] font-extrabold tracking-widest text-indigo-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
-                      <Lucide.Sparkles className="h-3 w-3" />
-                      AI Intelligence
-                    </div>
-                    <div className="flex flex-col space-y-1.5">
-                      {[
-                        { name: 'AI Summarizer Reader', path: '/ai-summarize' },
-                        { name: 'AI Chat with PDF', path: '/ai-chat' },
-                        { name: 'AI Resume ATS grader', path: '/ai-resume' },
-                        { name: 'AI Legal Simplifier', path: '/ai-contract' }
-                      ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
-                        >
-                          {item.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
             )}

@@ -5,6 +5,8 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import fs from "fs/promises";
+import multer from "multer";
+import os from "os";
 
 dotenv.config();
 
@@ -35,6 +37,164 @@ async function startServer() {
   } else {
     console.warn("WARNING: GEMINI_API_KEY is not defined or is a placeholder. Server will automatically deploy smart, realistic fallback document processing and AI outputs.");
   }
+
+  // --- COMPRESS PDF CONFIGRATION, CONCURRENCY LIMITS, RATE LIMITS, AND QUEUING ---
+  const ipRequests: Record<string, number[]> = {};
+  const compressionQueue: Array<{ resolve: () => void; reject: (err: Error) => void }> = [];
+  let activeCompressions = 0;
+
+  function isRateLimited(ip: string): boolean {
+    const now = Date.now();
+    const oneMinuteAgo = now - 60000;
+    if (!ipRequests[ip]) {
+      ipRequests[ip] = [];
+    }
+    ipRequests[ip] = ipRequests[ip].filter(t => t > oneMinuteAgo);
+    if (ipRequests[ip].length >= 5) {
+      return true;
+    }
+    ipRequests[ip].push(now);
+    return false;
+  }
+
+  function releaseCompressionSlot() {
+    activeCompressions--;
+    const next = compressionQueue.shift();
+    if (next) {
+      activeCompressions++;
+      next.resolve();
+    }
+  }
+
+  const upload = multer({
+    dest: os.tmpdir(),
+    limits: { fileSize: 50 * 1024 * 1024 }
+  });
+
+  const uploadMiddleware = upload.single("file");
+
+  app.post("/api/compress", (req, res, next) => {
+    const ip = req.ip || "unknown";
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: "Rate limit exceeded. Max 5 requests per minute." });
+    }
+
+    uploadMiddleware(req, res, (err) => {
+      if (err) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({ error: "File too large. Maximum size is 50MB." });
+        }
+        return res.status(400).json({ error: err.message || "Failed uploading file." });
+      }
+      next();
+    });
+  }, async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    // Double check size
+    if (req.file.size > 50 * 1024 * 1024) {
+      if (req.file.path) {
+        try { await fs.unlink(req.file.path); } catch {}
+      }
+      return res.status(400).json({ error: "File too large. Maximum size is 50MB." });
+    }
+
+    let isSlotAcquired = false;
+    let queueObj: { resolve: () => void; reject: (err: Error) => void } | undefined;
+
+    try {
+      // 55-second request timeout
+      const requestTimeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("GATEWAY_TIMEOUT")), 55000);
+      });
+
+      const processPromise = (async () => {
+        // Acquire slot
+        await new Promise<void>((resolve, reject) => {
+          if (activeCompressions < 10) {
+            activeCompressions++;
+            isSlotAcquired = true;
+            resolve();
+            return;
+          }
+          if (compressionQueue.length >= 20) {
+            return reject(new Error("QUEUE_FULL"));
+          }
+          queueObj = {
+            resolve: () => {
+              isSlotAcquired = true;
+              resolve();
+            },
+            reject,
+          };
+          compressionQueue.push(queueObj);
+        });
+
+        // Forward to the compressor service
+        const file = req.file!;
+        const fileBuffer = await fs.readFile(file.path);
+        const forwardFormData = new FormData();
+        const fileBlob = new Blob([fileBuffer], { type: file.mimetype });
+        forwardFormData.append("file", fileBlob, file.originalname);
+        forwardFormData.append("mode", req.body.mode || "smart");
+
+        const apiResponse = await fetch("https://foldpdf-api-1.onrender.com/api/compress", {
+          method: "POST",
+          body: forwardFormData,
+        });
+
+        if (!apiResponse.ok) {
+          const errText = await apiResponse.text();
+          throw new Error(errText || `Upstream error HTTP ${apiResponse.status}`);
+        }
+
+        const origSizeHeader = apiResponse.headers.get("x-original-size") || apiResponse.headers.get("X-Original-Size");
+        const newSizeHeader = apiResponse.headers.get("x-new-size") || apiResponse.headers.get("X-New-Size");
+
+        if (origSizeHeader) res.setHeader("X-Original-Size", origSizeHeader);
+        if (newSizeHeader) res.setHeader("X-New-Size", newSizeHeader);
+
+        const ab = await apiResponse.arrayBuffer();
+        return Buffer.from(ab);
+      })();
+
+      const compressedBuffer = await Promise.race([processPromise, requestTimeoutPromise]);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.send(compressedBuffer);
+
+    } catch (err: any) {
+      if (queueObj) {
+        const idx = compressionQueue.indexOf(queueObj);
+        if (idx !== -1) {
+          compressionQueue.splice(idx, 1);
+        }
+      }
+
+      const errMsg = err?.message || String(err);
+      if (errMsg === "QUEUE_FULL") {
+        res.status(429).json({ error: "Queue is full. Too many simultaneous compressions. Please try again later." });
+      } else if (errMsg === "GATEWAY_TIMEOUT") {
+        res.status(504).json({ error: "Request timed out after 55 seconds." });
+      } else {
+        console.error("Compression route error:", err);
+        res.status(500).json({ error: err.message || "Compression failed. Please try a smaller file or try again." });
+      }
+    } finally {
+      if (req.file && req.file.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkErr) {
+          console.error("Cleanup of temp file failed:", unlinkErr);
+        }
+      }
+      if (isSlotAcquired) {
+        releaseCompressionSlot();
+      }
+    }
+  });
 
   // --- API ROUTE FOR AI GEMINI ACTIONS ---
   app.post("/api/gemini/action", async (req, res) => {

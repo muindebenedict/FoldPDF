@@ -8,7 +8,7 @@ interface SecurityHubProps {
 export default function SecurityHub({ navigate }: SecurityHubProps) {
   const [checklist, setChecklist] = useState({
     useLocalOnly: true,
-    restrictNetwork: false,
+    restrictNetwork: true,
     clearHistory: true,
     inspectMata: false
   });

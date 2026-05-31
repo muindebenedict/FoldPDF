@@ -632,40 +632,111 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const go = async (f: File) => {
+    if (f.size > 50 * 1024 * 1024) {
+      setErr("File too large. Maximum size is 50MB.");
+      setSt("idle");
+      return;
+    }
+
     setSt("processing");
     setPct(10);
     setPmsg("Fetching OCR engines…");
     setErr("");
+
+    let doc: any = null;
+    let worker: any = null;
+    let timeoutId: any = null;
+
     try {
-      const lib = await getPdfJs();
-      const ab = await readAB(f);
-      const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
-      const tot = doc.numPages;
-      
-      const { loadScript: lSc } = require("./PdfScriptLoader");
-      await lSc("https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js", "Tesseract");
-      const T = (window as any).Tesseract;
-      
-      let extTxt = "";
-      for (let i = 1; i <= tot; i++) {
-        setPct(15 + Math.round((i / tot) * 80));
-        setPmsg(`OCR parsing image frames page ${i}/${tot}…`);
-        const cv = await renderPage(doc, i, 1.5);
-        const { data: { text } } = await T.recognize(cv, "eng", { logger: () => {} });
-        extTxt += `\n--- Page ${i} ---\n${text}\n`;
-      }
-      
-      setPct(100);
-      const blob = new Blob([extTxt], { type: "text/plain" });
-      setRes({
-        blob,
-        name: getOutputFile(f.name, "ocr", ".txt"),
-        info: `Scanned ${tot} pages & compiled text`
+      // 30 seconds timeout race
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error("TIMEOUT_ERROR"));
+        }, 30000);
       });
+
+      const executePromise = (async () => {
+        const lib = await getPdfJs();
+        const ab = await readAB(f);
+        doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
+        const tot = doc.numPages;
+        
+        const { loadScript: lSc } = require("./PdfScriptLoader");
+        await lSc("https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js", "Tesseract");
+        const T = (window as any).Tesseract;
+        
+        worker = await T.createWorker();
+        
+        let extTxt = "";
+        for (let i = 1; i <= tot; i++) {
+          setPct(15 + Math.round((i / tot) * 80));
+          setPmsg(`OCR parsing image frames page ${i}/${tot}…`);
+          const cv = await renderPage(doc, i, 1.5);
+          const { data: { text } } = await worker.recognize(cv);
+          extTxt += `\n--- Page ${i} ---\n${text}\n`;
+        }
+        
+        setPct(100);
+        const blob = new Blob([extTxt], { type: "text/plain" });
+        return {
+          blob,
+          name: getOutputFile(f.name, "ocr", ".txt"),
+          info: `Scanned ${tot} pages & compiled text`
+        };
+      })();
+
+      const scanResult = await Promise.race([executePromise, timeoutPromise]) as { blob: Blob; name: string; info: string };
+      clearTimeout(timeoutId);
+      
+      setRes(scanResult);
       setSt("done");
     } catch (e: any) {
-      setErr(e.message || "OCR Scan failed.");
-      setSt("error");
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      const errMsg = String(e?.message || e || "");
+      let friendlyError = "OCR Scan failed.";
+      
+      if (errMsg === "TIMEOUT_ERROR") {
+        friendlyError = "Processing took too long. Please try a smaller file.";
+      } else if (
+        errMsg.includes("damaged") || 
+        errMsg.includes("password") || 
+        errMsg.includes("decrypt") || 
+        errMsg.includes("encrypted") || 
+        errMsg.includes("corrupt") || 
+        errMsg.includes("structure") ||
+        errMsg.includes("Invalid PDF structure")
+      ) {
+        friendlyError = "This PDF appears to be damaged or password-protected.";
+      } else if (
+        errMsg.includes("Cannot read properties") || 
+        errMsg.includes("undefined") || 
+        errMsg.includes("null") || 
+        errMsg.includes("unsupported")
+      ) {
+        friendlyError = "This file appears to be damaged or unsupported.";
+      } else if (e?.message) {
+        friendlyError = e.message;
+      }
+      
+      setErr(friendlyError);
+      setSt("idle"); // Auto-reset OCR state back to upload/idle state!
+    } finally {
+      if (worker && typeof worker.terminate === "function") {
+        try {
+          await worker.terminate();
+        } catch (errWorker) {
+          console.warn("Could not terminate OCR worker cleanly:", errWorker);
+        }
+      }
+      if (doc && typeof doc.destroy === "function") {
+        try {
+          await doc.destroy();
+        } catch (errDoc) {
+          console.warn("Could not destroy PDF.js doc cleanly:", errDoc);
+        }
+      }
     }
   };
 
@@ -811,13 +882,19 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
   };
 
   const loadPdf = async (f: File) => {
+    if (f.size > 50 * 1024 * 1024) {
+      setErr("File too large. Maximum size is 50MB.");
+      setSt("idle");
+      return;
+    }
     setTheFile(f);
     setSt("processing");
     setPct(20);
+    let doc: any = null;
     try {
       const lib = await getPdfJs();
       const ab = await readAB(f);
-      const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
+      doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
       setNpg(doc.numPages);
       
       const c = await renderPage(doc, 1, 1.4);
@@ -825,8 +902,17 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
       setStage("place");
       setSt("idle");
     } catch (e: any) {
-      setErr(e.message || "Failed reading Pdf layers.");
+      const errM = String(e?.message || e || "");
+      let friendlyError = "Failed reading Pdf layers.";
+      if (errM.includes("damaged") || errM.includes("corrupt") || errM.includes("structure") || errM.includes("password")) {
+        friendlyError = "This PDF appears to be damaged or password-protected.";
+      }
+      setErr(friendlyError);
       setSt("error");
+    } finally {
+      if (doc && typeof doc.destroy === "function") {
+        await doc.destroy();
+      }
     }
   };
 
@@ -835,15 +921,20 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
     setCurPg(n);
     setSt("processing");
     setPct(30);
+    let doc: any = null;
     try {
       const lib = await getPdfJs();
       const ab = await readAB(theFile);
-      const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
+      doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
       const c = await renderPage(doc, n, 1.4);
       setThumb(c.toDataURL("image/jpeg", 0.9));
       setSt("idle");
     } catch (err) {
       setSt("error");
+    } finally {
+      if (doc && typeof doc.destroy === "function") {
+        await doc.destroy();
+      }
     }
   };
 
@@ -852,51 +943,77 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
     setSt("processing");
     setPct(20);
     setErr("");
+    let timeoutId: any = null;
     try {
-      const { PDFDocument } = await getPdfLib();
-      const ab = await readAB(theFile);
-      const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
-      const pgs = allPgs ? doc.getPages() : [doc.getPages()[curPg - 1]];
-      const el = preRef.current;
-      
-      const pw = el ? el.offsetWidth : 560;
-      const ph = el ? el.offsetHeight : 780;
-      const fp = doc.getPage(0);
-      const { width: pdfW, height: pdfH } = fp.getSize();
-      const scX = pdfW / pw;
-      const scY = pdfH / ph;
-
-      const r = await fetch(sigData);
-      const sb = await r.blob();
-      const sbuf = await sb.arrayBuffer();
-      
-      setPct(60);
-      for (const pg of pgs) {
-        const { height } = pg.getSize();
-        const png = await doc.embedPng(sbuf);
-        const x = sigPos.x * scX;
-        const y = height - ((sigPos.y + sigPos.h) * scY);
-        pg.drawImage(png, {
-          x,
-          y,
-          width: sigPos.w * scX,
-          height: sigPos.h * scY,
-          opacity: 0.95
-        });
-      }
-      
-      setPct(90);
-      const bytes = await doc.save();
-      setRes({
-        blob: new Blob([bytes], { type: "application/pdf" }),
-        name: getOutputFile(theFile?.name, "signed", ".pdf"),
-        info: "Prp certified visual stamp applied to document layers."
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error("TIMEOUT_ERROR")), 30000);
       });
+
+      const executePromise = (async () => {
+        const { PDFDocument } = await getPdfLib();
+        const ab = await readAB(theFile);
+        const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
+        const pgs = allPgs ? doc.getPages() : [doc.getPages()[curPg - 1]];
+        const el = preRef.current;
+        
+        const pw = el ? el.offsetWidth : 560;
+        const ph = el ? el.offsetHeight : 780;
+        const fp = doc.getPage(0);
+        const { width: pdfW, height: pdfH } = fp.getSize();
+        const scX = pdfW / pw;
+        const scY = pdfH / ph;
+
+        const r = await fetch(sigData);
+        const sb = await r.blob();
+        const sbuf = await sb.arrayBuffer();
+        
+        setPct(60);
+        for (const pg of pgs) {
+          const { height } = pg.getSize();
+          const png = await doc.embedPng(sbuf);
+          const x = sigPos.x * scX;
+          const y = height - ((sigPos.y + sigPos.h) * scY);
+          pg.drawImage(png, {
+            x,
+            y,
+            width: sigPos.w * scX,
+            height: sigPos.h * scY,
+            opacity: 0.95
+          });
+        }
+        
+        setPct(90);
+        const bytes = await doc.save();
+        return {
+          blob: new Blob([bytes], { type: "application/pdf" }),
+          name: getOutputFile(theFile?.name, "signed", ".pdf"),
+          info: "Prp certified visual stamp applied to document layers."
+        };
+      })();
+
+      const r = await Promise.race([executePromise, timeoutPromise]) as { blob: Blob; name: string; info: string };
+      clearTimeout(timeoutId);
+
+      setRes(r);
       setSt("done");
       setPct(100);
     } catch (e: any) {
-      setErr(e.message || "Failed embedding signature.");
-      setSt("error");
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      const errMsg = String(e?.message || e || "");
+      let friendlyError = "Failed embedding signature.";
+      if (errMsg === "TIMEOUT_ERROR") {
+        friendlyError = "Processing took too long. Please try a smaller file.";
+      } else if (errMsg.includes("damaged") || errMsg.includes("corrupt") || errMsg.includes("structure") || errMsg.includes("decrypt") || errMsg.includes("password")) {
+        friendlyError = "This PDF appears to be damaged or password-protected.";
+      }
+      setErr(friendlyError);
+      setSt("idle");
+      setStage("draw");
+      setSigData(null);
+      setTheFile(null);
+      setThumb(null);
     }
   };
 

@@ -25,15 +25,15 @@ export default function AboutPage({ navigate }: AboutProps) {
     {
       icon: <Lucide.Sparkles className="h-6 w-6 text-indigo-500" />,
       title: "4. Constant Innovation",
-      desc: "Integrating state-of-the-art Google Gemini models for deep, locally proxy-routed document AI audits."
+      desc: "Proactively deploying bleeding-edge browser optimization layers and next-generation document processing engines."
     }
   ];
 
   const roadmapSteps = [
     { phase: "Phase 1: Foundation", status: "Completed", desc: "Release over 25 core client-side converter utilities with high-performance WebAssembly runtimes." },
-    { phase: "Phase 2: AI Autopilot", status: "Current", desc: "Embed real-time document summarizers, ATS resume checkers, and legalese simplifiers via secure Express APIs." },
-    { phase: "Phase 3: Zero-knowledge OCR", status: "Active", desc: "Enable full client-side optical character recognition running entirely on browser WebGL layers." },
-    { phase: "Phase 4: Collaborative Sync", status: "Upcoming", desc: "Build secure, local-first end-to-end encrypted rooms for team document evaluations." }
+    { phase: "Phase 2: Zero-knowledge OCR", status: "Active", desc: "Enable full client-side optical character recognition running entirely on browser WebGL layers." },
+    { phase: "Phase 3: Collaborative Sync", status: "Upcoming", desc: "Build secure, local-first end-to-end encrypted rooms for team document evaluations." },
+    { phase: "Phase 4: AI Autopilot", status: "Upcoming", desc: "Embed real-time document summarizers, ATS resume checkers, and legalese simplifiers via secure Express APIs." }
   ];
 
   return (
@@ -60,7 +60,7 @@ export default function AboutPage({ navigate }: AboutProps) {
             Why FoldPDF Was Created
           </h2>
           <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed mb-4">
-            Our founding software engineers were tired of standard utility websites that are loaded with spam ads, demand forced premium registration walls, and show zero modern AI intelligence while sending sensitive documents to unencrypted servers.
+            Our founding software engineers were tired of standard utility websites that are loaded with spam ads and demand forced premium registration walls while sending sensitive documents to unencrypted servers.
             <br /><br />
             We realized that browser technology had matured enough to compile full, complex vector and raster math compilers into clients. We launched FoldPDF to prove that secure utilities could operate at lightning speeds with zero file caching.
           </p>
@@ -97,7 +97,7 @@ export default function AboutPage({ navigate }: AboutProps) {
             <li className="flex gap-2.5">
               <div className="h-5 w-5 rounded-full bg-indigo-50 text-indigo-500 font-extrabold flex items-center justify-center shrink-0">3</div>
               <div>
-                <strong className="text-slate-800 dark:text-white">Secure Proxy Gateways:</strong> Whenever smart-AI tools audit documents, text slices transmit via temporary secure channels that avoid storage disks completely.
+                <strong className="text-slate-800 dark:text-white">Secure Local Computations:</strong> Processing logic runs inside highly secure client environment frames, avoiding external storage files and tracking.
               </div>
             </li>
           </ul>

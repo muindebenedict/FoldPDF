@@ -54,19 +54,34 @@ async function fetchFont(urls: string[], name: string, prog?: (m: string) => voi
 // Sanitization function to convert non-WinAnsi Unicode text characters when using standard built-in fonts in pdf-lib (Helvetica / Times)
 function sanitizeWinAnsiText(str: string): string {
   if (!str) return "";
-  return str
-    .replace(/[\u2018\u2019]/g, "'") // single curly quotes
-    .replace(/[\u201c\u201d]/g, '"') // double curly quotes
-    .replace(/\u2013/g, "-")        // en-dash
-    .replace(/\u2014/g, "--")       // em-dash
-    .replace(/\u2022/g, "-")        // bullet point to hyphen
-    .replace(/\u25cf/g, "-")        // circle bullet to hyphen
-    .replace(/\u2192/g, "->")       // arrow right
-    .replace(/\u2190/g, "<-")       // arrow left
-    .replace(/\u2194/g, "<->")      // left-right arrow
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accent diacritics
-    .replace(/[^\x20-\x7E\xA0-\xFF\n\r\t]/g, " "); // keep standard characters and strip non-ansi
+  // 1. Replace tab characters (\t, 0x0009) with spaces
+  let clean = str.replace(/\t/g, "    ");
+  
+  // 2. Replace smart/curly quotes with straight quotes
+  clean = clean.replace(/[\u201C\u201D\u201F\u2033\u2036\u221F]/g, '"');
+  clean = clean.replace(/[\u2018\u2019\u201B\u2032\u2035]/g, "'");
+
+  // 3. Replace em and en dashes with hyphens (single '-' for safety)
+  clean = clean.replace(/[\u2013\u2014\u2212]/g, "-");
+
+  // 4. Replace ellipsis with three dots
+  clean = clean.replace(/\u2026/g, "...");
+
+  // 5. Strip any null bytes or control characters (0x00-0x08, 0x0B-0x1F)
+  clean = clean.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+
+  // 6. Replace any character outside the ASCII range (0x00-0x7F) with a space
+  let asciiClean = "";
+  for (let i = 0; i < clean.length; i++) {
+    const code = clean.charCodeAt(i);
+    if (code >= 0 && code <= 127) {
+      asciiClean += clean[i];
+    } else {
+      asciiClean += " ";
+    }
+  }
+
+  return asciiClean;
 }
 
 // Interfaces for DOM block elements
@@ -114,7 +129,7 @@ function parseHtmlToBlocks(htmlContent: string): BlockElement[] {
         const text = child.textContent || "";
         if (text) {
           segments.push({
-            text,
+            text: sanitizeWinAnsiText(text),
             isBold: styles.isBold,
             isItalic: styles.isItalic,
             isUnderline: styles.isUnderline,
@@ -562,7 +577,7 @@ function parseTxtToBlocks(text: string, fontSize: number): BlockElement[] {
 
     blocks.push({
       type: "p",
-      segments: [{ text: line.trim(), isBold: false, isItalic: false, isUnderline: false, fontSize }],
+      segments: [{ text: sanitizeWinAnsiText(line.trim()), isBold: false, isItalic: false, isUnderline: false, fontSize }],
       alignment: "left",
       indentLevel: indent
     });
@@ -1139,31 +1154,217 @@ export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→PPT */
 export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(15, "Opening PDF content…");
-    const ab = await readAB(files[0]);
-    const { text, numPages } = await extractText(ab);
-    
-    prog(45, "Loading PowerPoint compiler…");
-    const P = await getPptxGen();
-    const pptx = new P();
+    try {
+      prog(15, "Opening PDF content…");
+      const ab = await readAB(files[0]);
+      const { text, numPages, pages, pageDetails } = await extractText(ab);
+      
+      prog(45, "Loading PowerPoint compiler…");
+      const P = await getPptxGen();
+      const PptxConstructor = typeof P === 'function' ? P : (P && typeof P.default === 'function' ? P.default : (window as any).PptxGenJS || (window as any).pptxgen || (window as any).PptxGen);
+      if (!PptxConstructor) {
+        throw new Error("PowerPoint compiler (PptxGenJS) failed to load.");
+      }
+      const pptx = new PptxConstructor();
 
-    const sents = text.split(/[.!?\n]+/).map((s) => s.trim()).filter((s) => s.length > 10);
-    const ppSlide = Math.max(1, Math.ceil(sents.length / (numPages || 1)));
+      // Clear all hollow boxes, symbols, or unrendered dingbats that can cause squares on standard devices
+      const cleanPresentationText = (txt: string): string => {
+        if (!txt) return "";
+        
+        // Remove known Wingding, Webding, Private Use Area (PUA), and unrendered Unicode ranges
+        let clean = txt.replace(/[\uE000-\uF8FF]/g, ""); // PUA Primary
+        clean = clean.replace(/[\uF000-\uFFFF]/g, ""); // Extended symbols/surrogates
+        clean = clean.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ""); // Invisible controls
+        
+        const lines = clean.split("\n");
+        const processedLines = lines.map(line => {
+          let l = line.trim();
+          
+          // Match and replace any geometric bullet shapes (hollow/solid blocks, triangles, card symbols) at the line start
+          l = l.replace(/^[\u25A0-\u25FF\u2700-\u27BF\u2022\u2219\u25CB\u25CF\u25AA\u25AB\u25B6\u25C6\u25C8\u27A1\u27A2\u27A5\u27A6\u27AA\u27AB\u27AC\u27AD\u27AE\u27AF\u27B1\u27B2\u27B3\u27B5\u27B8\u27B9\u27BA\u27BB\u27BC\u27BD\u27BE\u27F0-\u27FF]+/g, "•");
+          
+          // Strip out literal bracket and hollow box bullet artifacts like "[]", "[ ]", "❑", "◆", "➢", etc.
+          l = l.replace(/^(\[\]|\[\s\]|\[\?\]|\-\-|\s*○|\s*■|\s*❑|\s*◆|\s*➢|\s*•)\s*/, "• ");
+          
+          // Remove orphan non-alphanumeric junk characters at start
+          l = l.replace(/^[^\w\s"'(•\-\+]{1}\s+/, "• ");
+          
+          // Replace any boxy characters or symbols within the sentence with a clean alternative
+          l = l.replace(/[\u25A0-\u25FF\u2700-\u27BF\u2219\u25CB\u25CF\u25AA\u25AB\u25B6\u25C6\u25C8\u27F0-\u27FF]/g, "-");
+          
+          return l;
+        });
+        
+        return processedLines.filter(line => line.length > 0).join("\n");
+      };
 
-    prog(70, "Framing presentation slides layout…");
-    for (let i = 0; i < numPages; i++) {
-      const slide = pptx.addSlide();
-      slide.addText(`Slide Section ${i + 1}`, { x: 0.5, y: 0.4, w: 9, h: 0.8, fontSize: 24, bold: true, color: "4F46E5" });
-      const snippet = sents.slice(i * ppSlide, (i + 1) * ppSlide).join(". ").slice(0, 480) || "No extract text content found.";
-      slide.addText(snippet, { x: 0.5, y: 1.5, w: 9, h: 4, fontSize: 13, color: "333333" });
+      prog(70, "Framing presentation slides layout…");
+      for (let i = 0; i < numPages; i++) {
+        const slide = pptx.addSlide();
+        
+        // Retrieve matching page details containing diagram/text data
+        const detail = pageDetails && pageDetails[i] ? pageDetails[i] : { text: pages[i] || "", pageNumber: i + 1, hasDiagram: false, image: undefined };
+        
+        let slideTitle = `Slide Section ${i + 1}`;
+        let bodyContent = "";
+        
+        const pageContent = detail.text ? detail.text.trim() : "";
+        if (pageContent) {
+          const lines = pageContent.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+          if (lines.length > 0) {
+            const potentialTitle = lines[0];
+            const cleanTitleCandidate = cleanPresentationText(potentialTitle).replace(/^•\s*/, "");
+            if (cleanTitleCandidate.length > 1 && cleanTitleCandidate.length < 90) {
+              slideTitle = cleanTitleCandidate;
+              bodyContent = lines.slice(1).join("\n");
+            } else {
+              slideTitle = `Section from Document Page ${i + 1}`;
+              bodyContent = lines.join("\n");
+            }
+          } else {
+            bodyContent = "No text content found on this page.";
+          }
+        } else {
+          bodyContent = "No text content found on this page.";
+        }
+        
+        slideTitle = cleanPresentationText(slideTitle).trim() || `Slide Section ${i + 1}`;
+        bodyContent = cleanPresentationText(bodyContent).trim();
+        
+        const snippet = bodyContent.slice(0, 1000) + (bodyContent.length > 1000 ? "..." : "");
+
+        // Standalone title banner with a highly presentable clean corporate font (Arial/Helvetica style) 
+        // to maintain the true, natural text styling of the original PDF
+        slide.addText(slideTitle, { 
+          x: 0.6, 
+          y: 0.5, 
+          w: 8.8, 
+          h: 0.8, 
+          fontSize: 24, 
+          bold: true, 
+          color: "0F172A", // Deep Charcoal slate (maintains PDF body text natural coloring)
+          fontFace: "Arial"
+        });
+
+        if (detail.hasDiagram && detail.image) {
+          // SPLIT LAYOUT (Diagram alongside text): Avoids dedicated slides so that text and figures stay together in the correct flow
+          slide.addText(snippet, { 
+            x: 0.6, 
+            y: 1.4, 
+            w: 4.2, 
+            h: 3.8, 
+            fontSize: 12, 
+            color: "1E293B", // Neutral grey-slate text
+            fontFace: "Arial",
+            align: "left",
+            valign: "top",
+            lineSpacing: 18
+          });
+
+          slide.addImage({
+            data: detail.image,
+            x: 5.1,
+            y: 1.4,
+            w: 4.3,
+            h: 3.8,
+            sizing: { type: "contain", w: 4.3, h: 3.8 }
+          });
+        } else {
+          // FULL LAYOUT (Standard full-width presentation text)
+          slide.addText(snippet, { 
+            x: 0.6, 
+            y: 1.4, 
+            w: 8.8, 
+            h: 3.8, 
+            fontSize: 13, 
+            color: "1E293B", // Sophisticated slate grey text
+            fontFace: "Arial",
+            align: "left",
+            valign: "top",
+            lineSpacing: 18
+          });
+        }
+      }
+
+      prog(90, "Writing ZIP payload…");
+      let pptxBlob: Blob;
+
+      const tryWrite = async (): Promise<Blob> => {
+        // Try write('base64') first, as base64 is extremely stable across older/newer PptxGenJS versions, then we decode it to binary blob.
+        try {
+          const b64 = await pptx.write("base64");
+          if (b64 && typeof b64 === 'string') {
+            const bin = atob(b64);
+            const rawLength = bin.length;
+            const uInt8Array = new Uint8Array(rawLength);
+            for (let j = 0; j < rawLength; j++) {
+              uInt8Array[j] = bin.charCodeAt(j);
+            }
+            return new Blob([uInt8Array], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+          }
+        } catch (e1) {
+          console.warn("pptx.write('base64') failed, trying other methods...", e1);
+        }
+
+        try {
+          const res = await pptx.write("blob");
+          if (res instanceof Blob) {
+            return res;
+          } else if (res) {
+            return new Blob([res as any], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+          }
+        } catch (e2) {
+          console.warn("pptx.write('blob') failed:", e2);
+        }
+
+        try {
+          const buf = await pptx.write("arraybuffer");
+          if (buf) {
+            return new Blob([buf as any], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+          }
+        } catch (e3) {
+          console.warn("pptx.write('arraybuffer') failed:", e3);
+        }
+
+        try {
+          const res = await pptx.write({ outputType: "blob" });
+          if (res instanceof Blob) {
+            return res;
+          } else if (res) {
+            return new Blob([res as any], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+          }
+        } catch (e4) {
+          console.warn("pptx.write({ outputType: 'blob' }) failed:", e4);
+        }
+
+        try {
+          const b64 = await pptx.write({ outputType: "base64" });
+          if (b64 && typeof b64 === 'string') {
+            const bin = atob(b64);
+            const rawLength = bin.length;
+            const uInt8Array = new Uint8Array(rawLength);
+            for (let j = 0; j < rawLength; j++) {
+              uInt8Array[j] = bin.charCodeAt(j);
+            }
+            return new Blob([uInt8Array], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+          }
+        } catch (e5) {
+          console.warn("pptx.write({ outputType: 'base64' }) failed:", e5);
+        }
+
+        throw new Error("All PowerPoint generation output methods failed.");
+      };
+
+      pptxBlob = await tryWrite();
+
+      return {
+        blob: pptxBlob,
+        name: getOutputFile(files[0]?.name, "slides", ".pptx")
+      };
+    } catch (err: any) {
+      console.error("Critical error inside PdfToPptTool:", err);
+      throw new Error(err?.message || String(err));
     }
-
-    prog(90, "Writing ZIP payload…");
-    const buf = await pptx.write({ outputType: "arraybuffer" });
-    return {
-      blob: new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" }),
-      name: getOutputFile(files[0]?.name, "slides", ".pptx")
-    };
   }, []);
 
   return <Proc id="pdf-to-ppt" label="Convert PDF to slides (PPTX)" accept=".pdf" run={run} onSuccess={onSuccess} toolName={toolName} />;

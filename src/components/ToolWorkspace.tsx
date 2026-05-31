@@ -8,7 +8,6 @@ import { PdfToTxtTool, TxtToPdfTool, PdfToWordTool, WordToPdfTool, PdfToExcelToo
 import { PdfToImgTool, ImgToPdfTool } from './tools/ImgConverters';
 import { CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTool, PageNumTool } from './tools/PdfEditTools';
 import { ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool } from './tools/PdfSecurityTools';
-import { AiSumTool, AiChatTool, ResumeTool, ContractTool } from './tools/PdfAiTools';
 
 // Escapes special characters for PDF text streams: ( ) \ and converts non-ASCII to '_'
 function escapePdfText(text: string): string {
@@ -487,14 +486,6 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
         return <RepairTool toolName={tool.name} onSuccess={onActionLogged} />;
       case 'ocr-pdf':
         return <OcrTool toolName={tool.name} onSuccess={onActionLogged} />;
-      case 'ai-summarize':
-        return <AiSumTool toolName={tool.name} onSuccess={onActionLogged} />;
-      case 'ai-chat':
-        return <AiChatTool toolName={tool.name} onSuccess={onActionLogged} />;
-      case 'ai-resume':
-        return <ResumeTool toolName={tool.name} onSuccess={onActionLogged} />;
-      case 'ai-contract':
-        return <ContractTool toolName={tool.name} onSuccess={onActionLogged} />;
       default:
         return null;
     }
@@ -1334,20 +1325,6 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
                               Clear Board
                             </button>
                           </div>
-                        </div>
-                      )}
-
-                      {/* 5. JOB DESCRIPTION AT ATS CHECK */}
-                      {tool.id === 'ai-resume-analyzer' && (
-                        <div className="space-y-3">
-                          <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-350 uppercase">Paste Target Job Description</label>
-                          <textarea
-                            rows={4}
-                            placeholder="Paste target job role descriptions, programming languages, and manager requirements..."
-                            value={jobDescription}
-                            onChange={(e) => setJobDescription(e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 py-2 px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
-                          />
                         </div>
                       )}
 

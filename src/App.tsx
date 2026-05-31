@@ -77,12 +77,11 @@ function SmartIcon({ name, className = "h-5 w-5 text-indigo-600 dark:text-indigo
 const getToolColors = (id: string): { bg: string; icon: string; isAi?: boolean } => {
   const idLower = id.toLowerCase();
   
-  // AI Tools
-  if (idLower.startsWith('ai-') || idLower === 'ocr-pdf') {
+  // OCR Scanned PDF Reader
+  if (idLower === 'ocr-pdf') {
     return {
       bg: 'bg-violet-100/80 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 group-hover:bg-violet-600 group-hover:text-white dark:group-hover:bg-violet-600 dark:group-hover:text-white',
-      icon: 'text-violet-600 dark:text-violet-400 group-hover:text-inherit transition-all duration-300',
-      isAi: true
+      icon: 'text-violet-600 dark:text-violet-400 group-hover:text-inherit transition-all duration-300'
     };
   }
   
@@ -277,7 +276,7 @@ export default function App() {
 
     // Standard static routes
     const titles: Record<string, string> = {
-      '/': 'FoldPDF - Free AI PDF Tools & Conversions Workspace',
+      '/': 'FoldPDF - Free PDF Tools & Conversions Workspace',
       '/about': 'About Our Workspace & Mission | FoldPDF',
       '/contact': 'Contact Direct Human Support | FoldPDF',
       '/privacy': 'Privacy, AdSense & Cookies Policy | FoldPDF',
@@ -286,7 +285,7 @@ export default function App() {
       '/blog': 'Document Architecture Learning Blog | FoldPDF'
     };
 
-    document.title = titles[currentPath] || 'FoldPDF - Safe AI PDF Editor';
+    document.title = titles[currentPath] || 'FoldPDF - Safe PDF Editor';
   }, [currentPath]);
 
   // Handle Dynamic Upload Action Log histories
@@ -461,7 +460,6 @@ export default function App() {
     }
     if (['add-watermark', 'add-page-numbers'].includes(tool.id)) return 'edit';
     if (['protect-pdf', 'unlock-pdf', 'sign-pdf'].includes(tool.id)) return 'security';
-    if (tool.id.startsWith('ai-') || ['ai-summarize', 'ai-chat', 'ai-resume', 'ai-contract'].includes(tool.id)) return 'ai';
     return tool.category;
   };
 
@@ -576,15 +574,14 @@ export default function App() {
               <div className="pb-8 border-b border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center w-full">
                 
                 {/* Visual Category Filters list */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 w-full">
                   {[
                     { id: 'all', label: 'All Tools' },
                     { id: 'organize', label: 'Organize PDF' },
                     { id: 'optimize', label: 'Optimize PDF' },
                     { id: 'convert', label: 'Convert PDF' },
                     { id: 'edit', label: 'Edit PDF' },
-                    { id: 'security', label: 'PDF Security' },
-                    { id: 'ai', label: 'AI Intelligence' }
+                    { id: 'security', label: 'PDF Security' }
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -637,11 +634,7 @@ export default function App() {
                     'sign-pdf': 'Inscribe your legal signature drawing right onto document contract lines.',
                     'unlock-pdf': 'Permit secure recovery of document print features by sweeping passkeys and restrictions away.',
                     'repair-pdf': 'Mend catalog indices and rebuild corrupted binary structures of broken PDF drafts.',
-                    'ocr-pdf': 'Transcribe graphic-only photo sheets into searchable editable textual nodes.',
-                    'ai-summarize': 'Summarize lengthy textbooks or files into structured abstract summaries automatically.',
-                    'ai-chat': 'Initiate conversational queries to unlock deep insights inside document scopes.',
-                    'ai-resume': 'Audit and score resume grids against corporate ATS tracking guidelines.',
-                    'ai-contract': 'Deconstruct contract clauses and hard legalese jargon into natural human terms.'
+                    'ocr-pdf': 'Transcribe graphic-only photo sheets into searchable editable textual nodes.'
                   };
                   const displayedDesc = DESC_OVERWRITE_MAP[tool.id] || tool.shortDesc;
                   const colors = getToolColors(tool.id);
@@ -659,12 +652,6 @@ export default function App() {
                       >
                         <Lucide.Star className={`h-4.5 w-4.5 ${isFav ? 'fill-amber-400 text-amber-500' : ''}`} />
                       </button>
-
-                      {colors.isAi && (
-                        <span className="absolute top-4.5 right-11 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase bg-violet-600 text-white tracking-wider leading-none shadow-sm">
-                          AI
-                        </span>
-                      )}
 
                       {/* Icon & Title */}
                       <div onClick={() => navigate(`/${tool.urlPath}`)} className="cursor-pointer">
@@ -717,7 +704,7 @@ export default function App() {
                   </p>
                 </div>
                 
-                <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+                <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
                   {/* Card 1 */}
                   <div className="bg-white dark:bg-slate-900/40 rounded-3xl border border-slate-150 dark:border-slate-800/80 p-6 shadow-premium-sm relative flex flex-col justify-between">
                     <div>
@@ -740,32 +727,6 @@ export default function App() {
                         className="text-indigo-650 dark:text-indigo-400 text-xs font-bold hover:underline cursor-pointer flex items-center bg-transparent border-none p-0 outline-none"
                       >
                         Explore Conversion Tools <Lucide.ChevronRight className="h-3 w-3 ml-0.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Card 2 */}
-                  <div className="bg-white dark:bg-slate-900/40 rounded-3xl border border-slate-150 dark:border-slate-800/80 p-6 shadow-premium-sm relative flex flex-col justify-between">
-                    <div>
-                      <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                        <Lucide.Sparkles className="h-5 w-5" />
-                      </div>
-                      <h3 className="text-base font-bold text-slate-800 dark:text-white font-display">
-                        Document AI Intelligence
-                      </h3>
-                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Incorporate smart AI reasoning on your uploads. Ask questions to books, summarize lengthy contracts into human-readable text, audit your resume format, and simplify complex legalese instantly.
-                      </p>
-                    </div>
-                    <div className="mt-6">
-                      <button 
-                        onClick={() => {
-                          setSelectedCategory('ai');
-                          document.getElementById('tools-catalog')?.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                        className="text-indigo-650 dark:text-indigo-400 text-xs font-bold hover:underline cursor-pointer flex items-center bg-transparent border-none p-0 outline-none"
-                      >
-                        Try AI PDF Tools <Lucide.ChevronRight className="h-3 w-3 ml-0.5" />
                       </button>
                     </div>
                   </div>
@@ -1024,8 +985,8 @@ export default function App() {
                         <p className="text-slate-500 dark:text-slate-400">Eliminated backend temporary storage caches for completely stateless processing pipelines.</p>
                       </div>
                       <div className="flex gap-3">
-                        <span className="font-mono text-indigo-500 pr-2 shrink-0">AI-SAFE</span>
-                        <p className="text-slate-500 dark:text-slate-400">Integrated dynamic local proxies for secure AI calculations, protecting original intellectual files.</p>
+                        <span className="font-mono text-indigo-500 pr-2 shrink-0">RAM v3</span>
+                        <p className="text-slate-500 dark:text-slate-400">Optimized client-side memory buffers to handle extremely large documents seamlessly.</p>
                       </div>
                     </div>
                   </div>

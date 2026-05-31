@@ -183,6 +183,15 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
   const [err, setErr] = useState("");
   const [drag, setDrag] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
+  const timeoutIdRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
+    };
+  }, []);
 
   const getFriendlyFormatName = () => {
     const idLower = id.toLowerCase();
@@ -213,20 +222,97 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
 
   const go = useCallback(async () => {
     if (!files.length) return;
+    
+    // Validate file sizes (50MB limit)
+    const overSized = files.some(f => f.size > 50 * 1024 * 1024);
+    if (overSized) {
+      setFiles([]);
+      setErr("File too large. Maximum size is 50MB.");
+      setSt("idle");
+      return;
+    }
+
     setSt("reading");
     setPct(5);
     setErr("");
+    
     try {
-      const r = await run(files, (p, m) => {
+      const timeoutPromise = new Promise((_, reject) => {
+        const tid = setTimeout(() => {
+          reject(new Error("TIMEOUT_ERROR"));
+        }, 30000);
+        timeoutIdRef.current = tid;
+      });
+
+      const executePromise = run(files, (p, m) => {
         setPct(p);
         if (m) setPmsg(m);
       });
+
+      const r = await Promise.race([executePromise, timeoutPromise]) as { blob: Blob; name: string; info?: string };
+      
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+
       setRes(r);
       setSt("done");
       setPct(100);
     } catch (e: any) {
-      setErr(e.message || "Processing failed.");
-      setSt("error");
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+      
+      const errMsg = String(e?.message || e || "");
+      let friendlyError = "Something went wrong. Please refresh and try again.";
+      
+      if (errMsg === "TIMEOUT_ERROR") {
+        friendlyError = "Processing took too long. Please try a smaller file.";
+      } else if (errMsg.includes("unsupported characters") || errMsg.includes("WinAnsi cannot encode") || errMsg.includes("WinAnsi")) {
+        friendlyError = "This document contains unsupported characters. Try saving it as a plain .txt file first.";
+      } else if (
+        errMsg.includes("damaged") || 
+        errMsg.includes("password-protected") || 
+        errMsg.includes("decrypt") || 
+        errMsg.includes("encrypted") || 
+        errMsg.includes("structure") || 
+        errMsg.includes("corrupt") || 
+        errMsg.includes("Invalid PDF structure") ||
+        errMsg.includes("bad decrypt")
+      ) {
+        friendlyError = "This PDF appears to be damaged or password-protected.";
+      } else if (
+        errMsg.includes("Cannot read properties") || 
+        errMsg.includes("undefined") || 
+        errMsg.includes("null") || 
+        errMsg.includes("unsupported") ||
+        errMsg.includes("Type Error")
+      ) {
+        friendlyError = "Could not read this file. Please try again.";
+      } else if (
+        errMsg.includes("Out of memory") || 
+        errMsg.includes("memory") || 
+        errMsg.includes("Allocation failed") ||
+        errMsg.includes("out of memory")
+      ) {
+        friendlyError = "This file is too large to process in your browser.";
+      } else if (
+        errMsg.includes("Network error") || 
+        errMsg.includes("fetch") || 
+        errMsg.includes("network") || 
+        errMsg.includes("connect")
+      ) {
+        friendlyError = "Connection lost. Please check your internet and try again.";
+      } else if (e?.message) {
+        friendlyError = e.message;
+      }
+      
+      setErr(friendlyError);
+      setFiles([]);
+      setSt("idle");
+      setPct(0);
     }
   }, [files, run]);
 
@@ -235,10 +321,19 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
     const a = Array.from(fl);
     if (!multi && a.length > 1) a.splice(1);
     
+    // Check file sizes
+    const overSized = a.some(f => f.size > 50 * 1024 * 1024);
+    if (overSized) {
+      setFiles([]);
+      setErr("File too large. Maximum size is 50MB.");
+      setSt("idle");
+      return;
+    }
+
     const vRes = validateUploadedFiles(a, accept);
     if (!vRes.isValid) {
       setFiles([]);
-      setErr(vRes.error || "Invalid file format.");
+      setErr(vRes.error || "Please try again with a valid file.");
       setSt("idle");
       return;
     }

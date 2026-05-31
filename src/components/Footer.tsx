@@ -104,8 +104,7 @@ export function Footer({ navigate }: FooterProps) {
                 { name: "Organize PDFs (Merge / Split)", path: "/" },
                 { name: "Optimize Documents (Compress)", path: "/compress-pdf" },
                 { name: "Convert PDFs (Word / JPG / PNG)", path: "/" },
-                { name: "Document Protections / Lock", path: "/protect-pdf" },
-                { name: "Document AI Intelligence", path: "/" }
+                { name: "Document Protections / Lock", path: "/protect-pdf" }
               ].map((item, i) => (
                 <li key={i}>
                   <button onClick={() => handleLinkClick(item.path)} className="text-left hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors">

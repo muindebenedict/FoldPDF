@@ -11,126 +11,383 @@ interface ToolProps {
 /* COMPRESS PDF */
 export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
   const [lvl, setLvl] = useState<"light" | "medium" | "strong">("medium");
+  const [files, setFiles] = useState<File[]>([]);
+  const [st, setSt] = useState<"idle" | "processing" | "done">("idle");
+  const [statusMsg, setStatusMsg] = useState("");
+  const [err, setErr] = useState("");
+  const [res, setRes] = useState<{ blob: Blob; name: string; info?: string } | null>(null);
+  const [drag, setDrag] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(5, "Preparing document upload buffer…");
-    
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const elapsedTimerRef = useRef<any>(null);
+  const retryTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+      if (retryTimerRef.current) clearInterval(retryTimerRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
+
+  const reset = () => {
+    setFiles([]);
+    setSt("idle");
+    setRes(null);
+    setErr("");
+    setStatusMsg("");
+    setRetryCount(0);
+    setRetryCountdown(0);
+  };
+
+  const cancelAndReset = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (retryTimerRef.current) {
+      clearInterval(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
+    setSt("idle");
+    setStatusMsg("");
+    setRetryCount(0);
+    setRetryCountdown(0);
+  };
+
+  const pick = (fl: FileList | null) => {
+    if (!fl) return;
+    const a = Array.from(fl);
+    if (a.length > 1) a.splice(1);
+
+    const overSized = a.some((f) => f.size > 50 * 1024 * 1024);
+    if (overSized) {
+      setErr("File too large. Maximum size is 50MB.");
+      return;
+    }
+
+    const vRes = validateUploadedFiles(a, ".pdf");
+    if (!vRes.isValid) {
+      setErr(vRes.error || "Please try again with a valid PDF file.");
+      return;
+    }
+
+    setFiles(a);
+    setErr("");
+  };
+
+  const startCompression = async (retryAttempt = 0) => {
+    if (!files.length) return;
+    setErr("");
+    setSt("processing");
+    setStatusMsg("Uploading your file...");
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    let secondsElapsed = 0;
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+
+    elapsedTimerRef.current = setInterval(() => {
+      secondsElapsed += 1;
+      if (secondsElapsed >= 30) {
+        setStatusMsg("Still working, thank you for your patience...");
+      } else if (secondsElapsed >= 15) {
+        setStatusMsg("Almost done, large files take a moment...");
+      } else if (secondsElapsed >= 2) {
+        setStatusMsg("Compressing your PDF...");
+      }
+    }, 1000);
+
     const file = files[0];
-    const originalSizeVal = file.size;
-    
-    // Config mappings: Ultra (strong), Smart (medium), Quality (light)
     const mode = lvl === "strong" ? "ultra" : lvl === "medium" ? "smart" : "quality";
-    
-    const config = {
-      ultra:   { label: "Ultra Compression (Server)" },
-      smart:   { label: "Smart Compression (Server)" },
-      quality: { label: "Quality Compression (Server)" },
-    }[mode];
-    
-    prog(20, "Uploading document to Vercel hybrid compression backend…");
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("mode", mode);
-    
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/compress", {
-      method: "POST",
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(errText || `Server error during compression (HTTP ${response.status})`);
+
+    const fetchTimeoutId = setTimeout(() => {
+      controller.abort();
+    }, 60000);
+
+    try {
+      const response = await fetch("/api/compress", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(fetchTimeoutId);
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
+      }
+
+      if (response.status === 429) {
+        if (retryAttempt < 3) {
+          setRetryCount(retryAttempt + 1);
+          let count = 15;
+          setRetryCountdown(count);
+          setStatusMsg(
+            `High demand right now. Your file will be processed shortly — please wait... Retrying in ${count} seconds...`
+          );
+
+          if (retryTimerRef.current) clearInterval(retryTimerRef.current);
+          retryTimerRef.current = setInterval(() => {
+            count -= 1;
+            setRetryCountdown(count);
+            if (count > 0) {
+              setStatusMsg(
+                `High demand right now. Your file will be processed shortly — please wait... Retrying in ${count} seconds...`
+              );
+            } else {
+              clearInterval(retryTimerRef.current);
+              retryTimerRef.current = null;
+              startCompression(retryAttempt + 1);
+            }
+          }, 1000);
+
+          return;
+        } else {
+          throw new Error("PROX_MORE_429");
+        }
+      }
+
+      if (response.status === 500) {
+        throw new Error("SERVER_500");
+      }
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `Server error during compression (HTTP ${response.status})`);
+      }
+
+      const blobData = await response.blob();
+      const pdfBlob = new Blob([blobData], { type: "application/pdf" });
+
+      const xOriginalSize = response.headers.get("X-Original-Size") || response.headers.get("x-original-size");
+      const xNewSize = response.headers.get("X-New-Size") || response.headers.get("x-new-size");
+
+      const finalOriginalSize = xOriginalSize ? parseInt(xOriginalSize, 10) : file.size;
+      const finalNewSize = xNewSize ? parseInt(xNewSize, 10) : pdfBlob.size;
+
+      const savedPercent = (((finalOriginalSize - finalNewSize) / finalOriginalSize) * 100).toFixed(1);
+      const finalFilename = getOutputFile(file.name, "compressed", ".pdf");
+
+      dl(pdfBlob, finalFilename);
+
+      setRes({
+        blob: pdfBlob,
+        name: finalFilename,
+        info: `Successfully compressed your PDF by ${savedPercent}% (${fmt(finalOriginalSize)} → ${fmt(finalNewSize)})`,
+      });
+      setSt("done");
+
+      if (onSuccess) {
+        onSuccess(finalFilename, toolName);
+      }
+    } catch (e: any) {
+      clearTimeout(fetchTimeoutId);
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
+      }
+      if (retryTimerRef.current) {
+        clearInterval(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+
+      if (e.name === "AbortError" || controller.signal.aborted) {
+        setSt("idle");
+        setStatusMsg("");
+        return;
+      }
+
+      const errMsg = e.message || String(e);
+      let friendly = "Compression failed. Please check your network and try again.";
+
+      if (errMsg === "SERVER_500") {
+        friendly = "Compression failed. Please try a smaller file or try again.";
+      } else if (errMsg === "PROX_MORE_429") {
+        friendly = "Please try again in a few minutes.";
+      } else if (errMsg.includes("504") || errMsg.includes("timeout") || errMsg.includes("TIMEOUT")) {
+        friendly = "Processing took too long. Please try a smaller file.";
+      } else if (errMsg.includes("limit") || errMsg.includes("429")) {
+        friendly = "High demand right now. Please try again in a few minutes.";
+      }
+
+      setErr(friendly);
+      setSt("idle");
+    } finally {
+      abortControllerRef.current = null;
     }
-    
-    prog(80, "Downloading optimized binary stream…");
-    const blobData = await response.blob();
-    const pdfBlob = new Blob([blobData], { type: "application/pdf" });
-    
-    prog(95, "Reading response headers with final specs…");
-    
-    const xOriginalSize = response.headers.get("X-Original-Size") || response.headers.get("x-original-size");
-    const xNewSize = response.headers.get("X-New-Size") || response.headers.get("x-new-size");
-    
-    const finalOriginalSize = xOriginalSize ? parseInt(xOriginalSize, 10) : originalSizeVal;
-    const finalNewSize = xNewSize ? parseInt(xNewSize, 15) : pdfBlob.size;
-    
-    const savingsPercent = (((finalOriginalSize - finalNewSize) / finalOriginalSize) * 100).toFixed(1);
-    const finalFilename = getOutputFile(file.name, "compressed", ".pdf");
-    
-    // Trigger automatic browser download
-    dl(pdfBlob, finalFilename);
-    
-    return {
-      blob: pdfBlob,
-      name: finalFilename
-    };
-  }, [lvl]);
+  };
+
+  if (st === "done" && res) {
+    return (
+      <Done
+        blob={res.blob}
+        name={res.name}
+        origSize={files[0]?.size}
+        info={res.info}
+        onReset={reset}
+        onSuccess={onSuccess}
+        toolName={toolName}
+        toolId="compress-pdf"
+      />
+    );
+  }
+
+  if (st === "processing") {
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-12 px-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/60 shadow-lg max-w-lg mx-auto">
+        <div className="relative flex items-center justify-center mb-6">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-100 border-t-indigo-600 dark:border-indigo-950 dark:border-t-indigo-400"></div>
+          <div className="absolute text-xl">⚡</div>
+        </div>
+        <p className="text-sm font-extrabold text-slate-800 dark:text-white text-center font-display mb-2">
+          {statusMsg || "Compressing your PDF..."}
+        </p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 font-mono text-center">
+          {files[0]?.name} ({fmt(files[0]?.size)})
+        </p>
+        <button
+          onClick={cancelAndReset}
+          className="mt-8 px-5 py-2 bg-slate-100 dark:bg-slate-805 text-slate-700 dark:text-slate-300 hover:bg-slate-205 dark:hover:bg-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer transition shadow-sm"
+        >
+          Cancel Operation
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <Proc
-      id="compress-pdf"
-      label="COMPRESS PDF"
-      run={run}
-      onSuccess={onSuccess}
-      toolName={toolName}
-      opts={
-        <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
-            Compression Quality Target
-          </p>
-          <div className="flex flex-col gap-3">
-            {[
-              {
-                v: "strong",
-                l: "Ultra Compression",
-                d: "Maximum size reduction for smaller PDFs",
-              },
-              {
-                v: "medium",
-                l: "Smart Compression",
-                d: "Optimized quality and compression balance",
-              },
-              {
-                v: "light",
-                l: "Quality Compression",
-                d: "Preserves more detail with lighter compression",
-              },
-            ].map(({ v, l, d }) => {
-              const active = lvl === v;
-              return (
-                <div
-                  key={v}
-                  onClick={() => setLvl(v as any)}
-                  className={`relative cursor-pointer rounded-xl border p-4 transition-all duration-300 flex items-center justify-between select-none hover:scale-[1.01] hover:border-indigo-400 active:scale-[0.99] ${
-                    active
-                      ? "border-indigo-600 bg-indigo-50/15 dark:bg-indigo-950/20 ring-1 ring-indigo-500 dark:ring-indigo-400/50 shadow-md shadow-indigo-600/10"
-                      : "border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/25 hover:bg-slate-100/50 dark:hover:bg-slate-900/40"
-                  }`}
-                >
-                  <div className="flex flex-col pr-6 text-left">
-                    <span className={`text-xs font-bold transition-all duration-200 ${
-                      active 
-                        ? "text-indigo-600 dark:text-indigo-400 font-extrabold" 
-                        : "text-slate-800 dark:text-slate-200"
-                    }`}>
-                      {l}
-                    </span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      {d}
-                    </span>
-                  </div>
-                  {active && (
-                    <div className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-600 text-white shrink-0 shadow-sm transition-all duration-300 scale-100">
-                      <Check className="h-3 w-3 stroke-[3]" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+    <div className="w-full">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDrag(false);
+          pick(e.dataTransfer.files);
+        }}
+        onClick={() => fileInputRef.current?.click()}
+        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition ${
+          drag
+            ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20"
+            : "border-slate-200 hover:border-indigo-400 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40"
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf"
+          className="hidden"
+          onChange={(e) => pick(e.target.files)}
+        />
+        <div className="text-3xl mb-3 animate-bounce">📂</div>
+        <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white mb-1">
+          {files.length ? `${files.length} file selected` : "Drag and drop your PDF here"}
+        </p>
+        <p className="text-slate-400 dark:text-slate-500 text-xs">
+          or click to browse local files · Max 50 MB
+        </p>
+        {files.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5 justify-center max-w-md mx-auto">
+            {files.map((f, i) => (
+              <span
+                key={i}
+                className="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 rounded-lg px-2.5 py-1 text-xs font-semibold font-mono whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px]"
+              >
+                {f.name} ({fmt(f.size)})
+              </span>
+            ))}
           </div>
+        )}
+      </div>
+
+      <div className="mt-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm">
+        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
+          Compression Quality Target
+        </p>
+        <div className="flex flex-col gap-3">
+          {[
+            {
+              v: "strong",
+              l: "Ultra Compression",
+              d: "Maximum size reduction for smaller PDFs",
+            },
+            {
+              v: "medium",
+              l: "Smart Compression",
+              d: "Optimized quality and compression balance",
+            },
+            {
+              v: "light",
+              l: "Quality Compression",
+              d: "Preserves more detail with lighter compression",
+            },
+          ].map(({ v, l, d }) => {
+            const active = lvl === v;
+            return (
+              <div
+                key={v}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLvl(v as any);
+                }}
+                className={`relative cursor-pointer rounded-xl border p-4 transition-all duration-300 flex items-center justify-between select-none hover:scale-[1.01] hover:border-indigo-400 active:scale-[0.99] ${
+                  active
+                    ? "border-indigo-600 bg-indigo-50/15 dark:bg-indigo-950/20 ring-1 ring-indigo-500 dark:ring-indigo-400/50 shadow-md shadow-indigo-600/10"
+                    : "border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/25 hover:bg-slate-100/50 dark:hover:bg-slate-900/40"
+                }`}
+              >
+                <div className="flex flex-col pr-6 text-left">
+                  <span className={`text-xs font-bold transition-all duration-200 ${
+                    active 
+                      ? "text-indigo-600 dark:text-indigo-400 font-extrabold" 
+                      : "text-slate-800 dark:text-slate-200"
+                  }`}>
+                    {l}
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    {d}
+                  </span>
+                </div>
+                {active && (
+                  <div className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-600 text-white shrink-0 shadow-sm transition-all duration-300 scale-100">
+                    <Check className="h-3 w-3 stroke-[3]" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-      }
-    />
+      </div>
+
+      {files.length > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            startCompression();
+          }}
+          className="w-full mt-4 bg-indigo-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-700 shadow-md shadow-indigo-600/15 cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wide"
+        >
+          COMPRESS PDF NOW
+        </button>
+      )}
+
+      {err && <Err msg={err} onClose={() => setErr("")} />}
+    </div>
   );
 };
 
@@ -1041,10 +1298,15 @@ export const WatermarkTool = ({ onSuccess, toolName }: ToolProps) => {
     const gVal = parseInt(col.slice(3, 5), 16) / 255;
     const bVal = parseInt(col.slice(5, 7), 16) / 255;
 
+    const sanitizedText = text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\x20-\x7E]/g, " ");
+
     for (const pg of doc.getPages()) {
       const { width, height } = pg.getSize();
-      pg.drawText(text, {
-        x: width / 2 - (text.length * fs * 0.28),
+      pg.drawText(sanitizedText, {
+        x: width / 2 - (sanitizedText.length * fs * 0.28),
         y: height / 2,
         size: fs,
         opacity: op / 100,
@@ -1143,6 +1405,10 @@ export const PageNumTool = ({ onSuccess, toolName }: ToolProps) => {
       const { width, height } = pg.getSize();
       const n = idx + start;
       const lbl = fmt2.replace("{n}", String(n)).replace("{t}", String(pgs.length));
+      const cleanLbl = lbl
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\x20-\x7E]/g, " ");
       
       const xm: Record<string, number> = {
         "bottom-left": 40,
@@ -1161,7 +1427,7 @@ export const PageNumTool = ({ onSuccess, toolName }: ToolProps) => {
         "top-right": height - 32
       };
 
-      pg.drawText(lbl, {
+      pg.drawText(cleanLbl, {
         x: xm[pos] !== undefined ? xm[pos] : 40,
         y: ym[pos] !== undefined ? ym[pos] : 22,
         size: 9.5,
