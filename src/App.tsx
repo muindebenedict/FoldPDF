@@ -258,9 +258,9 @@ export default function App() {
     // Check if it's a specific tool
     const matchingTool = TOOLS_DATA.find((t) => t.urlPath === path);
     if (matchingTool) {
-      document.title = matchingTool.metaTitle;
+      document.title = matchingTool.metaTitle || 'FoldPDF';
       const meta = document.querySelector('meta[name="description"]');
-      if (meta) meta.setAttribute('content', matchingTool.metaDesc);
+      if (meta) meta.setAttribute('content', matchingTool.metaDesc || 'FoldPDF');
       return;
     }
 
@@ -269,14 +269,14 @@ export default function App() {
       const slug = currentPath.split('/blog/')[1];
       const matchingPost = BLOG_POSTS.find((p) => p.slug === slug);
       if (matchingPost) {
-        document.title = `${matchingPost.title} | FoldPDF Blog`;
+        document.title = `${matchingPost.title || 'FoldPDF'} | FoldPDF Blog`;
         return;
       }
     }
 
     // Standard static routes
     const titles: Record<string, string> = {
-      '/': 'FoldPDF - Free PDF Tools & Conversions Workspace',
+      '/': 'FoldPDF | Free Secure PDF Tools',
       '/about': 'About Our Workspace & Mission | FoldPDF',
       '/contact': 'Contact Direct Human Support | FoldPDF',
       '/privacy': 'Privacy, AdSense & Cookies Policy | FoldPDF',
@@ -285,7 +285,7 @@ export default function App() {
       '/blog': 'Document Architecture Learning Blog | FoldPDF'
     };
 
-    document.title = titles[currentPath] || 'FoldPDF - Safe PDF Editor';
+    document.title = titles[currentPath] || 'FoldPDF';
   }, [currentPath]);
 
   // Handle Dynamic Upload Action Log histories

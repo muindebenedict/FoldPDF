@@ -432,6 +432,14 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
   const [userQuery, setUserQuery] = useState('');
   const [rawTextContext, setRawTextContext] = useState('');
 
+  useEffect(() => {
+    if (tool && tool.name) {
+      document.title = `${tool.name} | Free Secure PDF Tools | FoldPDF`;
+    } else {
+      document.title = "FoldPDF | Free Secure PDF Tools";
+    }
+  }, [tool?.name]);
+
   const renderRealTool = () => {
     switch (tool.id) {
       case 'pdf-to-txt':
