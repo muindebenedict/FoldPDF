@@ -152,7 +152,7 @@ export function Footer({ navigate }: FooterProps) {
                 { name: "Privacy & AdSense Policies", path: "/privacy" },
                 { name: "Terms of Service Conditions", path: "/terms" },
                 { name: "DMCA Intellectual Procedures", path: "/dmca" },
-                { name: "Contact Direct Human Support", path: "/contact" },
+                { name: "Contact FoldPDF Support", path: "/contact" },
                 { name: "Dynamic HTML Sitemap", path: "/sitemap" }
               ].map((item, i) => (
                 <li key={i}>

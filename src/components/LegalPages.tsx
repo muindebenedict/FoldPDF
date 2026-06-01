@@ -57,7 +57,7 @@ interface LegalPagesProps {
 }
 
 export function LegalPages({ page, navigate }: LegalPagesProps) {
-  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Billing & Payment Scope', message: '' });
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'General Inquiry', message: '' });
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,18 +94,53 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         status: 'open'
       };
 
-      await addDoc(collection(db, 'support_tickets'), ticketData);
+      let deliverySuccessful = false;
 
-      // On success: clear the form and show success message
-      setContactForm({ name: '', email: '', subject: 'Billing & Payment Scope', message: '' });
+      // 1. Submit directly over API using FormSubmit securely in the background
+      try {
+        const res = await fetch("https://formsubmit.co/ajax/foldpdf.support@gmail.com", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            name: nameVal,
+            email: emailVal,
+            category: contactForm.subject,
+            message: messageVal
+          })
+        });
+        if (res.ok) {
+          deliverySuccessful = true;
+        }
+      } catch (submitErr) {
+        console.warn("Background API submission failed, fallback chosen:", submitErr);
+      }
+
+      // 2. Also log inside Firestore database
+      try {
+        await addDoc(collection(db, 'support_tickets'), ticketData);
+        deliverySuccessful = true;
+      } catch (dbErr) {
+        console.error('Database logging status: ', dbErr);
+      }
+
+      // 3. Fallback to Mailto Redirection if background post fails entirely
+      if (!deliverySuccessful) {
+        const mailtoSubject = encodeURIComponent(`[FoldPDF Contact] ${contactForm.subject} - ${nameVal}`);
+        const mailtoBody = encodeURIComponent(
+          `Hello Benedict,\n\nI have submitted a support request via FoldPDF with the details below:\n\nSender Name: ${nameVal}\nSender Email: ${emailVal}\nInquiry Type: ${contactForm.subject}\n\nMessage:\n${messageVal}\n\n---\nProcessed securely by FoldPDF`
+        );
+        const mailtoUrl = `mailto:foldpdf.support@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+        window.location.href = mailtoUrl;
+      }
+
+      // Clear the form and show success message
+      setContactForm({ name: '', email: '', subject: 'General Inquiry', message: '' });
       setFormSubmitted(true);
     } catch (error) {
-      try {
-        handleFirestoreError(error, OperationType.CREATE, 'support_tickets');
-      } catch (e) {
-        console.error('Firestore insertion failed: ', e);
-      }
-      setFormError('Something went wrong. Please try again.');
+      setFormError('Could not issue inquiry. Please email me directly at foldpdf.support@gmail.com');
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +208,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
           Contact FoldPDF Support
         </h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8 max-w-xl">
-          Do you have a feature request? Spotted a rendering bug under specific PDF variants? Ask us anything! Our support staff reviews custom tickets within 12 hours.
+          Have a question or found a bug? Send me a message and I'll get back to you within 24 hours.
         </p>
 
         {formSubmitted ? (
@@ -181,7 +216,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             <Lucide.CheckCircle className="h-14 w-14 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Message Received Successfully!</h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-450 mb-6 max-w-sm mx-auto font-medium">
-              Your ticket has been submitted! We'll respond within 12 hours.
+              Your ticket has been submitted! I'll get back to you within 24 hours.
             </p>
             <button 
               onClick={() => { setFormSubmitted(false); setFormError(null); }}
@@ -229,10 +264,9 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
                 onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 py-2.5 px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900 text-neutral-950 dark:text-white"
               >
-                <option>Billing & Payment Scope</option>
-                <option>Technical Convert Rendering Bug</option>
-                <option>Feature Recommendation / AI</option>
-                <option>General Partner Collaboration</option>
+                <option>General Inquiry</option>
+                <option>Bug Report</option>
+                <option>Feature Request</option>
               </select>
             </div>
 
@@ -278,22 +312,48 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
           Privacy Policy
         </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-455 mb-8">Last Revised: May 21, 2026</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: May 31, 2026</p>
 
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">1. File Deletion Security Guarantee</h2>
-        <p className="mb-4">
-          FoldPDF operates a volatile sandbox. Under no conditions are uploads cached or hardwritten to historical log repositories. When you upload a document (PDF, Word, TXT, web graphics), that file is processed exclusively in-memory, parsed or converted on-the-fly, and is completely purged instantly upon tab closures. There are zero backups.
-        </p>
+        <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
+          <p>
+            At FoldPDF, we care about your privacy. This page explains what information we gather and how we use it.
+          </p>
 
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">2. AdSense & Cookie Policies</h2>
-        <p className="mb-4">
-          We integrate Google AdSense to monetize free traffic. Google uses cookies (like the DART cookie) to deliver context-optimized advertisements to users who browse our platform. Users may opt-out of personalized target ads, or consult Google’s official Advertising Partner policies.
-        </p>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.ShieldCheck className="h-5 w-5 text-indigo-500 animate-pulse" />
+            1. We Do Not Store Your Files
+          </h2>
+          <p>
+            We do not store or save any uploaded files. Your documents are processed directly in-browser on your own computer. All files are deleted completely as soon as you close the website tab.
+          </p>
 
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">3. Modern Tracking Policies (GDPR / CCPA)</h2>
-        <p className="mb-4">
-          We comply fully with GDPR guidelines. European residents hold rights to view delete metrics. Because our platform avoids login requirements, there are no databases containing your private personal files, assuring compliance.
-        </p>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.Cookie className="h-5 w-5 text-indigo-500" />
+            2. Cookies and Ads
+          </h2>
+          <p>
+            We use Google AdSense and Google Analytics on our website. These services use cookies to display relevant advertisements and analyze reader traffic patterns.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.Settings className="h-5 w-5 text-indigo-500" />
+            3. Disabling Cookies
+          </h2>
+          <p>
+            You have complete control over cookies. You can choose to disable cookies through your browser settings at any time if you prefer not to use them.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.Mail className="h-5 w-5 text-indigo-500" />
+            4. Contact Us
+          </h2>
+          <p>
+            If you have questions about our privacy practices, please contact us at:{" "}
+            <a href="mailto:foldpdf.support@gmail.com" className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold">
+              foldpdf.support@gmail.com
+            </a>
+          </p>
+        </div>
       </div>
     );
   }
@@ -308,17 +368,53 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
           Terms of Service
         </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-455 mb-8">Last Revised: May 21, 2026</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: May 31, 2026</p>
 
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">1. Permitted Uses</h2>
-        <p className="mb-4">
-          FoldPDF permits you to compress, stitch, split, secure, and run AI deep examinations across documents up to 50MB. Commercial extraction operations are welcome, provided you avoid running automated programmatic scrapping cycles that disrupt server ingress operations.
-        </p>
+        <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
+          <p>
+            Welcome to FoldPDF. Please read these simple Terms of Service before using our website.
+          </p>
 
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mt-8 mb-3">2. Complete Disclaimer of Warranties</h2>
-        <p className="mb-4">
-          FoldPDF delivers services "As Is". Because we purged files immediately from caches, we are not liable for accidental data losses or formatting discrepancies resulting from compressed packages.
-        </p>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.Scale className="h-5 w-5 text-indigo-500" />
+            1. Allowed Use
+          </h2>
+          <p>
+            You agree to use our tools for legal purposes only. You must not use our service to process illegal files or try to damage our website.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.AlertTriangle className="h-5 w-5 text-indigo-500" />
+            2. Provided As-Is
+          </h2>
+          <p>
+            We provide all tools as-is with no warranty. We do our best to make sure the tools work, but we cannot promise they will always be perfect or available.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.FileWarning className="h-5 w-5 text-indigo-500" />
+            3. No Liability for Data Loss
+          </h2>
+          <p>
+            We process files locally on your device. We are not liable for any data loss, file corruption, or issues that happen during file processing. Always keep backups of your originals.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.RefreshCw className="h-5 w-5 text-indigo-500" />
+            4. Updating These Terms
+          </h2>
+          <p>
+            We can update these terms at any time. We will change the "Last Updated" date at the top of this page when we make modifications.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.Info className="h-5 w-5 text-indigo-500" />
+            5. Site Operation
+          </h2>
+          <p>
+            This website is operated by Benedict Muinde in Nairobi, Kenya.
+          </p>
+        </div>
       </div>
     );
   }

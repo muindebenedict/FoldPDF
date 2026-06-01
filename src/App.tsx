@@ -278,7 +278,7 @@ export default function App() {
     const titles: Record<string, string> = {
       '/': 'FoldPDF | Free Secure PDF Tools',
       '/about': 'About Our Workspace & Mission | FoldPDF',
-      '/contact': 'Contact Direct Human Support | FoldPDF',
+      '/contact': 'Contact FoldPDF Support | FoldPDF',
       '/privacy': 'Privacy, AdSense & Cookies Policy | FoldPDF',
       '/terms': 'Terms of Service Policies | FoldPDF',
       '/dmca': 'DMCA Policy & Procedure | FoldPDF',
