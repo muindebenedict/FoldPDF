@@ -296,6 +296,9 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             </button>
           </form>
         )}
+        <p className="mt-6 text-sm text-center text-neutral-500 dark:text-neutral-400">
+          Prefer email? Reach me directly at <a href="mailto:foldpdf.support@gmail.com" className="text-indigo-600 dark:text-indigo-400 hover:underline">foldpdf.support@gmail.com</a>
+        </p>
       </div>
     );
   }
