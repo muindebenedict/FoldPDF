@@ -202,6 +202,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
   // 2. CONTACT US PAGE
   if (page === 'contact') {
+    const isFormSent = formSubmitted || (typeof window !== 'undefined' && window.location.search.includes('sent=true'));
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 dark:text-neutral-200">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-4">
@@ -211,22 +212,23 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
           Have a question or found a bug? Send me a message and I'll get back to you within 24 hours.
         </p>
 
-        {formSubmitted ? (
+        {isFormSent ? (
           <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/25 p-8 border border-emerald-100 dark:border-emerald-900 text-center animate-in zoom-in duration-200">
             <Lucide.CheckCircle className="h-14 w-14 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Message Received Successfully!</h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-450 mb-6 max-w-sm mx-auto font-medium">
-              Your ticket has been submitted! I'll get back to you within 24 hours.
+              Thanks! Your message has been sent. I'll reply within 24 hours.
             </p>
             <button 
-              onClick={() => { setFormSubmitted(false); setFormError(null); }}
+              onClick={() => { window.location.href = '/contact'; }}
               className="text-xs font-bold text-indigo-600 hover:text-indigo-850 dark:text-indigo-455 hover:underline"
             >
               Submit Another Inquiry
             </button>
           </div>
         ) : (
-          <form onSubmit={handleContactSubmit} className="space-y-5 rounded-2xl border border-gray-150 p-6 dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
+          <form action="https://formspree.io/f/xredwjzj" method="POST" className="space-y-5 rounded-2xl border border-gray-150 p-6 dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
+            <input type="hidden" name="_next" value="https://www.foldpdf.online/contact?sent=true" />
             {formError && (
               <div className="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 p-4 text-xs font-semibold text-rose-600 dark:text-rose-400">
                 {formError}
@@ -237,6 +239,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
                 <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-350 uppercase mb-1.5">Your Full Name</label>
                 <input 
                   type="text" 
+                  name="name"
                   required
                   placeholder="e.g. Alexis Carter" 
                   value={contactForm.name}
@@ -248,6 +251,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
                 <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-350 uppercase mb-1.5">Your Email Address</label>
                 <input 
                   type="email" 
+                  name="email"
                   required
                   placeholder="alexis@domain.com" 
                   value={contactForm.email}
@@ -260,6 +264,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             <div>
               <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-350 uppercase mb-1.5">Topic Category</label>
               <select 
+                name="topic"
                 value={contactForm.subject}
                 onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 py-2.5 px-3 text-sm dark:border-neutral-800 dark:bg-neutral-900 text-neutral-950 dark:text-white"
@@ -273,6 +278,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             <div>
               <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-350 uppercase mb-1.5">Inquiry Message</label>
               <textarea 
+                name="message"
                 required
                 rows={5}
                 placeholder="Explain instructions, bugs, or notes in full context..."
@@ -284,17 +290,9 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
             <button 
               type="submit"
-              disabled={isLoading}
-              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-3 text-sm hover:bg-indigo-700 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-3 text-sm hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-2"
             >
-              {isLoading ? (
-                <>
-                  <Lucide.Loader2 className="h-4 w-4 animate-spin" />
-                  Sending Support Ticket...
-                </>
-              ) : (
-                'Send Support Ticket'
-              )}
+              Send Support Ticket
             </button>
           </form>
         )}
