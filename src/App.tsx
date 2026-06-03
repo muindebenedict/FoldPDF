@@ -189,6 +189,124 @@ export default function App() {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetPasswordSentEmail, setResetPasswordSentEmail] = useState<string | null>(null);
 
+  // loading and Toast states represent the refined experience
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [inlineErrors, setInlineErrors] = useState<{ email?: string; password?: string; name?: string; repeatPassword?: string }>({});
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' }[]>([]);
+
+  // Function to add a Toast dynamic notification
+  const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3000);
+  }, []);
+
+  const getPasswordStrength = useCallback((pass: string) => {
+    if (!pass) return null;
+    if (pass.length < 6) return { level: 'short', color: 'bg-rose-500', label: 'Too short', textColor: 'text-rose-500' };
+    const hasMix = /[0-9!@#$%^&*(),.?":{}|<>]/.test(pass);
+    if (pass.length >= 8 && hasMix) {
+      return { level: 'strong', color: 'bg-emerald-500', label: 'Strong', textColor: 'text-emerald-500' };
+    }
+    return { level: 'weak', color: 'bg-amber-500', label: 'Weak', textColor: 'text-amber-500' };
+  }, []);
+
+  const mapSignInError = useCallback((err: any): string | null => {
+    const code = err?.code || '';
+    const message = err?.message || '';
+
+    if (code === 'auth/cancelled-popup-request' || message.includes('cancelled-popup-request')) {
+      return null;
+    }
+    if (code === 'auth/popup-closed-by-user' || message.includes('popup-closed-by-user')) {
+      return null;
+    }
+    if (code === 'auth/popup-blocked' || message.includes('popup-blocked')) {
+      return "Please allow popups for this site to use Google Sign In.";
+    }
+    if (code === 'auth/unauthorized-domain' || message.includes('unauthorized-domain')) {
+      return `This domain is not authorized in your Firebase Console. Please add "${window.location.host}" under Authentication > Settings > Authorized Domains.`;
+    }
+    if (code === 'auth/invalid-credential' || message.includes('invalid-credential')) {
+      return "Incorrect email or password. Please try again.";
+    }
+    if (code === 'auth/user-not-found' || message.includes('user-not-found')) {
+      return "No account found with this email. Want to sign up?";
+    }
+    if (code === 'auth/wrong-password' || message.includes('wrong-password')) {
+      return "Incorrect password. Please try again.";
+    }
+    if (code === 'auth/too-many-requests' || message.includes('too-many-requests')) {
+      return "Too many attempts. Please wait a few minutes and try again.";
+    }
+    if (code === 'auth/network-request-failed' || message.includes('network-request-failed')) {
+      return "Connection lost. Check your internet and try again.";
+    }
+    if (code === 'auth/invalid-email' || message.includes('invalid-email')) {
+      return "Please enter a valid email address.";
+    }
+    return "Something went wrong. Please try again.";
+  }, []);
+
+  const mapSignUpError = useCallback((err: any): string | null => {
+    const code = err?.code || '';
+    const message = err?.message || '';
+
+    if (code === 'auth/cancelled-popup-request' || message.includes('cancelled-popup-request')) {
+      return null;
+    }
+    if (code === 'auth/popup-closed-by-user' || message.includes('popup-closed-by-user')) {
+      return null;
+    }
+    if (code === 'auth/email-already-in-use' || message.includes('email-already-in-use') || message.includes('already-exists')) {
+      return "An account with this email already exists. Try signing in instead.";
+    }
+    if (code === 'auth/weak-password' || message.includes('weak-password')) {
+      return "Password is too weak. Use at least 6 characters.";
+    }
+    if (code === 'auth/invalid-email' || message.includes('invalid-email')) {
+      return "Please enter a valid email address.";
+    }
+    if (code === 'auth/network-request-failed' || message.includes('network-request-failed')) {
+      return "Connection lost. Check your internet and try again.";
+    }
+    return "Something went wrong. Please try again.";
+  }, []);
+
+  const validateForm = useCallback(() => {
+    const errors: { email?: string; password?: string; name?: string; repeatPassword?: string } = {};
+    
+    if (authForm.isRegister && !authForm.name.trim()) {
+      errors.name = 'Full Name is required.';
+    }
+    
+    if (!authForm.email.trim()) {
+      errors.email = 'Email Address is required.';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(authForm.email)) {
+        errors.email = 'Please enter a valid email address.';
+      }
+    }
+    
+    if (!authForm.password) {
+      errors.password = 'Password is required.';
+    } else if (authForm.isRegister && authForm.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters.';
+    }
+    
+    if (authForm.isRegister && authForm.password !== authForm.repeatPassword) {
+      errors.repeatPassword = 'Passwords do not match.';
+    }
+    
+    setInlineErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [authForm]);
+
   // Observe active session from Firebase Auth SDK
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -329,27 +447,40 @@ export default function App() {
       setAuthError('Email Address is required.');
       return;
     }
+    setForgotLoading(true);
     try {
       await sendPasswordResetEmail(auth, authForm.email);
       setResetPasswordSentEmail(authForm.email);
+      addToast("Password reset email sent! Check your inbox.", "success");
     } catch (err: any) {
       console.error("Firebase password reset failure:", err);
-      setAuthError(err.message || 'Failed to send password reset link. Please try again.');
+      setAuthError('No account found with this email address.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     setAuthError('');
+    setGoogleLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      const firebaseUser = userCredential.user;
+      const fullName = firebaseUser.displayName || '';
+      const firstName = fullName.split(' ')[0] || firebaseUser.email?.split('@')[0] || 'Member';
+      addToast(`Welcome back, ${firstName}! 👋`, 'success');
+
       setAuthModalOpen(false);
     } catch (err: any) {
       console.error("Firebase Google sign in failure:", err);
-      if (err?.code === 'auth/popup-closed-by-user') {
-        return;
+      const mappedError = mapSignInError(err);
+      if (mappedError) {
+        setAuthError(mappedError);
       }
-      setAuthError(err.message || 'Google authentication failed. Please try again.');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -357,31 +488,35 @@ export default function App() {
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    setInlineErrors({});
 
-    if (!authForm.email || !authForm.password) {
-      setAuthError('Email and password are required.');
+    if (!validateForm()) {
       return;
     }
 
     if (authForm.isRegister) {
-      if (!authForm.name) {
-        setAuthError('Full Name is required.');
-        return;
-      }
-      if (authForm.password !== authForm.repeatPassword) {
-        setAuthError('Passwords do not match.');
-        return;
-      }
-
       try {
+        setEmailLoading(true);
         const userCredential = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
         await updateProfile(userCredential.user, { displayName: authForm.name });
         
         // Send email verification
-        await sendEmailVerification(userCredential.user);
+        try {
+          await sendEmailVerification(userCredential.user);
+        } catch (verificationErr) {
+          console.warn("Verification email skip or fail:", verificationErr);
+        }
+        
+        addToast("Account created! Welcome to FoldPDF 🎉", "success");
         
         // Set verification email to toggle to verification message screen
         setVerificationEmail(authForm.email);
+        
+        // Auto-close modal after 2 seconds
+        setTimeout(() => {
+          setAuthModalOpen(false);
+          setVerificationEmail(null);
+        }, 2000);
         
         // Immediately sign out to NOT sign them in automatically
         await signOut(auth);
@@ -392,21 +527,16 @@ export default function App() {
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
       } catch (err: any) {
         console.error("Firebase registration failure:", err);
-        const errStr = String(err || '').toLowerCase();
-        const code = (err?.code || '').toLowerCase();
-        const msg = (err?.message || '').toLowerCase();
-        if (
-          code.includes('email-already-in-use') || 
-          msg.includes('email-already-in-use') || 
-          errStr.includes('email-already-in-use')
-        ) {
-          setAuthError('User already exists. Sign in?');
-        } else {
-          setAuthError(err.message || 'Registration failed. Please try again.');
+        const mappedError = mapSignUpError(err);
+        if (mappedError) {
+          setAuthError(mappedError);
         }
+      } finally {
+        setEmailLoading(false);
       }
     } else {
       try {
+        setEmailLoading(true);
         const userCredential = await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
         
         // Check if email is verified
@@ -423,20 +553,20 @@ export default function App() {
           return;
         }
 
+        const fullName = userCredential.user.displayName || '';
+        const firstName = fullName.split(' ')[0] || userCredential.user.email?.split('@')[0] || 'Member';
+        addToast(`Welcome back, ${firstName}! 👋`, 'success');
+
         setAuthModalOpen(false);
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
       } catch (err: any) {
         console.error("Firebase login failure:", err);
-        const code = (err?.code || '').toLowerCase();
-        const msg = (err?.message || '').toLowerCase();
-        if (code.includes('api-key-not-valid') || msg.includes('api-key-not-valid') || code.includes('invalid-api-key') || msg.includes('invalid-api-key')) {
-          setAuthError('Firebase Configuration Error: The API Key is invalid or blocked.');
-        } else if (code.includes('network-request-failed') || msg.includes('network-request-failed')) {
-          setAuthError('Network error. Please check your internet connection.');
-        } else {
-          // Display exactly as requested: "Password or Email Incorrect"
-          setAuthError('Password or Email Incorrect');
+        const mappedError = mapSignInError(err);
+        if (mappedError) {
+          setAuthError(mappedError);
         }
+      } finally {
+        setEmailLoading(false);
       }
     }
   };
@@ -1052,6 +1182,7 @@ export default function App() {
                 setVerificationEmail(null);
                 setIsForgotPassword(false);
                 setResetPasswordSentEmail(null);
+                setInlineErrors({});
                 setAuthModalOpen(false);
               }}
               className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600"
@@ -1124,16 +1255,23 @@ export default function App() {
                       required
                       placeholder="alexis@domain.com"
                       value={authForm.email}
-                      onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all"
+                      onChange={(e) => {
+                        setAuthForm({ ...authForm, email: e.target.value });
+                        setInlineErrors(prev => ({ ...prev, email: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
                     />
+                    {inlineErrors.email && (
+                      <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.email}</p>
+                    )}
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 text-sm hover:bg-indigo-700 active:bg-indigo-800 transition mt-4 cursor-pointer"
+                    disabled={forgotLoading}
+                    className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 text-sm hover:bg-indigo-700 active:bg-indigo-800 transition mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Get Reset Link
+                    {forgotLoading ? 'Sending...' : 'Get Reset Link'}
                   </button>
                 </form>
 
@@ -1141,6 +1279,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       setAuthError('');
+                      setInlineErrors({});
                       setIsForgotPassword(false);
                     }}
                     className="text-indigo-600 hover:underline font-semibold cursor-pointer"
@@ -1173,9 +1312,15 @@ export default function App() {
                         required
                         placeholder="Alexis Carter"
                         value={authForm.name}
-                        onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all"
+                        onChange={(e) => {
+                          setAuthForm({ ...authForm, name: e.target.value });
+                          setInlineErrors(prev => ({ ...prev, name: undefined }));
+                        }}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
                       />
+                      {inlineErrors.name && (
+                        <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.name}</p>
+                      )}
                     </div>
                   )}
 
@@ -1186,9 +1331,15 @@ export default function App() {
                       required
                       placeholder="alexis@domain.com"
                       value={authForm.email}
-                      onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all"
+                      onChange={(e) => {
+                        setAuthForm({ ...authForm, email: e.target.value });
+                        setInlineErrors(prev => ({ ...prev, email: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
                     />
+                    {inlineErrors.email && (
+                      <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.email}</p>
+                    )}
                   </div>
 
                   <div>
@@ -1199,6 +1350,7 @@ export default function App() {
                           type="button"
                           onClick={() => {
                             setAuthError('');
+                            setInlineErrors({});
                             setIsForgotPassword(true);
                           }}
                           className="text-[10px] font-semibold text-indigo-600 hover:underline cursor-pointer"
@@ -1212,9 +1364,36 @@ export default function App() {
                       required
                       placeholder="••••••••"
                       value={authForm.password}
-                      onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all"
+                      onChange={(e) => {
+                        setAuthForm({ ...authForm, password: e.target.value });
+                        setInlineErrors(prev => ({ ...prev, password: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
                     />
+                    {inlineErrors.password && (
+                      <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.password}</p>
+                    )}
+
+                    {authForm.isRegister && authForm.password && (() => {
+                      const strength = getPasswordStrength(authForm.password);
+                      if (!strength) return null;
+                      return (
+                        <div className="mt-2 space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Password Strength:</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${strength.textColor}`}>{strength.label}</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${strength.color} transition-all duration-300`} 
+                              style={{ 
+                                width: strength.level === 'short' ? '33%' : strength.level === 'weak' ? '66%' : '100%' 
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {authForm.isRegister && (
@@ -1225,9 +1404,15 @@ export default function App() {
                         required
                         placeholder="••••••••"
                         value={authForm.repeatPassword}
-                        onChange={(e) => setAuthForm({ ...authForm, repeatPassword: e.target.value })}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all"
+                        onChange={(e) => {
+                          setAuthForm({ ...authForm, repeatPassword: e.target.value });
+                          setInlineErrors(prev => ({ ...prev, repeatPassword: undefined }));
+                        }}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
                       />
+                      {inlineErrors.repeatPassword && (
+                        <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.repeatPassword}</p>
+                      )}
                     </div>
                   )}
 
@@ -1235,6 +1420,7 @@ export default function App() {
                     <div 
                       onClick={() => {
                         setAuthError('');
+                        setInlineErrors({});
                         setAuthForm({ ...authForm, isRegister: false, name: '', password: '', repeatPassword: '' });
                       }}
                       className="text-xs font-semibold p-2.5 rounded-xl border border-rose-100/50 dark:border-rose-950/40 bg-rose-50/50 dark:bg-rose-950/15 text-rose-500 dark:text-rose-400 text-center hover:bg-rose-100/30 cursor-pointer select-none transition-all mt-2"
@@ -1245,9 +1431,12 @@ export default function App() {
 
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 text-sm hover:bg-indigo-700 active:bg-indigo-800 transition mt-4 cursor-pointer"
+                    disabled={emailLoading || googleLoading}
+                    className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 text-sm hover:bg-indigo-700 active:bg-indigo-800 transition mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {authForm.isRegister ? 'Register Free' : 'Access Account'}
+                    {emailLoading 
+                      ? (authForm.isRegister ? 'Creating account...' : 'Signing in...') 
+                      : (authForm.isRegister ? 'Register Free' : 'Access Account')}
                   </button>
                 </form>
 
@@ -1260,7 +1449,8 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full flex items-center justify-center bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 font-bold py-2.5 px-4 rounded-full transition shadow-sm hover:shadow-md cursor-pointer select-none text-sm font-sans"
+                  disabled={emailLoading || googleLoading}
+                  className="w-full flex items-center justify-center bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 font-bold py-2.5 px-4 rounded-full transition shadow-sm hover:shadow-md cursor-pointer select-none text-sm font-sans disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-4 h-4 mr-3 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -1268,13 +1458,14 @@ export default function App() {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.63-.61-1.04-1.37-1.04-2.63z" fill="#FBBC05" />
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
-                  {authForm.isRegister ? 'Sign up with Google' : 'Sign in with Google'}
+                  {googleLoading ? 'Connecting...' : (authForm.isRegister ? 'Sign up with Google' : 'Sign in with Google')}
                 </button>
 
                 <div className="mt-6 text-center text-xs">
                   <button
                     onClick={() => {
                       setAuthError('');
+                      setInlineErrors({});
                       setAuthForm({ ...authForm, isRegister: !authForm.isRegister, name: '', password: '', repeatPassword: '' });
                     }}
                     className="text-indigo-600 hover:underline font-semibold cursor-pointer"
@@ -1319,6 +1510,37 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Reusable Toast Notifications Container */}
+      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto flex items-center justify-between p-4 rounded-2xl shadow-2xl transition-all duration-300 animate-in slide-in-from-top-4 ${
+              toast.type === 'success'
+                ? 'bg-emerald-50 dark:bg-emerald-950/90 border border-emerald-100 dark:border-emerald-900 text-emerald-800 dark:text-emerald-200'
+                : toast.type === 'error'
+                ? 'bg-rose-50 dark:bg-rose-950/90 border border-rose-100 dark:border-rose-900 text-rose-805 dark:text-rose-200'
+                : 'bg-indigo-50 dark:bg-indigo-950/90 border border-indigo-100 dark:border-indigo-900 text-indigo-800 dark:text-indigo-200'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              {toast.type === 'success' && <Lucide.CheckCircle className="h-5 w-5 text-emerald-500 shrink-0" />}
+              {toast.type === 'error' && <Lucide.AlertCircle className="h-5 w-5 text-rose-500 shrink-0" />}
+              {toast.type === 'info' && <Lucide.Info className="h-5 w-5 text-indigo-500 shrink-0" />}
+              <span className="text-xs font-semibold">{toast.message}</span>
+            </div>
+            <button
+              onClick={() => {
+                setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+              }}
+              className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 ml-4 shrink-0 transition"
+            >
+              <Lucide.X className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
 
     </div>
   );
