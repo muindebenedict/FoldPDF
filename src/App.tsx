@@ -474,6 +474,12 @@ export default function App() {
   const handleGoogleSignIn = async () => {
     setAuthError('');
     setGoogleLoading(true);
+    
+    // Safety timeout: auto-reset loading state if it takes longer than 30 seconds (e.g. if authentication is abandoned)
+    const safetyTimeout = setTimeout(() => {
+      setGoogleLoading(false);
+    }, 30000);
+
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
@@ -491,6 +497,7 @@ export default function App() {
         setAuthError(mappedError);
       }
     } finally {
+      clearTimeout(safetyTimeout);
       setGoogleLoading(false);
     }
   };
