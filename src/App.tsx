@@ -334,6 +334,17 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Reset stuck Google sign-in loading state if user returns focus to this parent window (e.g. cancelled/closed popup)
+  useEffect(() => {
+    const handleFocus = () => {
+      setGoogleLoading(false);
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   // Cookie Consent State for AdSense compliance
   const [cookieConsentAccepted, setCookieConsentAccepted] = useState<boolean>(() => {
     return localStorage.getItem('cookie-consent') === 'true';
@@ -1183,6 +1194,8 @@ export default function App() {
                 setIsForgotPassword(false);
                 setResetPasswordSentEmail(null);
                 setInlineErrors({});
+                setGoogleLoading(false);
+                setEmailLoading(false);
                 setAuthModalOpen(false);
               }}
               className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600"
@@ -1421,6 +1434,8 @@ export default function App() {
                       onClick={() => {
                         setAuthError('');
                         setInlineErrors({});
+                        setGoogleLoading(false);
+                        setEmailLoading(false);
                         setAuthForm({ ...authForm, isRegister: false, name: '', password: '', repeatPassword: '' });
                       }}
                       className="text-xs font-semibold p-2.5 rounded-xl border border-rose-100/50 dark:border-rose-950/40 bg-rose-50/50 dark:bg-rose-950/15 text-rose-500 dark:text-rose-400 text-center hover:bg-rose-100/30 cursor-pointer select-none transition-all mt-2"
@@ -1466,6 +1481,8 @@ export default function App() {
                     onClick={() => {
                       setAuthError('');
                       setInlineErrors({});
+                      setGoogleLoading(false);
+                      setEmailLoading(false);
                       setAuthForm({ ...authForm, isRegister: !authForm.isRegister, name: '', password: '', repeatPassword: '' });
                     }}
                     className="text-indigo-600 hover:underline font-semibold cursor-pointer"
