@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { readAB, readTxt, getPdfJs, getPdfLib, getFontkit, getMammoth, getXLSX, getPptxGen, extractText, fmt, getOutputFile } from "./PdfScriptLoader";
+import { readAB, readTxt, getPdfJs, getPdfLib, getFontkit, getMammoth, getXLSX, getPptxGen, extractText, fmt, getOutputFile, loadScript } from "./PdfScriptLoader";
 import { Proc } from "./SharedComponents";
 
 interface ToolProps {
@@ -648,7 +648,7 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     }
 
     prog(95, "Compressing offset structures…");
-    const bytes = await doc.save();
+    const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "from-text", ".pdf")
@@ -845,7 +845,7 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
     return {
       blob: new Blob([rtf], { type: "application/rtf" }),
       name: getOutputFile(files[0]?.name, "word", ".rtf"),
-      info: `Exported ${doc.numPages} styled pages to Word RTF format`
+      info: "Converted from PDF — complex layouts may need manual adjustment"
     };
   }, []);
 
@@ -855,11 +855,14 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
 /* WORD→PDF */
 export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Fetching Mammoth DOCX compiler…");
+    prog(10, "Fetching dependencies…");
     const m = await getMammoth();
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
+
     const ab = await readAB(files[0]);
     
-    prog(25, "Decompressing DOCX package XMLs…");
+    prog(25, "Converting DOCX structures to HTML markup…");
     let html = "";
     try {
       const r = await m.convertToHtml({ arrayBuffer: ab });
@@ -868,105 +871,144 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
       throw new Error("Could not parse DOCX package. File may be password protected or contains unsupported structural macros.");
     }
 
-    prog(40, "Initializing PDF layout engines…");
-    const { PDFDocument, rgb, StandardFonts } = await getPdfLib();
-    const fontkit = await getFontkit();
-    const doc = await PDFDocument.create();
-    doc.registerFontkit(fontkit);
+    prog(50, "Rendering document view in virtual space…");
 
-    // Fetch Roboto typographic files
-    const fontBytesReg = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", (msg) => prog(45, msg));
-    const fontBytesBold = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", (msg) => prog(50, msg));
-    const fontBytesItalic = await fetchFont(ITALIC_FONT_URLS, "Roboto-Italic", (msg) => prog(55, msg));
-    const fontBytesBoldItalic = await fetchFont(BOLD_ITALIC_FONT_URLS, "Roboto-BoldItalic", (msg) => prog(60, msg));
+    // Dynamic hidden document host
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "-9999px";
+    container.style.background = "white";
+    container.style.width = "794px"; // Standard A4 width in pixels at 96 DPI
+    container.style.color = "black";
+    container.style.fontFamily = "'Times New Roman', Times, serif, Arial, sans-serif";
+    container.style.fontSize = "15px";
+    container.style.lineHeight = "1.6";
+    container.style.padding = "60px"; // Comfortable margins
+    container.style.boxSizing = "border-box";
+    container.innerHTML = `
+      <style>
+        h1 { font-size: 26px; margin-bottom: 12px; font-weight: bold; }
+        h2 { font-size: 20px; margin-bottom: 10px; font-weight: bold; }
+        h3 { font-size: 16px; margin-bottom: 8px; font-weight: bold; }
+        p { margin-bottom: 12px; text-align: justify; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { border: 1px solid #666666; padding: 10px; text-align: left; }
+        th { background: #f5f5f5; font-weight: bold; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { margin-bottom: 5px; }
+      </style>
+      ${html}
+    `;
+    document.body.appendChild(container);
 
-    const hasEmbedded = !!fontBytesReg && !!fontBytesBold && !!fontBytesItalic && !!fontBytesBoldItalic;
-    const fontReg = hasEmbedded ? await doc.embedFont(fontBytesReg!) : await doc.embedStandardFont(StandardFonts.Helvetica);
-    const fontBold = hasEmbedded ? await doc.embedFont(fontBytesBold!) : await doc.embedStandardFont(StandardFonts.HelveticaBold);
-    const fontItalic = hasEmbedded ? await doc.embedFont(fontBytesItalic!) : await doc.embedStandardFont(StandardFonts.HelveticaOblique);
-    const fontBoldItalic = hasEmbedded ? await doc.embedFont(fontBytesBoldItalic!) : await doc.embedStandardFont(StandardFonts.HelveticaBoldOblique);
+    // Give time for markup parsing
+    await new Promise((r) => setTimeout(r, 400));
 
-    const fontGetter = (isB: boolean, isI: boolean) => {
-      if (isB && isI) return fontBoldItalic;
-      if (isB) return fontBold;
-      if (isI) return fontItalic;
-      return fontReg;
-    };
+    prog(75, "Compiling page canvas images…");
 
-    prog(70, "Parsing document structural nodes…");
-    const blocks = parseHtmlToBlocks(html);
+    const html2canvasLib = (window as any).html2canvas;
+    const jspdfLib = (window as any).jspdf;
 
-    const pW = 595;
-    const pH = 842;
-    const mg = 50;
-
-    prog(80, "Assembling elegant vector layout…");
-    const layout = new PageLayoutState(doc, fontGetter, rgb, hasEmbedded, pW, pH, mg);
-
-    for (const block of blocks) {
-      if (block.type === "hr") {
-        layout.ensureSpace(12);
-        layout.y -= 4;
-        layout.currentPage.drawLine({
-          start: { x: mg, y: layout.y },
-          end: { x: pW - mg, y: layout.y },
-          thickness: 0.8,
-          color: rgb(0.85, 0.85, 0.85),
-        });
-        layout.y -= 8;
-      } else if (block.type === "table") {
-        if (block.tableData) {
-          layout.drawTable(block.tableData);
-        }
-      } else if (block.type === "li") {
-        const indentText = block.indentLevel * 15 + 12;
-        const indentMarker = block.indentLevel * 15;
-        const markerText = block.listType === "number" ? `${block.listIndex}.` : (hasEmbedded ? "•" : "-");
-
-        const wrapped = wrapSegments(block.segments, pW - mg * 2 - indentText, fontGetter, hasEmbedded);
-        if (wrapped.length > 0) {
-          const firstLine = wrapped[0];
-          layout.ensureSpace(firstLine.height);
-
-          const markerFont = fontGetter(true, false);
-          const currentMarkerSize = 11;
-          layout.currentPage.drawText(markerText, {
-            x: mg + indentMarker,
-            y: layout.y - currentMarkerSize,
-            size: currentMarkerSize,
-            font: markerFont,
-            color: rgb(0.15, 0.15, 0.15),
-          });
-
-          wrapped.forEach((line) => {
-            layout.drawTextLine(line, block.alignment, indentText);
-          });
-        }
-        layout.y -= 4; // micro bullet spacing
-      } else {
-        const spaceBefore = block.type === "p" ? 0 : 8;
-        if (spaceBefore > 0) layout.y -= spaceBefore;
-
-        const indentText = block.indentLevel * 15;
-        const wrapped = wrapSegments(block.segments, pW - mg * 2 - indentText, fontGetter, hasEmbedded);
-        wrapped.forEach((line) => {
-          layout.drawTextLine(line, block.alignment, indentText);
-        });
-
-        const spaceAfter = block.type === "p" ? 6 : 4;
-        layout.y -= spaceAfter;
-      }
+    if (!html2canvasLib || !jspdfLib) {
+      document.body.removeChild(container);
+      throw new Error("Failed to load layout rendering libraries. Please check your network and try again.");
     }
 
-    prog(95, "Completing PDF file construction…");
-    const bytes = await doc.save();
+    let pdfBytes: ArrayBuffer;
+    try {
+      const canvas = await html2canvasLib(container, {
+        scale: 2, // Capture at high resolution
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff"
+      });
+
+      const imgWidth = container.offsetWidth;
+      const imgHeight = container.offsetHeight;
+
+      // jsPDF coordinates (A4 is 595.28 pt x 841.89 pt)
+      const pdfPageWidth = 595.28;
+      const pdfPageHeight = 841.89;
+      const onePageImgHeight = imgWidth * (pdfPageHeight / pdfPageWidth);
+
+      let leftHeight = imgHeight;
+      let position = 0;
+
+      const pdf = new jspdfLib.jsPDF("p", "pt", "a4");
+
+      let firstPage = true;
+      while (leftHeight > 0) {
+        if (!firstPage) {
+          pdf.addPage();
+        }
+        firstPage = false;
+
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = Math.min(canvas.height - position * 2, onePageImgHeight * 2);
+
+        const pageCtx = pageCanvas.getContext("2d");
+        if (pageCtx) {
+          pageCtx.drawImage(
+            canvas,
+            0,
+            position * 2,
+            canvas.width,
+            pageCanvas.height,
+            0,
+            0,
+            pageCanvas.width,
+            pageCanvas.height
+          );
+        }
+
+        const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+        pdf.addImage(
+          pageImgData,
+          "JPEG",
+          0,
+          0,
+          pdfPageWidth,
+          Math.min(pdfPageHeight, (pageCanvas.height / 2) * (pdfPageWidth / imgWidth))
+        );
+
+        leftHeight -= onePageImgHeight;
+        position += onePageImgHeight;
+      }
+
+      pdfBytes = pdf.output("arraybuffer");
+    } finally {
+      document.body.removeChild(container);
+    }
+
+    prog(95, "Completing PDF document layer stream…");
     return {
-      blob: new Blob([bytes], { type: "application/pdf" }),
+      blob: new Blob([pdfBytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "docx-to-pdf", ".pdf")
     };
   }, []);
 
-  return <Proc id="word-to-pdf" label="Compile Word to PDF" accept=".docx" run={run} onSuccess={onSuccess} toolName={toolName} />;
+  return (
+    <Proc
+      id="word-to-pdf"
+      label="Compile Word to PDF"
+      accept=".docx"
+      run={run}
+      onSuccess={onSuccess}
+      toolName={toolName}
+      opts={
+        <div className="bg-amber-50/50 border border-amber-200/50 dark:bg-amber-950/10 dark:border-amber-900/50 rounded-xl p-4 flex gap-3 text-left">
+          <svg className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div className="text-xs text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
+            <strong>Fidelity & Component Warning:</strong> Highly complex typographic files, custom embedded fonts, multi-column equations, or nested floating shape grids may display subtle line alignment or wrapping shifts. For optimal results, ensure standard fonts are used.
+          </div>
+        </div>
+      }
+    />
+  );
 };
 
 /* PDF→EXCEL */
@@ -988,7 +1030,8 @@ export const PdfToExcelTool = ({ onSuccess, toolName }: ToolProps) => {
     const buf = X.write(wb, { bookType: "xlsx", type: "array" });
     return {
       blob: new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
-      name: getOutputFile(files[0]?.name, "dataset", ".xlsx")
+      name: getOutputFile(files[0]?.name, "dataset", ".xlsx"),
+      info: "Table detection works best with simple, clean PDF tables."
     };
   }, []);
 
@@ -1141,7 +1184,7 @@ export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     }
 
     prog(90, "Assembling PDF document layers…");
-    const bytes = await doc.save();
+    const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "spreadsheet", ".pdf")

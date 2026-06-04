@@ -9,24 +9,20 @@ export const Spin = ({ msg = "" }: { msg?: string }) => (
   </div>
 );
 
-export const Bar = ({ v, msg }: { v: number; msg?: string }) => {
-  const isRasterizing = msg && /rasteriz/i.test(msg);
-  const displayMsg = isRasterizing ? "" : msg;
-  return (
-    <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-bold">
-        {displayMsg ? <span>{displayMsg}</span> : <div />}
-        <span>{v}%</span>
-      </div>
-      <div className="h-2.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-300"
-          style={{ width: v + "%" }}
-        />
-      </div>
+export const Bar = ({ v, msg }: { v: number; msg?: string }) => (
+  <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+    <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-bold">
+      {msg ? <span>{msg}</span> : <div />}
+      <span>{v}%</span>
     </div>
-  );
-};
+    <div className="h-2.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-300"
+        style={{ width: v + "%" }}
+      />
+    </div>
+  </div>
+);
 
 export const Err = ({ msg, onClose }: { msg: string; onClose?: () => void }) => {
   if (!msg) return null;

@@ -1,5 +1,0 @@
-# FoldPDF Google AdSense Publisher Authorization File
-# REPLACE pub-0000000000000000 WITH YOUR ACTUAL PUBLISHER ID FROM GOOGLE ADSENSE CONSOLE
-# FORMAT: google.com, pub-xxxxxxxxxxxxxxxx, DIRECT, f08c47fec0942fa0
-
-google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

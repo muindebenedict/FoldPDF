@@ -117,7 +117,7 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     }, 60000);
 
     try {
-      const response = await fetch("/api/compress", {
+      const response = await fetch("https://foldpdf-api-1.onrender.com/api/compress", {
         method: "POST",
         body: formData,
         signal: controller.signal,
