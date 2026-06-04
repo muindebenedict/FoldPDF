@@ -5,7 +5,7 @@ import { TOOLS_DATA } from '../toolsData';
 
 // Import local real document conversion tools
 import { PdfToTxtTool, TxtToPdfTool, PdfToWordTool, WordToPdfTool, PdfToExcelTool, ExcelToPdfTool, PdfToPptTool } from './tools/PdfDocConverters';
-import { PdfToImgTool, ImgToPdfTool } from './tools/ImgConverters';
+import { PdfToImgTool, ImgToPdfTool, ImgToImgTool } from './tools/ImgConverters';
 import { CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTool, PageNumTool } from './tools/PdfEditTools';
 import { ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool } from './tools/PdfSecurityTools';
 
@@ -462,6 +462,10 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
         return <PdfToImgTool fmt="png" toolName={tool.name} onSuccess={onActionLogged} />;
       case 'pdf-to-webp':
         return <PdfToImgTool fmt="webp" toolName={tool.name} onSuccess={onActionLogged} />;
+      case 'jpeg-to-png':
+        return <ImgToImgTool fmt="png" toolName={tool.name} onSuccess={onActionLogged} />;
+      case 'png-to-jpg':
+        return <ImgToImgTool fmt="jpeg" toolName={tool.name} onSuccess={onActionLogged} />;
       case 'jpg-to-pdf':
         return <ImgToPdfTool accept=".jpg,.jpeg" toolName={tool.name} onSuccess={onActionLogged} />;
       case 'png-to-pdf':

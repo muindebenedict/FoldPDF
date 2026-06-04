@@ -130,7 +130,7 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
       });
 
       // THEN SAVE IT — THIS WRITES ENCRYPTED DATA
-      const encryptedBytes = await pdfDoc.save();
+      const encryptedBytes = await pdfDoc.save({ useObjectStreams: true });
 
       // SANITY CHECK: VERIFY WE CAN LOAD IT BACK WITH THE SAME PASSWORD
       await PDFDocument.load(encryptedBytes, { password: password });
@@ -427,7 +427,7 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
       });
 
       // Save WITHOUT encryption object = removes password
-      const decryptedBytes = await pdfDoc.save();
+      const decryptedBytes = await pdfDoc.save({ useObjectStreams: true });
       const blob = new Blob([decryptedBytes], { type: "application/pdf" });
 
       setOutputBlob(blob);
@@ -611,7 +611,7 @@ export const RepairTool = ({ onSuccess, toolName }: ToolProps) => {
     }
     
     prog(70, "Recalculating offsets stream…");
-    const bytes = await doc.save();
+    const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "repaired", ".pdf"),
@@ -983,7 +983,7 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
         }
         
         setPct(90);
-        const bytes = await doc.save();
+        const bytes = await doc.save({ useObjectStreams: true });
         return {
           blob: new Blob([bytes], { type: "application/pdf" }),
           name: getOutputFile(theFile?.name, "signed", ".pdf"),

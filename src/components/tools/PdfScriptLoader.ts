@@ -77,8 +77,9 @@ export const fmt = (b: number): string =>
   b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(2) + " MB";
 
 export const getOutputFile = (originalName: string | undefined, suffix: string, extWithDot: string): string => {
-  if (!originalName) return `foldpdf-${suffix}-${Date.now()}${extWithDot}`;
+  if (!originalName) return `foldpdf-${suffix || "output"}-${Date.now()}${extWithDot}`;
   const base = originalName.replace(/\.[^/.]+$/, "");
+  if (!suffix) return `${base}${extWithDot}`;
   return `${base}-${suffix}${extWithDot}`;
 };
 

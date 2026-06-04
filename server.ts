@@ -196,6 +196,64 @@ async function startServer() {
     }
   });
 
+  // --- API ROUTE FOR CONVERTING PDF TO WORD (DELEGATES TO PYTHON FLASK SERVER ON PORT 5000) ---
+  app.post("/api/convert-to-word", (req, res, next) => {
+    uploadMiddleware(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ error: err.message || "Failed uploading file." });
+      }
+      next();
+    });
+  }, async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    try {
+      const file = req.file;
+      const fileBuffer = await fs.readFile(file.path);
+      const forwardFormData = new FormData();
+      const fileBlob = new Blob([fileBuffer], { type: file.mimetype });
+      forwardFormData.append("file", fileBlob, file.originalname);
+
+      // Fetch from local Python Flask server with a 120-second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+      const apiResponse = await fetch("http://127.0.0.1:5000/api/convert-to-word", {
+        method: "POST",
+        body: forwardFormData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!apiResponse.ok) {
+        const errText = await apiResponse.text();
+        throw new Error(errText || "Conversion failed. Please try again.");
+      }
+
+      const ab = await apiResponse.arrayBuffer();
+      const responseBuffer = Buffer.from(ab);
+
+      res.setHeader("Content-Type", apiResponse.headers.get("content-type") || "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      res.setHeader("Content-Disposition", apiResponse.headers.get("content-disposition") || `attachment; filename="${file.originalname.replace(/\.pdf$/i, "")}.docx"`);
+      res.send(responseBuffer);
+
+    } catch (err: any) {
+      console.error("Conversion proxy error:", err);
+      res.status(500).json({ error: "Conversion failed. Please try again." });
+    } finally {
+      if (req.file && req.file.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkErr) {
+          console.error("Cleanup of upload file failed:", unlinkErr);
+        }
+      }
+    }
+  });
+
   // --- API ROUTE FOR AI GEMINI ACTIONS ---
   app.post("/api/gemini/action", async (req, res) => {
     const { action, textContext, userQuery, documentName, option } = req.body;

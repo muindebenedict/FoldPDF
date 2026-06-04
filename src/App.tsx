@@ -183,7 +183,10 @@ export default function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -487,7 +490,7 @@ export default function App() {
       const firebaseUser = userCredential.user;
       const fullName = firebaseUser.displayName || '';
       const firstName = fullName.split(' ')[0] || firebaseUser.email?.split('@')[0] || 'Member';
-      addToast(`Welcome back, ${firstName}! 👋`, 'success');
+      addToast(`Welcome back, ${firstName}! 👋`, 'info');
 
       setAuthModalOpen(false);
     } catch (err: any) {
@@ -573,7 +576,7 @@ export default function App() {
 
         const fullName = userCredential.user.displayName || '';
         const firstName = fullName.split(' ')[0] || userCredential.user.email?.split('@')[0] || 'Member';
-        addToast(`Welcome back, ${firstName}! 👋`, 'success');
+        addToast(`Welcome back, ${firstName}! 👋`, 'info');
 
         setAuthModalOpen(false);
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
@@ -635,7 +638,7 @@ export default function App() {
         setDarkMode={setDarkMode}
         user={user}
         onAuthTrigger={() => {setAuthError(''); setVerificationEmail(null); setIsForgotPassword(false); setResetPasswordSentEmail(null); setAuthModalOpen(true);}}
-        onLogout={handleLogout}
+        onLogout={() => setLogoutConfirmOpen(true)}
       />
 
       {/* PRIMARY VIEWER PORTAL */}
@@ -1379,17 +1382,31 @@ export default function App() {
                         </button>
                       )}
                     </div>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={authForm.password}
-                      onChange={(e) => {
-                        setAuthForm({ ...authForm, password: e.target.value });
-                        setInlineErrors(prev => ({ ...prev, password: undefined }));
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        placeholder="••••••••"
+                        value={authForm.password}
+                        onChange={(e) => {
+                          setAuthForm({ ...authForm, password: e.target.value });
+                          setInlineErrors(prev => ({ ...prev, password: undefined }));
+                        }}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-3 pr-10 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text animate-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer p-0.5 focus:outline-none select-none"
+                        title={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? (
+                          <Lucide.EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Lucide.Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                     {inlineErrors.password && (
                       <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.password}</p>
                     )}
@@ -1419,17 +1436,31 @@ export default function App() {
                   {authForm.isRegister && (
                     <div>
                       <label className="block text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Repeat Password</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        value={authForm.repeatPassword}
-                        onChange={(e) => {
-                          setAuthForm({ ...authForm, repeatPassword: e.target.value });
-                          setInlineErrors(prev => ({ ...prev, repeatPassword: undefined }));
-                        }}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showRepeatPassword ? "text" : "password"}
+                          required
+                          placeholder="••••••••"
+                          value={authForm.repeatPassword}
+                          onChange={(e) => {
+                            setAuthForm({ ...authForm, repeatPassword: e.target.value });
+                            setInlineErrors(prev => ({ ...prev, repeatPassword: undefined }));
+                          }}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-3 pr-10 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text animate-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer p-0.5 focus:outline-none select-none"
+                          title={showRepeatPassword ? "Hide password" : "Show password"}
+                        >
+                          {showRepeatPassword ? (
+                            <Lucide.EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Lucide.Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                       {inlineErrors.repeatPassword && (
                         <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.repeatPassword}</p>
                       )}
@@ -1499,6 +1530,56 @@ export default function App() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* FRIENDLY SIGN OUT CONFIRMATION MODAL */}
+      {logoutConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-sm rounded-3xl border border-slate-100 dark:border-neutral-800 bg-white p-6 shadow-2xl dark:bg-neutral-900 animate-in zoom-in-95 duration-200 text-center">
+            
+            <button
+              onClick={() => setLogoutConfirmOpen(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+              id="close-logout-modal-btn"
+            >
+              <Lucide.X className="h-5 w-5" />
+            </button>
+
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400" id="logout-icon-container">
+              <Lucide.LogOut className="h-6 w-6 ml-0.5" />
+            </div>
+
+            <h3 className="text-xl font-extrabold tracking-tight text-neutral-950 dark:text-white font-sans mb-2" id="logout-modal-title">
+              Sign Out Confirmation
+            </h3>
+            
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed font-body mb-6" id="logout-modal-description">
+              Are you sure you want to sign out? Your files will remain highly secure and will not be affected.
+            </p>
+
+            <div className="flex flex-col sm:flex-row-reverse gap-2">
+              <button
+                onClick={async () => {
+                  setLogoutConfirmOpen(false);
+                  await handleLogout();
+                  addToast("Successfully signed out.", "info");
+                }}
+                className="w-full sm:w-1/2 rounded-xl bg-indigo-600 text-white font-semibold py-2.5 text-sm hover:bg-indigo-700 active:bg-indigo-800 transition shadow-lg shadow-indigo-500/10 cursor-pointer"
+                id="confirm-logout-btn"
+              >
+                Yes, Sign Out
+              </button>
+              <button
+                onClick={() => setLogoutConfirmOpen(false)}
+                className="w-full sm:w-1/2 rounded-xl border border-slate-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-neutral-800 transition cursor-pointer"
+                id="cancel-logout-btn"
+              >
+                Cancel
+              </button>
+            </div>
+
           </div>
         </div>
       )}

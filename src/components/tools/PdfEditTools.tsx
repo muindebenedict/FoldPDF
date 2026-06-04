@@ -438,7 +438,7 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
       
       setPct(95);
       setPmsg("Writing nested catalog streams…");
-      const bytes = await merged.save();
+      const bytes = await merged.save({ useObjectStreams: true });
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
         name: getOutputFile(list[0]?.name, "merged", ".pdf"),
@@ -648,7 +648,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
         const nd = await PDFDocument.create();
         const pgs = await nd.copyPages(src, sets[0]);
         pgs.forEach((p: any) => nd.addPage(p));
-        const bytes = await nd.save();
+        const bytes = await nd.save({ useObjectStreams: true });
         setRes({
           blob: new Blob([bytes], { type: "application/pdf" }),
           name: getOutputFile(theFile?.name, "split", ".pdf"),
@@ -663,7 +663,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
           const nd = await PDFDocument.create();
           const pgs = await nd.copyPages(src, sets[i]);
           pgs.forEach((p: any) => nd.addPage(p));
-          const bytes = await nd.save();
+          const bytes = await nd.save({ useObjectStreams: true });
           zip.file(`split-segment-${i + 1}.pdf`, bytes);
         }
         setPct(95);
@@ -920,7 +920,7 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
       });
       
       setPct(80);
-      const bytes = await doc.save();
+      const bytes = await doc.save({ useObjectStreams: true });
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
         name: getOutputFile(theFile?.name, "rotated", ".pdf")
@@ -1133,7 +1133,7 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
       pgs.forEach((p: any) => nd.addPage(p));
       
       setPct(80);
-      const bytes = await nd.save();
+      const bytes = await nd.save({ useObjectStreams: true });
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
         name: getOutputFile(theFile?.name, "removed", ".pdf"),
@@ -1316,7 +1316,7 @@ export const WatermarkTool = ({ onSuccess, toolName }: ToolProps) => {
     }
 
     prog(85, "Merging PDF structures…");
-    const bytes = await doc.save();
+    const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "watermarked", ".pdf")
@@ -1436,7 +1436,7 @@ export const PageNumTool = ({ onSuccess, toolName }: ToolProps) => {
     });
 
     prog(85, "Completing encryption schemas…");
-    const bytes = await doc.save();
+    const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "numbered", ".pdf")
