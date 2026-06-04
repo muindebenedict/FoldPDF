@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { readAB, readTxt, getPdfJs, getPdfLib, getFontkit, getMammoth, getXLSX, getPptxGen, extractText, fmt, getOutputFile, loadScript, getJSZip } from "./PdfScriptLoader";
+import { readAB, readTxt, getPdfJs, getPdfLib, getFontkit, getMammoth, getXLSX, getPptxGen, extractText, fmt, getOutputFile } from "./PdfScriptLoader";
 import { Proc } from "./SharedComponents";
 
 interface ToolProps {
@@ -648,7 +648,7 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     }
 
     prog(95, "Compressing offset structures…");
-    const bytes = await doc.save({ useObjectStreams: true });
+    const bytes = await doc.save();
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "from-text", ".pdf")
@@ -845,7 +845,7 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
     return {
       blob: new Blob([rtf], { type: "application/rtf" }),
       name: getOutputFile(files[0]?.name, "word", ".rtf"),
-      info: "Converted from PDF — complex layouts may need manual adjustment"
+      info: `Exported ${doc.numPages} styled pages to Word RTF format`
     };
   }, []);
 
@@ -855,477 +855,118 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
 /* WORD→PDF */
 export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Fetching dependencies…");
+    prog(10, "Fetching Mammoth DOCX compiler…");
     const m = await getMammoth();
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
-
     const ab = await readAB(files[0]);
     
-    prog(25, "Converting DOCX structures to HTML markup…");
+    prog(25, "Decompressing DOCX package XMLs…");
     let html = "";
     try {
-      const alignments = ["center", "right", "justify", "left"];
-      const baseStyles = [
-        { name: "Heading 1", tag: "h1" },
-        { name: "Heading 2", tag: "h2" },
-        { name: "Heading 3", tag: "h3" },
-        { name: "Heading 4", tag: "h4" },
-        { name: "Heading 5", tag: "h5" },
-        { name: "Heading 6", tag: "h6" },
-        { name: "Normal", tag: "p" },
-        { name: "Title", tag: "h1.docx-title" },
-        { name: "Subtitle", tag: "p.docx-subtitle" },
-      ];
-
-      const customStyleMap: string[] = [];
-      for (const style of baseStyles) {
-        for (const align of alignments) {
-          customStyleMap.push(`p[style-name='${style.name} Align-${align}'] => ${style.tag}.text-${align}:fresh`);
-        }
-      }
-      for (const align of alignments) {
-        customStyleMap.push(`p[style-name='Align-${align}'] => p.text-${align}:fresh`);
-        customStyleMap.push(`p[style-name='Normal Align-${align}'] => p.text-${align}:fresh`);
-      }
-
-      const transformElement = (element: any): any => {
-        if (element.children) {
-          element.children = element.children.map(transformElement);
-        }
-        if (element.type === "paragraph" && element.alignment) {
-          const originalStyle = element.styleName || "Normal";
-          element.styleName = `${originalStyle} Align-${element.alignment}`;
-        }
-        return element;
-      };
-
-      const r = await m.convertToHtml({
-        arrayBuffer: ab,
-        transformDocument: transformElement,
-        styleMap: customStyleMap,
-        ignoreEmptyParagraphs: false
-      });
+      const r = await m.convertToHtml({ arrayBuffer: ab });
       html = r.value;
     } catch {
       throw new Error("Could not parse DOCX package. File may be password protected or contains unsupported structural macros.");
     }
 
-    prog(50, "Rendering document view in virtual space…");
+    prog(40, "Initializing PDF layout engines…");
+    const { PDFDocument, rgb, StandardFonts } = await getPdfLib();
+    const fontkit = await getFontkit();
+    const doc = await PDFDocument.create();
+    doc.registerFontkit(fontkit);
 
-    // Dynamic hidden document host
-    const pagesContainer = document.createElement("div");
-    pagesContainer.style.position = "absolute";
-    pagesContainer.style.left = "-9999px";
-    pagesContainer.style.top = "-9999px";
-    pagesContainer.style.width = "794px"; // Standard A4 width in px at 96 DPI
-    pagesContainer.style.background = "#f0f0f0";
-    document.body.appendChild(pagesContainer);
+    // Fetch Roboto typographic files
+    const fontBytesReg = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", (msg) => prog(45, msg));
+    const fontBytesBold = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", (msg) => prog(50, msg));
+    const fontBytesItalic = await fetchFont(ITALIC_FONT_URLS, "Roboto-Italic", (msg) => prog(55, msg));
+    const fontBytesBoldItalic = await fetchFont(BOLD_ITALIC_FONT_URLS, "Roboto-BoldItalic", (msg) => prog(60, msg));
 
-    let paddingLeft = "60px";
-    let paddingRight = "60px";
-    let paddingTop = "60px";
-    let paddingBottom = "90px"; // generous footer space buffer
+    const hasEmbedded = !!fontBytesReg && !!fontBytesBold && !!fontBytesItalic && !!fontBytesBoldItalic;
+    const fontReg = hasEmbedded ? await doc.embedFont(fontBytesReg!) : await doc.embedStandardFont(StandardFonts.Helvetica);
+    const fontBold = hasEmbedded ? await doc.embedFont(fontBytesBold!) : await doc.embedStandardFont(StandardFonts.HelveticaBold);
+    const fontItalic = hasEmbedded ? await doc.embedFont(fontBytesItalic!) : await doc.embedStandardFont(StandardFonts.HelveticaOblique);
+    const fontBoldItalic = hasEmbedded ? await doc.embedFont(fontBytesBoldItalic!) : await doc.embedStandardFont(StandardFonts.HelveticaBoldOblique);
 
-    const createPage = (isMeasuring = true) => {
-      const pageEl = document.createElement("div");
-      pageEl.className = "docx-pdf-page";
-      pageEl.style.width = "794px";
-      if (isMeasuring) {
-        pageEl.style.height = "auto";
-      } else {
-        pageEl.style.height = "1123px";
-      }
-      pageEl.style.padding = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`;
-      pageEl.style.boxSizing = "border-box";
-      pageEl.style.background = "white";
-      pageEl.style.color = "black";
-      pageEl.style.fontFamily = "'Times New Roman', Times, serif, Arial, sans-serif";
-      pageEl.style.fontSize = "15px";
-      pageEl.style.lineHeight = "1.6";
-      pageEl.style.display = "flex";
-      pageEl.style.flexDirection = "column";
-      pageEl.style.position = "relative";
-      
-      const styleNode = document.createElement("style");
-      styleNode.innerHTML = `
-        h1 { font-size: 26px; margin-bottom: 12px; font-weight: bold; line-height: 1.25; margin-top: 14px; color: #111111; }
-        h2 { font-size: 20px; margin-bottom: 10px; font-weight: bold; line-height: 1.3; margin-top: 12px; color: #222222; }
-        h3 { font-size: 16px; margin-bottom: 8px; font-weight: bold; line-height: 1.35; margin-top: 10px; color: #333333; }
-        p { margin-bottom: 12px; text-align: justify; }
-        table { width: 100% !important; border-collapse: collapse !important; margin-top: 12px !important; margin-bottom: 20px !important; }
-        th, td { border: 1px solid #444444 !important; padding: 10px !important; text-align: left; }
-        th { background: #f2f2f2; font-weight: bold; }
-        ul { list-style-type: disc !important; padding-left: 28px !important; margin-bottom: 12px !important; }
-        ol { list-style-type: decimal !important; padding-left: 28px !important; margin-bottom: 12px !important; }
-        li { margin-bottom: 6px !important; display: list-item !important; }
-        .text-center { text-align: center !important; }
-        .text-right { text-align: right !important; }
-        .text-left { text-align: left !important; }
-        .text-justify { text-align: justify !important; }
-      `;
-      pageEl.appendChild(styleNode);
-      pagesContainer.appendChild(pageEl);
-      return pageEl;
+    const fontGetter = (isB: boolean, isI: boolean) => {
+      if (isB && isI) return fontBoldItalic;
+      if (isB) return fontBold;
+      if (isI) return fontItalic;
+      return fontReg;
     };
 
-    // Load elements into virtual DOM
-    const parserDiv = document.createElement("div");
-    parserDiv.innerHTML = html;
+    prog(70, "Parsing document structural nodes…");
+    const blocks = parseHtmlToBlocks(html);
 
-    // Apply exact alignments, page margins, text colors, and table shading from openxml
-    try {
-      const jszip = await getJSZip();
-      const zip = await jszip.loadAsync(ab);
-      
-      // Parse styles.xml first for inheritance
-      const stylesMap: Record<string, string> = {};
-      const stylesXmlFile = zip.file("word/styles.xml");
-      if (stylesXmlFile) {
-        const stylesXmlText = await stylesXmlFile.async("string");
-        const domParser = new DOMParser();
-        const stylesXml = domParser.parseFromString(stylesXmlText, "text/xml");
-        const styles = Array.from(stylesXml.getElementsByTagNameNS("*", "style"));
-        for (const style of styles) {
-          const styleId = style.getAttribute("w:styleId") || style.getAttributeNS("*", "styleId") || style.getAttribute("styleId");
-          const nameEl = style.getElementsByTagNameNS("*", "name")[0];
-          const styleName = nameEl ? (nameEl.getAttribute("w:val") || nameEl.getAttributeNS("*", "val") || nameEl.getAttribute("val")) : null;
-          
-          if (styleId || styleName) {
-            const pPr = style.getElementsByTagNameNS("*", "pPr")[0];
-            if (pPr) {
-              const jc = pPr.getElementsByTagNameNS("*", "jc")[0];
-              if (jc) {
-                const val = jc.getAttribute("w:val") || jc.getAttributeNS("*", "val") || jc.getAttribute("val");
-                if (val) {
-                  if (styleId) stylesMap[styleId] = val;
-                  if (styleName) stylesMap[styleName] = val;
-                }
-              }
-            }
-          }
+    const pW = 595;
+    const pH = 842;
+    const mg = 50;
+
+    prog(80, "Assembling elegant vector layout…");
+    const layout = new PageLayoutState(doc, fontGetter, rgb, hasEmbedded, pW, pH, mg);
+
+    for (const block of blocks) {
+      if (block.type === "hr") {
+        layout.ensureSpace(12);
+        layout.y -= 4;
+        layout.currentPage.drawLine({
+          start: { x: mg, y: layout.y },
+          end: { x: pW - mg, y: layout.y },
+          thickness: 0.8,
+          color: rgb(0.85, 0.85, 0.85),
+        });
+        layout.y -= 8;
+      } else if (block.type === "table") {
+        if (block.tableData) {
+          layout.drawTable(block.tableData);
         }
-      }
+      } else if (block.type === "li") {
+        const indentText = block.indentLevel * 15 + 12;
+        const indentMarker = block.indentLevel * 15;
+        const markerText = block.listType === "number" ? `${block.listIndex}.` : (hasEmbedded ? "•" : "-");
 
-      // Parse document.xml for page dimensions, margins, tables shading, runs, and paragraphs
-      const docXmlFile = zip.file("word/document.xml");
-      if (docXmlFile) {
-        const docXmlText = await docXmlFile.async("string");
-        const domParser = new DOMParser();
-        const documentXml = domParser.parseFromString(docXmlText, "text/xml");
+        const wrapped = wrapSegments(block.segments, pW - mg * 2 - indentText, fontGetter, hasEmbedded);
+        if (wrapped.length > 0) {
+          const firstLine = wrapped[0];
+          layout.ensureSpace(firstLine.height);
 
-        // 1. EXTRACT DOCUMENT MARGINS
-        const pgMar = documentXml.getElementsByTagNameNS("*", "pgMar")[0];
-        if (pgMar) {
-          const leftMar = pgMar.getAttribute("w:left") || pgMar.getAttributeNS("*", "left") || pgMar.getAttribute("left");
-          const rightMar = pgMar.getAttribute("w:right") || pgMar.getAttributeNS("*", "right") || pgMar.getAttribute("right");
-          const topMar = pgMar.getAttribute("w:top") || pgMar.getAttributeNS("*", "top") || pgMar.getAttribute("top");
-          const bottomMar = pgMar.getAttribute("w:bottom") || pgMar.getAttributeNS("*", "bottom") || pgMar.getAttribute("bottom");
-          
-          // 1 twip = 1/20 pt = 0.05 pt. 1 pt = 1.33 px. So twips * 0.0667 px.
-          if (leftMar) {
-            paddingLeft = `${Math.round(parseInt(leftMar) * 0.0667)}px`;
-          }
-          if (rightMar) {
-            paddingRight = `${Math.round(parseInt(rightMar) * 0.0667)}px`;
-          }
-          if (topMar) {
-            paddingTop = `${Math.round(parseInt(topMar) * 0.0667)}px`;
-          }
-          if (bottomMar) {
-            paddingBottom = `${Math.max(60, Math.round(parseInt(bottomMar) * 0.0667))}px`;
-          }
+          const markerFont = fontGetter(true, false);
+          const currentMarkerSize = 11;
+          layout.currentPage.drawText(markerText, {
+            x: mg + indentMarker,
+            y: layout.y - currentMarkerSize,
+            size: currentMarkerSize,
+            font: markerFont,
+            color: rgb(0.15, 0.15, 0.15),
+          });
+
+          wrapped.forEach((line) => {
+            layout.drawTextLine(line, block.alignment, indentText);
+          });
         }
+        layout.y -= 4; // micro bullet spacing
+      } else {
+        const spaceBefore = block.type === "p" ? 0 : 8;
+        if (spaceBefore > 0) layout.y -= spaceBefore;
 
-        // 2. STYLE TABLES & TABLE CELL BACKGROUNDS (SHADING)
-        const wTbls = Array.from(documentXml.getElementsByTagNameNS("*", "tbl"));
-        const htmlTables = Array.from(parserDiv.querySelectorAll("table")) as HTMLTableElement[];
-        
-        for (let t = 0; t < Math.min(wTbls.length, htmlTables.length); t++) {
-          const xmlTbl = wTbls[t];
-          const htmlTbl = htmlTables[t];
-          
-          htmlTbl.style.width = "100%";
-          htmlTbl.style.borderCollapse = "collapse";
-          htmlTbl.style.marginTop = "12px";
-          htmlTbl.style.marginBottom = "20px";
-          
-          const htmlTDs = Array.from(htmlTbl.querySelectorAll("td, th")) as HTMLElement[];
-          const xmlTCs = Array.from(xmlTbl.getElementsByTagNameNS("*", "tc"));
-          
-          for (let c = 0; c < Math.min(xmlTCs.length, htmlTDs.length); c++) {
-            const xmlTc = xmlTCs[c];
-            const htmlTd = htmlTDs[c];
-            
-            htmlTd.style.border = "1px solid #444444";
-            htmlTd.style.padding = "10px";
-            htmlTd.style.fontSize = "14px";
-            htmlTd.style.lineHeight = "1.5";
-            
-            let shdFill: string | null = null;
-            const tcPr = xmlTc.getElementsByTagNameNS("*", "tcPr")[0];
-            if (tcPr) {
-              const shd = tcPr.getElementsByTagNameNS("*", "shd")[0];
-              if (shd) {
-                shdFill = shd.getAttribute("w:fill") || shd.getAttributeNS("*", "fill") || shd.getAttribute("fill");
-              }
-            }
-            
-            if (shdFill && shdFill !== "auto" && shdFill !== "none") {
-              const cleanHex = shdFill.trim();
-              const colorCode = cleanHex.startsWith("#") ? cleanHex : `#${cleanHex}`;
-              htmlTd.style.backgroundColor = colorCode;
-              
-              // Dark vs Light Background Contrast Formula for Accessibility
-              const r = parseInt(cleanHex.substring(0, 2), 16);
-              const g = parseInt(cleanHex.substring(2, 4), 16);
-              const b = parseInt(cleanHex.substring(4, 6), 16);
-              if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
-                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                htmlTd.style.color = luminance > 0.5 ? "#000000" : "#ffffff";
-              }
-            }
-          }
-        }
-
-        // 3. ENHANCE PARAGRAPH SPECIFIC STYLING, ALIGNMENTS, SPACING, AND TEXT COLORS
-        const wPs = Array.from(documentXml.getElementsByTagNameNS("*", "p"));
-        const htmlBlocks = Array.from(parserDiv.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li")) as HTMLElement[];
-
-        let xmlIndex = 0;
-        for (let i = 0; i < htmlBlocks.length; i++) {
-          const htmlEl = htmlBlocks[i];
-          const htmlText = htmlEl.textContent?.trim() || "";
-
-          // Match XML paragraph with similarity & index sequence fallback
-          let matchedXmlNode: any = null;
-          let matchedIndex = -1;
-
-          for (let j = xmlIndex; j < Math.min(xmlIndex + 15, wPs.length); j++) {
-            const xmlText = wPs[j].textContent?.trim() || "";
-            if (xmlText === htmlText || 
-                (htmlText && xmlText && (htmlText.includes(xmlText) || xmlText.includes(htmlText)) && Math.abs(htmlText.length - xmlText.length) < 20)) {
-              matchedXmlNode = wPs[j];
-              matchedIndex = j;
-              break;
-            }
-          }
-
-          if (!matchedXmlNode && xmlIndex < wPs.length) {
-            // General in-order fallback
-            matchedXmlNode = wPs[xmlIndex];
-            matchedIndex = xmlIndex;
-          }
-
-          if (matchedXmlNode) {
-            let alignVal: string | null = null;
-            let spacingBefore: string | null = null;
-            let spacingAfter: string | null = null;
-            let leftInd: string | null = null;
-            let runColor: string | null = null;
-            let runSize: string | null = null;
-
-            const pPr = matchedXmlNode.getElementsByTagNameNS("*", "pPr")[0];
-            if (pPr) {
-              // Direct Alignment check
-              const jc = pPr.getElementsByTagNameNS("*", "jc")[0];
-              if (jc) {
-                alignVal = jc.getAttribute("w:val") || jc.getAttributeNS("*", "val") || jc.getAttribute("jc");
-              }
-              if (!alignVal) {
-                // Style lookup alignment
-                const pStyle = pPr.getElementsByTagNameNS("*", "pStyle")[0];
-                if (pStyle) {
-                  const styleId = pStyle.getAttribute("w:val") || pStyle.getAttributeNS("*", "val") || pStyle.getAttribute("styleId");
-                  if (styleId && stylesMap[styleId]) {
-                    alignVal = stylesMap[styleId];
-                  }
-                }
-              }
-
-              // Spacing check (twips to px)
-              const spacing = pPr.getElementsByTagNameNS("*", "spacing")[0];
-              if (spacing) {
-                spacingBefore = spacing.getAttribute("w:before") || spacing.getAttributeNS("*", "before") || spacing.getAttribute("before");
-                spacingAfter = spacing.getAttribute("w:after") || spacing.getAttributeNS("*", "after") || spacing.getAttribute("after");
-              }
-
-              // Indentation check (twips to px)
-              const ind = pPr.getElementsByTagNameNS("*", "ind")[0];
-              if (ind) {
-                leftInd = ind.getAttribute("w:left") || ind.getAttributeNS("*", "left") || ind.getAttribute("left");
-              }
-            }
-
-            // Extract Run details (text color, custom font size) of the first formatted run
-            const runs = matchedXmlNode.getElementsByTagNameNS("*", "r");
-            for (let rNode = 0; rNode < runs.length; rNode++) {
-              const rPr = runs[rNode].getElementsByTagNameNS("*", "rPr")[0];
-              if (rPr) {
-                if (!runColor) {
-                  const colorNode = rPr.getElementsByTagNameNS("*", "color")[0];
-                  if (colorNode) {
-                    runColor = colorNode.getAttribute("w:val") || colorNode.getAttributeNS("*", "val") || colorNode.getAttribute("val");
-                  }
-                }
-                if (!runSize) {
-                  const szNode = rPr.getElementsByTagNameNS("*", "sz")[0];
-                  if (szNode) {
-                    runSize = szNode.getAttribute("w:val") || szNode.getAttributeNS("*", "val") || szNode.getAttribute("sz");
-                  }
-                }
-              }
-              if (runColor && runSize) break;
-            }
-
-            // Apply alignments (Center, Right, Justified, Left)
-            if (alignVal) {
-              const norm = alignVal.toLowerCase();
-              if (norm === "center") {
-                htmlEl.classList.add("text-center");
-                htmlEl.style.setProperty("text-align", "center", "important");
-              } else if (norm === "right" || norm === "end") {
-                htmlEl.classList.add("text-right");
-                htmlEl.style.setProperty("text-align", "right", "important");
-              } else if (norm === "both" || norm === "justify") {
-                htmlEl.classList.add("text-justify");
-                htmlEl.style.setProperty("text-align", "justify", "important");
-              } else if (norm === "left" || norm === "start") {
-                htmlEl.classList.add("text-left");
-                htmlEl.style.setProperty("text-align", "left", "important");
-              }
-            }
-
-            // Apply Spacing properties (preserving spacing margins)
-            if (spacingBefore) {
-              const sBeforePx = Math.round(parseInt(spacingBefore) * 0.0667);
-              htmlEl.style.marginTop = `${sBeforePx}px`;
-            }
-            if (spacingAfter) {
-              const sAfterPx = Math.round(parseInt(spacingAfter) * 0.0667);
-              htmlEl.style.marginBottom = `${sAfterPx}px`;
-            }
-
-            // Apply Indentation (preserving margin limits and list indentations)
-            if (leftInd) {
-              const leftIndPx = Math.round(parseInt(leftInd) * 0.0667);
-              // Maintain lists standard padding-left by adding extra indentation if any
-              if (htmlEl.tagName.toLowerCase() === "li") {
-                htmlEl.style.marginLeft = `${leftIndPx}px`;
-              } else {
-                htmlEl.style.paddingLeft = `${leftIndPx}px`;
-              }
-            }
-
-            // Apply Colors (preserving color)
-            if (runColor && runColor !== "auto") {
-              htmlEl.style.color = runColor.startsWith("#") ? runColor : `#${runColor}`;
-            }
-
-            // Apply proportional font sizing
-            if (runSize) {
-              const sizePx = Math.max(10, Math.round(parseInt(runSize) * 0.667));
-              // Only override size if it's a standard text unit (paragraph or list item)
-              if (htmlEl.tagName.toLowerCase() === "p" || htmlEl.tagName.toLowerCase() === "li") {
-                htmlEl.style.fontSize = `${sizePx}px`;
-              }
-            }
-
-            xmlIndex = matchedIndex + 1;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Could not perfectly match formatting alignment from Raw XML archive, using style-only fallbacks.", e);
-    }
-
-    const childNodes = Array.from(parserDiv.childNodes);
-
-    let currentPage = createPage(true);
-
-    // Paginate elements
-    for (const node of childNodes) {
-      if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) {
-        continue;
-      }
-      const clone = node.cloneNode(true);
-      currentPage.appendChild(clone);
-
-      const contentChildrenCount = Array.from(currentPage.childNodes).filter(
-        n => n.nodeName.toLowerCase() !== "style"
-      ).length;
-
-      // Check height limit - leaving 30px buffer to prevent accidental clipping
-      if (currentPage.offsetHeight > (1123 - 30) && contentChildrenCount > 1) {
-        currentPage.removeChild(clone);
-        currentPage = createPage(true);
-        currentPage.appendChild(clone);
-      }
-    }
-
-    // Force page layout size to exact A4 for canvas snapshotting
-    const pages = Array.from(pagesContainer.querySelectorAll(".docx-pdf-page")) as HTMLDivElement[];
-    pages.forEach((pageEl) => {
-      pageEl.style.height = "1123px";
-    });
-
-    // Give browser brief layout calculation moment
-    await new Promise((r) => setTimeout(r, 400));
-
-    prog(75, "Compiling page canvas images…");
-
-    const html2canvasLib = (window as any).html2canvas;
-    const jspdfLib = (window as any).jspdf;
-
-    if (!html2canvasLib || !jspdfLib) {
-      document.body.removeChild(pagesContainer);
-      throw new Error("Failed to load layout rendering libraries. Please check your network and try again.");
-    }
-
-    let pdfBytes: ArrayBuffer;
-    try {
-      const pdf = new jspdfLib.jsPDF("p", "pt", "a4");
-      const pdfPageWidth = 595.28;
-      const pdfPageHeight = 841.89;
-
-      for (let i = 0; i < pages.length; i++) {
-        prog(75 + Math.round((i / pages.length) * 20));
-        const canvas = await html2canvasLib(pages[i], {
-          scale: 2, // High DPI capture
-          useCORS: true,
-          logging: false,
-          backgroundColor: "#ffffff"
+        const indentText = block.indentLevel * 15;
+        const wrapped = wrapSegments(block.segments, pW - mg * 2 - indentText, fontGetter, hasEmbedded);
+        wrapped.forEach((line) => {
+          layout.drawTextLine(line, block.alignment, indentText);
         });
 
-        const imgData = canvas.toDataURL("image/jpeg", 0.95);
-        if (i > 0) {
-          pdf.addPage();
-        }
-        pdf.addImage(imgData, "JPEG", 0, 0, pdfPageWidth, pdfPageHeight);
+        const spaceAfter = block.type === "p" ? 6 : 4;
+        layout.y -= spaceAfter;
       }
-
-      pdfBytes = pdf.output("arraybuffer");
-    } finally {
-      document.body.removeChild(pagesContainer);
     }
 
-    prog(95, "Completing PDF document layer stream…");
+    prog(95, "Completing PDF file construction…");
+    const bytes = await doc.save();
     return {
-      blob: new Blob([pdfBytes], { type: "application/pdf" }),
-      name: getOutputFile(files[0]?.name, "", ".pdf")
+      blob: new Blob([bytes], { type: "application/pdf" }),
+      name: getOutputFile(files[0]?.name, "docx-to-pdf", ".pdf")
     };
   }, []);
 
-  return (
-    <Proc
-      id="word-to-pdf"
-      label="Compile Word to PDF"
-      accept=".docx"
-      run={run}
-      onSuccess={onSuccess}
-      toolName={toolName}
-    />
-  );
+  return <Proc id="word-to-pdf" label="Compile Word to PDF" accept=".docx" run={run} onSuccess={onSuccess} toolName={toolName} />;
 };
 
 /* PDF→EXCEL */
@@ -1347,8 +988,7 @@ export const PdfToExcelTool = ({ onSuccess, toolName }: ToolProps) => {
     const buf = X.write(wb, { bookType: "xlsx", type: "array" });
     return {
       blob: new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
-      name: getOutputFile(files[0]?.name, "dataset", ".xlsx"),
-      info: "Table detection works best with simple, clean PDF tables."
+      name: getOutputFile(files[0]?.name, "dataset", ".xlsx")
     };
   }, []);
 
@@ -1501,7 +1141,7 @@ export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     }
 
     prog(90, "Assembling PDF document layers…");
-    const bytes = await doc.save({ useObjectStreams: true });
+    const bytes = await doc.save();
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "spreadsheet", ".pdf")
