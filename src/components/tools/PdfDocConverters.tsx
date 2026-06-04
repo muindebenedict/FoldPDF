@@ -691,35 +691,11 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
     const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
     
     let rtfBody = "";
-    
-    // Escaping helper for RTF syntax and Unicode characters
     const rtfEsc = (s: string) => {
       return s
         .replace(/[\\{}]/g, "\\$&")
         .replace(/[^\x00-\x7F]/g, (char) => `\\u${char.charCodeAt(0)}?`);
     };
-
-    // STRICT BOLD DETECTION HELPER - Explicitly from font properties only
-    const isFontBold = (fontFamilyStr: string, fontNameStr: string): boolean => {
-      const fFam = (fontFamilyStr || "").toLowerCase();
-      const fName = (fontNameStr || "").toLowerCase();
-      return (
-        fFam.includes("bold") ||
-        fFam.includes("black") ||
-        fFam.includes("semibold") ||
-        fFam.includes("demibold") ||
-        fName.includes("bold") ||
-        fName.includes("black") ||
-        fName.includes("semibold") ||
-        fName.includes("demibold")
-      );
-    };
-
-    // Tracker counters for stats reporting
-    let totalTextBlocksExtracted = 0;
-    let normalParagraphsCount = 0;
-    let boldTextRunsCount = 0;
-    let tableRowsCount = 0;
 
     for (let i = 1; i <= doc.numPages; i++) {
       prog(20 + Math.round((i / doc.numPages) * 60), `Structuring page layouts ${i}/${doc.numPages}…`);
@@ -729,25 +705,21 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
       const items = tc.items
         .filter((x: any) => x && typeof x.str === "string")
         .map((x: any) => {
-          totalTextBlocksExtracted++;
           const matrix = x.transform || [1, 0, 0, 1, 0, 0];
           const fontSize = Math.abs(matrix[3]) || x.height || 10;
           
           // Detect styles from font mapping if available
           const style = tc.styles?.[x.fontName];
           const fontFamily = style?.fontFamily || "";
-          const isBold = isFontBold(fontFamily, x.fontName || "");
-          if (isBold) {
-            boldTextRunsCount++;
-          }
-          const isItalic = fontFamily.toLowerCase().includes("italic") || fontFamily.toLowerCase().includes("oblique") || x.fontName?.toLowerCase().includes("italic") || x.fontName?.toLowerCase().includes("oblique") || false;
+          const isBold = fontFamily.toLowerCase().includes("bold") || x.fontName?.toLowerCase().includes("bold");
+          const isItalic = fontFamily.toLowerCase().includes("italic") || fontFamily.toLowerCase().includes("oblique") || x.fontName?.toLowerCase().includes("italic") || x.fontName?.toLowerCase().includes("oblique");
 
           return {
             text: x.str,
             x: matrix[4],
             y: matrix[5],
             fontSize,
-            width: x.width || (x.str.length * fontSize * 0.38),
+            width: x.width || 0,
             height: x.height || fontSize,
             isBold,
             isItalic
@@ -759,24 +731,11 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
         continue;
       }
 
-      // Step 2: Rebuild reading order
-      items.sort((a, b) => {
-        const yTolerance = Math.max(a.fontSize, b.fontSize) * 0.45;
-        if (Math.abs(a.y - b.y) < yTolerance) {
-          return a.x - b.x;
-        }
-        return b.y - a.y;
-      });
+      // Sort items by Y coordinate descending
+      items.sort((a, b) => b.y - a.y);
 
-      // Step 3: Group raw items into Lines
-      const lines: Array<{
-        y: number;
-        fontSize: number;
-        items: typeof items;
-        minX: number;
-        maxX: number;
-      }> = [];
-
+      // Group into lines
+      const lines: Array<{ y: number; fontSize: number; items: typeof items }> = [];
       for (const item of items) {
         let foundLine = false;
         for (const line of lines) {
@@ -791,281 +750,102 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
           lines.push({
             y: item.y,
             fontSize: item.fontSize,
-            items: [item],
-            minX: item.x,
-            maxX: item.x + item.width
+            items: [item]
           });
         }
       }
 
-      // Inside each line, sort the items by X ascending, and evaluate the line's bounds
+      // Sort horizontally
       for (const line of lines) {
         line.items.sort((a, b) => a.x - b.x);
-        line.minX = line.items[0].x;
-        const last = line.items[line.items.length - 1];
-        line.maxX = last.x + last.width;
       }
-
-      // Sort lines vertically descending (top of page first)
-      lines.sort((a, b) => b.y - a.y);
-
-      // Now, let's assemble lines into "LineToCellChunks" for Table and spacing evaluations
-      interface CellChunk {
-        text: string;
-        xStart: number;
-        xEnd: number;
-        isBold: boolean;
-        isItalic: boolean;
-        fontSize: number;
-      }
-
-      const getCellChunksOfLine = (line: typeof lines[0]): CellChunk[] => {
-        const chunks: CellChunk[] = [];
-        if (line.items.length === 0) return chunks;
-
-        let currentChunk: CellChunk = {
-          text: line.items[0].text,
-          xStart: line.items[0].x,
-          xEnd: line.items[0].x + line.items[0].width,
-          isBold: line.items[0].isBold,
-          isItalic: line.items[0].isItalic,
-          fontSize: line.items[0].fontSize
-        };
-
-        for (let j = 1; j < line.items.length; j++) {
-          const curr = line.items[j];
-          const prev = line.items[j - 1];
-          const gap = curr.x - (prev.x + prev.width);
-
-          if (gap > Math.max(30, curr.fontSize * 2.2)) {
-            chunks.push(currentChunk);
-            currentChunk = {
-              text: curr.text,
-              xStart: curr.x,
-              xEnd: curr.x + curr.width,
-              isBold: curr.isBold,
-              isItalic: curr.isItalic,
-              fontSize: curr.fontSize
-            };
-          } else {
-            const hasSpace = gap > curr.fontSize * 0.15 || /\s$/.test(currentChunk.text) || /^\s/.test(curr.text);
-            currentChunk.text += (hasSpace ? " " : "") + curr.text;
-            currentChunk.xEnd = curr.x + curr.width;
-            if (curr.isBold) currentChunk.isBold = true;
-            if (curr.isItalic) currentChunk.isItalic = true;
-            currentChunk.fontSize = Math.max(currentChunk.fontSize, curr.fontSize);
-          }
-        }
-        chunks.push(currentChunk);
-        return chunks;
-      };
-
-      interface LineAnalysis {
-        line: typeof lines[0];
-        chunks: CellChunk[];
-        isTableCandidate: boolean;
-        cleanText: string;
-      }
-
-      const analyzedLines: LineAnalysis[] = lines.map((l) => {
-        const chunks = getCellChunksOfLine(l);
-        const text = chunks.map((c) => c.text).join(" ").trim();
-        const isTableCandidate = chunks.length >= 2;
-
-        return {
-          line: l,
-          chunks,
-          isTableCandidate,
-          cleanText: text
-        };
-      });
-
-      const cleanLines = analyzedLines.filter((al) => al.cleanText.length > 0);
-
-      interface Block {
-        type: "paragraph" | "table";
-        lines: LineAnalysis[];
-        text: string;
-        alignment: string;
-      }
-
-      const blocks: Block[] = [];
-      let currentTable: LineAnalysis[] = [];
-
-      const flushTable = () => {
-        if (currentTable.length > 0) {
-          blocks.push({
-            type: "table",
-            lines: [...currentTable],
-            text: "",
-            alignment: "\\ql"
-          });
-          currentTable = [];
-        }
-      };
-
-      for (let j = 0; j < cleanLines.length; j++) {
-        const curr = cleanLines[j];
-        const prev = cleanLines[j - 1];
-        const next = cleanLines[j + 1];
-
-        const prevIsTable = prev && prev.isTableCandidate;
-        const nextIsTable = next && next.isTableCandidate;
-
-        if (curr.isTableCandidate && (prevIsTable || nextIsTable || currentTable.length > 0)) {
-          currentTable.push(curr);
-        } else {
-          flushTable();
-
-          const lineStartX = curr.line.minX;
-          const lineEndX = curr.line.maxX;
-          const lineMid = (lineStartX + lineEndX) / 2;
-          const pageMid = 595.27 / 2;
-          const lineWidth = lineEndX - lineStartX;
-          let alignment = "\\ql";
-
-          // Precision Alignment Detection based strictly on bounding metrics
-          if (lineWidth < (595.27 - 180)) {
-            if (lineEndX > 480 && lineStartX > 220) {
-              alignment = "\\qr";
-            } else if (Math.abs(lineMid - pageMid) < 40) {
-              alignment = "\\qc";
-            }
-          }
-
-          const lastBlock = blocks[blocks.length - 1];
-          let merged = false;
-
-          // Merge sequential text lines of matched alignment with close vertical distance and size
-          if (lastBlock && lastBlock.type === "paragraph" && prev) {
-            const yGap = prev.line.y - curr.line.y;
-            const threshold = Math.max(prev.line.fontSize, curr.line.fontSize) * 2.2;
-            const fontDiff = Math.abs(prev.line.fontSize - curr.line.fontSize);
-
-            if (yGap < threshold && lastBlock.alignment === alignment && fontDiff < 2.5) {
-              lastBlock.lines.push(curr);
-              const joinSpace = /\s$/.test(lastBlock.text) || /^\s/.test(curr.cleanText) ? "" : " ";
-              lastBlock.text += joinSpace + curr.cleanText;
-              merged = true;
-            }
-          }
-
-          if (!merged) {
-            normalParagraphsCount++;
-            blocks.push({
-              type: "paragraph",
-              lines: [curr],
-              text: curr.cleanText,
-              alignment
-            });
-          }
-        }
-      }
-      flushTable();
 
       let pageRtf = "";
-      for (const b of blocks) {
-        if (b.type === "table") {
-          for (const rl of b.lines) {
-            pageRtf += `\\trowd\\trgaph100\\trleft200`;
-            const chunks = rl.chunks;
-            const borderDef = `\\clbrdrt\\brdrs\\brdrw10\\clbrdrb\\brdrs\\brdrw10\\clbrdrl\\brdrs\\brdrw10\\clbrdrr\\brdrs\\brdrw10`;
-            const celldefs = chunks.map(c => `${borderDef}\\cellx${Math.round(c.xEnd * 20)}`).join("");
-            const celltext = chunks.map(c => {
-              let cellStr = rtfEsc(c.text);
-              const szWord = `\\fs${Math.round(c.fontSize * 2)}`;
-              if (c.isBold && c.isItalic) {
-                cellStr = `{\\b\\i ${szWord} ${cellStr}}`;
-              } else if (c.isBold) {
-                cellStr = `{\\b ${szWord} ${cellStr}}`;
-              } else if (c.isItalic) {
-                cellStr = `{\\i ${szWord} ${cellStr}}`;
-              } else {
-                cellStr = `{${szWord} ${cellStr}}`;
-              }
-              return `${cellStr}\\cell`;
-            }).join("");
-
-            pageRtf += celldefs + " " + celltext + `\\row\n`;
+      for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        const line = lines[lineIndex];
+        let lineStr = "";
+        
+        for (let j = 0; j < line.items.length; j++) {
+          const curr = line.items[j];
+          let chunkStr = rtfEsc(curr.text);
+          if (curr.isBold && curr.isItalic) {
+            chunkStr = `{\\b\\i ${chunkStr}}`;
+          } else if (curr.isBold) {
+            chunkStr = `{\\b ${chunkStr}}`;
+          } else if (curr.isItalic) {
+            chunkStr = `{\\i ${chunkStr}}`;
           }
-          pageRtf += `\\pard\\s0\\ql\\sb60\\sa60\\par\n`;
-        } else {
-          let formattedPara = "";
-          for (let lIdx = 0; lIdx < b.lines.length; lIdx++) {
-            const lAnalysis = b.lines[lIdx];
-            let lineFormatted = "";
-            for (const c of lAnalysis.chunks) {
-              let chunkText = rtfEsc(c.text);
-              const szWord = `\\fs${Math.round(c.fontSize * 2)}`;
-              if (c.isBold && c.isItalic) {
-                chunkText = `{\\b\\i ${szWord} ${chunkText}}`;
-              } else if (c.isBold) {
-                chunkText = `{\\b ${szWord} ${chunkText}}`;
-              } else if (c.isItalic) {
-                chunkText = `{\\i ${szWord} ${chunkText}}`;
-              } else {
-                chunkText = `{${szWord} ${chunkText}}`;
-              }
-              lineFormatted += (lineFormatted ? " " : "") + chunkText;
+
+          if (j === 0) {
+            lineStr += chunkStr;
+          } else {
+            const prev = line.items[j - 1];
+            const approxCharWidth = curr.fontSize * 0.38;
+            const prevWidth = prev.width || (prev.text.length * approxCharWidth);
+            const gap = curr.x - (prev.x + prevWidth);
+            
+            const endsWithSpace = /\s$/.test(prev.text);
+            const startsWithSpace = /^\s/.test(curr.text);
+            
+            if (endsWithSpace || startsWithSpace) {
+              lineStr += chunkStr;
+            } else if (gap > curr.fontSize * 1.5) {
+              lineStr += "\\tab " + chunkStr;
+            } else if (gap > curr.fontSize * 0.16) {
+              lineStr += " " + chunkStr;
+            } else {
+              lineStr += chunkStr;
             }
-            formattedPara += (formattedPara ? " " : "") + lineFormatted;
           }
+        }
 
-          // Output clean compact paragraph: space before: 3pt, space after: 4pt. Prevents giant gaps and drift!
-          pageRtf += `\\pard\\s0${b.alignment}\\sb60\\sa80 ${formattedPara}\\par\n`;
+        // Detect spacing and paragraph alignment control codes
+        const lineStartX = line.items[0].x;
+        const lastItem = line.items[line.items.length - 1];
+        const approxCharWidth = lastItem.fontSize * 0.38;
+        const lastItemWidth = lastItem.width || (lastItem.text.length * approxCharWidth);
+        const lineEndX = lastItem.x + lastItemWidth;
+        const lineWidth = lineEndX - lineStartX;
+
+        let prgControlWord = "\\ql"; // default left
+        if (lineWidth > 30 && lineWidth < 400) {
+          const lineMid = (lineStartX + lineEndX) / 2;
+          const pageMid = 595 / 2;
+          if (Math.abs(lineMid - pageMid) < 35) {
+            prgControlWord = "\\qc"; // center
+          } else if (lineStartX > 250) {
+            prgControlWord = "\\qr"; // right
+          }
+        }
+
+        if (lineIndex < lines.length - 1) {
+          const nextLine = lines[lineIndex + 1];
+          const yGap = line.y - nextLine.y;
+          const verticalTolerance = Math.max(line.fontSize, nextLine.fontSize) * 1.6;
+          if (yGap > verticalTolerance) {
+            pageRtf += `${prgControlWord} ${lineStr}\\par\n\\par\n`;
+          } else {
+            pageRtf += `${prgControlWord} ${lineStr}\\par\n`;
+          }
+        } else {
+          pageRtf += `${prgControlWord} ${lineStr}\\par\n`;
         }
       }
 
       rtfBody += pageRtf;
       if (i < doc.numPages) {
-        rtfBody += `\\page\n`;
+        rtfBody += `\\page\n`; // RTF page break
       }
     }
 
-    prog(90, "Assembling and compressing RTF package…");
+    prog(90, "Assembling elegant Word structures…");
     const rtfHeader = `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\\f0\\fs24\n`;
     const rtf = rtfHeader + rtfBody + "\n}";
-
-    const boldPercent = totalTextBlocksExtracted > 0 ? (boldTextRunsCount / totalTextBlocksExtracted) * 100 : 0;
-
-    const infoNode = (
-      <div className="flex flex-col space-y-3 mt-4 text-left border border-slate-200 dark:border-slate-800 p-4 rounded-xl bg-white dark:bg-slate-950/40">
-        <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase font-mono tracking-wider border-b border-slate-100 dark:border-slate-900 pb-1.5">
-          PDF Parsing Quality Metrics (Preservation Mode)
-        </h4>
-        <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-          <div>
-            <span className="text-slate-500 dark:text-slate-400 block font-semibold">Blocks Extracted</span>
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{totalTextBlocksExtracted}</span>
-          </div>
-          <div>
-            <span className="text-slate-500 dark:text-slate-400 block font-semibold font-sans">Body Paragraphs</span>
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{normalParagraphsCount}</span>
-          </div>
-          <div>
-            <span className="text-slate-500 dark:text-slate-400 block font-semibold">Bold Text Runs</span>
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-              {boldTextRunsCount} <span className="text-[10px] text-slate-400">({boldPercent.toFixed(1)}%)</span>
-            </span>
-          </div>
-          <div>
-            <span className="text-slate-500 dark:text-slate-400 block font-semibold font-sans">Table Rows Extractions</span>
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{tableRowsCount}</span>
-          </div>
-        </div>
-        <div className="border-t border-slate-100 dark:border-slate-900 pt-2 flex flex-col space-y-1 text-[10px] text-slate-400 font-semibold font-sans">
-          <div className="flex justify-between">
-            <span>Fidelity Verification Status:</span>
-            <span className="text-emerald-500 font-bold uppercase tracking-wider font-mono">PASS (Certified True Layout Preservation)</span>
-          </div>
-        </div>
-      </div>
-    );
 
     return {
       blob: new Blob([rtf], { type: "application/rtf" }),
       name: getOutputFile(files[0]?.name, "word", ".rtf"),
-      info: infoNode
+      info: "Converted from PDF — complex layouts may need manual adjustment"
     };
   }, []);
 
@@ -1172,7 +952,7 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
         h1 { font-size: 26px; margin-bottom: 12px; font-weight: bold; line-height: 1.25; margin-top: 14px; color: #111111; }
         h2 { font-size: 20px; margin-bottom: 10px; font-weight: bold; line-height: 1.3; margin-top: 12px; color: #222222; }
         h3 { font-size: 16px; margin-bottom: 8px; font-weight: bold; line-height: 1.35; margin-top: 10px; color: #333333; }
-        p { margin-bottom: 12px; text-align: left; }
+        p { margin-bottom: 12px; text-align: justify; }
         table { width: 100% !important; border-collapse: collapse !important; margin-top: 12px !important; margin-bottom: 20px !important; }
         th, td { border: 1px solid #444444 !important; padding: 10px !important; text-align: left; }
         th { background: #f2f2f2; font-weight: bold; }
@@ -1197,20 +977,6 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     try {
       const jszip = await getJSZip();
       const zip = await jszip.loadAsync(ab);
-
-      const getAttrVal = (el: Element, localName: string): string | null => {
-        if (!el) return null;
-        const nsVal = el.getAttributeNS("http://schemas.openxmlformats.org/wordprocessingml/2006/main", localName);
-        if (nsVal) return nsVal;
-        for (let idx = 0; idx < el.attributes.length; idx++) {
-          const attr = el.attributes[idx];
-          const attrLocal = attr.localName || attr.name.split(":").pop() || "";
-          if (attrLocal.toLowerCase() === localName.toLowerCase()) {
-            return attr.value;
-          }
-        }
-        return el.getAttribute(localName) || el.getAttribute(`w:${localName}`);
-      };
       
       // Parse styles.xml first for inheritance
       const stylesMap: Record<string, string> = {};
@@ -1221,16 +987,16 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
         const stylesXml = domParser.parseFromString(stylesXmlText, "text/xml");
         const styles = Array.from(stylesXml.getElementsByTagNameNS("*", "style"));
         for (const style of styles) {
-          const styleId = style.getAttribute("w:styleId") || style.getAttributeNS("*", "styleId") || style.getAttribute("styleId") || getAttrVal(style, "styleId");
+          const styleId = style.getAttribute("w:styleId") || style.getAttributeNS("*", "styleId") || style.getAttribute("styleId");
           const nameEl = style.getElementsByTagNameNS("*", "name")[0];
-          const styleName = nameEl ? (getAttrVal(nameEl, "val") || nameEl.getAttribute("w:val")) : null;
+          const styleName = nameEl ? (nameEl.getAttribute("w:val") || nameEl.getAttributeNS("*", "val") || nameEl.getAttribute("val")) : null;
           
           if (styleId || styleName) {
             const pPr = style.getElementsByTagNameNS("*", "pPr")[0];
             if (pPr) {
               const jc = pPr.getElementsByTagNameNS("*", "jc")[0];
               if (jc) {
-                const val = getAttrVal(jc, "val");
+                const val = jc.getAttribute("w:val") || jc.getAttributeNS("*", "val") || jc.getAttribute("val");
                 if (val) {
                   if (styleId) stylesMap[styleId] = val;
                   if (styleName) stylesMap[styleName] = val;
@@ -1251,10 +1017,10 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
         // 1. EXTRACT DOCUMENT MARGINS
         const pgMar = documentXml.getElementsByTagNameNS("*", "pgMar")[0];
         if (pgMar) {
-          const leftMar = getAttrVal(pgMar, "left");
-          const rightMar = getAttrVal(pgMar, "right");
-          const topMar = getAttrVal(pgMar, "top");
-          const bottomMar = getAttrVal(pgMar, "bottom");
+          const leftMar = pgMar.getAttribute("w:left") || pgMar.getAttributeNS("*", "left") || pgMar.getAttribute("left");
+          const rightMar = pgMar.getAttribute("w:right") || pgMar.getAttributeNS("*", "right") || pgMar.getAttribute("right");
+          const topMar = pgMar.getAttribute("w:top") || pgMar.getAttributeNS("*", "top") || pgMar.getAttribute("top");
+          const bottomMar = pgMar.getAttribute("w:bottom") || pgMar.getAttributeNS("*", "bottom") || pgMar.getAttribute("bottom");
           
           // 1 twip = 1/20 pt = 0.05 pt. 1 pt = 1.33 px. So twips * 0.0667 px.
           if (leftMar) {
@@ -1301,7 +1067,7 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
             if (tcPr) {
               const shd = tcPr.getElementsByTagNameNS("*", "shd")[0];
               if (shd) {
-                shdFill = getAttrVal(shd, "fill");
+                shdFill = shd.getAttribute("w:fill") || shd.getAttributeNS("*", "fill") || shd.getAttribute("fill");
               }
             }
             
@@ -1331,56 +1097,46 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
           const htmlEl = htmlBlocks[i];
           const htmlText = htmlEl.textContent?.trim() || "";
 
-          // Match XML paragraph using wide global text congruence matching to avoid off-by-one table misalignment
+          // Match XML paragraph with similarity & index sequence fallback
           let matchedXmlNode: any = null;
           let matchedIndex = -1;
 
-          if (htmlText) {
-            // Sequential sliding window of size 20 (extremely order-preserving and accurate)
-            const startSearch = Math.max(0, xmlIndex - 3);
-            const endSearch = Math.min(wPs.length, xmlIndex + 20);
-            
-            for (let j = startSearch; j < endSearch; j++) {
-              const xmlText = wPs[j].textContent?.trim() || "";
-              if (xmlText === htmlText || 
-                  (xmlText && (htmlText === xmlText || htmlText.includes(xmlText) || xmlText.includes(htmlText)) && Math.abs(htmlText.length - xmlText.length) < 30)) {
-                matchedXmlNode = wPs[j];
-                matchedIndex = j;
-                break;
-              }
+          for (let j = xmlIndex; j < Math.min(xmlIndex + 15, wPs.length); j++) {
+            const xmlText = wPs[j].textContent?.trim() || "";
+            if (xmlText === htmlText || 
+                (htmlText && xmlText && (htmlText.includes(xmlText) || xmlText.includes(htmlText)) && Math.abs(htmlText.length - xmlText.length) < 20)) {
+              matchedXmlNode = wPs[j];
+              matchedIndex = j;
+              break;
             }
           }
 
-          if (!matchedXmlNode && !htmlText && xmlIndex < wPs.length) {
-            // Fallback for blank/spacer paragraphs
+          if (!matchedXmlNode && xmlIndex < wPs.length) {
+            // General in-order fallback
             matchedXmlNode = wPs[xmlIndex];
             matchedIndex = xmlIndex;
           }
 
-          if (matchedIndex !== -1) {
-            xmlIndex = matchedIndex + 1;
-          }
-
-          let alignVal: string | null = null;
-          let spacingBefore: string | null = null;
-          let spacingAfter: string | null = null;
-          let leftInd: string | null = null;
-          let runColor: string | null = null;
-          let runSize: string | null = null;
-
           if (matchedXmlNode) {
+            let alignVal: string | null = null;
+            let spacingBefore: string | null = null;
+            let spacingAfter: string | null = null;
+            let leftInd: string | null = null;
+            let runColor: string | null = null;
+            let runSize: string | null = null;
+
             const pPr = matchedXmlNode.getElementsByTagNameNS("*", "pPr")[0];
             if (pPr) {
               // Direct Alignment check
               const jc = pPr.getElementsByTagNameNS("*", "jc")[0];
               if (jc) {
-                alignVal = getAttrVal(jc, "val");
+                alignVal = jc.getAttribute("w:val") || jc.getAttributeNS("*", "val") || jc.getAttribute("jc");
               }
               if (!alignVal) {
                 // Style lookup alignment
                 const pStyle = pPr.getElementsByTagNameNS("*", "pStyle")[0];
                 if (pStyle) {
-                  const styleId = getAttrVal(pStyle, "val");
+                  const styleId = pStyle.getAttribute("w:val") || pStyle.getAttributeNS("*", "val") || pStyle.getAttribute("styleId");
                   if (styleId && stylesMap[styleId]) {
                     alignVal = stylesMap[styleId];
                   }
@@ -1390,14 +1146,14 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
               // Spacing check (twips to px)
               const spacing = pPr.getElementsByTagNameNS("*", "spacing")[0];
               if (spacing) {
-                spacingBefore = getAttrVal(spacing, "before");
-                spacingAfter = getAttrVal(spacing, "after");
+                spacingBefore = spacing.getAttribute("w:before") || spacing.getAttributeNS("*", "before") || spacing.getAttribute("before");
+                spacingAfter = spacing.getAttribute("w:after") || spacing.getAttributeNS("*", "after") || spacing.getAttribute("after");
               }
 
               // Indentation check (twips to px)
               const ind = pPr.getElementsByTagNameNS("*", "ind")[0];
               if (ind) {
-                leftInd = getAttrVal(ind, "left");
+                leftInd = ind.getAttribute("w:left") || ind.getAttributeNS("*", "left") || ind.getAttribute("left");
               }
             }
 
@@ -1409,85 +1165,57 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
                 if (!runColor) {
                   const colorNode = rPr.getElementsByTagNameNS("*", "color")[0];
                   if (colorNode) {
-                    runColor = getAttrVal(colorNode, "val");
+                    runColor = colorNode.getAttribute("w:val") || colorNode.getAttributeNS("*", "val") || colorNode.getAttribute("val");
                   }
                 }
                 if (!runSize) {
                   const szNode = rPr.getElementsByTagNameNS("*", "sz")[0];
                   if (szNode) {
-                    runSize = getAttrVal(szNode, "val");
+                    runSize = szNode.getAttribute("w:val") || szNode.getAttributeNS("*", "val") || szNode.getAttribute("sz");
                   }
                 }
               }
               if (runColor && runSize) break;
             }
-          }
 
-          // Apply alignments (Center, Right, Justified, Left)
-          let alignmentSet = false;
-          if (alignVal) {
-            const norm = alignVal.toLowerCase();
-            if (norm === "center") {
-              htmlEl.classList.add("text-center");
-              htmlEl.style.setProperty("text-align", "center", "important");
-              alignmentSet = true;
-            } else if (norm === "right" || norm === "end") {
-              htmlEl.classList.add("text-right");
-              htmlEl.style.setProperty("text-align", "right", "important");
-              alignmentSet = true;
-            } else if (norm === "both" || norm === "justify") {
-              htmlEl.classList.add("text-justify");
-              htmlEl.style.setProperty("text-align", "justify", "important");
-              alignmentSet = true;
-            } else if (norm === "left" || norm === "start") {
-              htmlEl.classList.add("text-left");
-              htmlEl.style.setProperty("text-align", "left", "important");
-              alignmentSet = true;
-            }
-          }
-
-          // CRITICAL CLASS FALLBACK: If XML matched node didn't set alignment, look at Mammoth's class designations!
-          if (!alignmentSet) {
-            for (const cl of Array.from(htmlEl.classList)) {
-              if (cl.startsWith("text-")) {
-                const alignDir = cl.split("-")[1];
-                if (alignDir === "center") {
-                  htmlEl.style.setProperty("text-align", "center", "important");
-                  alignmentSet = true;
-                } else if (alignDir === "right") {
-                  htmlEl.style.setProperty("text-align", "right", "important");
-                  alignmentSet = true;
-                } else if (alignDir === "justify") {
-                  htmlEl.style.setProperty("text-align", "justify", "important");
-                  alignmentSet = true;
-                } else if (alignDir === "left") {
-                  htmlEl.style.setProperty("text-align", "left", "important");
-                  alignmentSet = true;
-                }
+            // Apply alignments (Center, Right, Justified, Left)
+            if (alignVal) {
+              const norm = alignVal.toLowerCase();
+              if (norm === "center") {
+                htmlEl.classList.add("text-center");
+                htmlEl.style.setProperty("text-align", "center", "important");
+              } else if (norm === "right" || norm === "end") {
+                htmlEl.classList.add("text-right");
+                htmlEl.style.setProperty("text-align", "right", "important");
+              } else if (norm === "both" || norm === "justify") {
+                htmlEl.classList.add("text-justify");
+                htmlEl.style.setProperty("text-align", "justify", "important");
+              } else if (norm === "left" || norm === "start") {
+                htmlEl.classList.add("text-left");
+                htmlEl.style.setProperty("text-align", "left", "important");
               }
             }
-          }
 
-          // Apply Spacing properties (preserving spacing margins)
-          if (spacingBefore) {
-            const sBeforePx = Math.round(parseInt(spacingBefore) * 0.0667);
-            htmlEl.style.marginTop = `${sBeforePx}px`;
-          }
-          if (spacingAfter) {
-            const sAfterPx = Math.round(parseInt(spacingAfter) * 0.0667);
-            htmlEl.style.marginBottom = `${sAfterPx}px`;
-          }
-
-          // Apply Indentation (preserving margin limits and list indentations)
-          if (leftInd) {
-            const leftIndPx = Math.round(parseInt(leftInd) * 0.0667);
-            // Maintain lists standard padding-left by adding extra indentation if any
-            if (htmlEl.tagName.toLowerCase() === "li") {
-              htmlEl.style.marginLeft = `${leftIndPx}px`;
-            } else {
-              htmlEl.style.paddingLeft = `${leftIndPx}px`;
+            // Apply Spacing properties (preserving spacing margins)
+            if (spacingBefore) {
+              const sBeforePx = Math.round(parseInt(spacingBefore) * 0.0667);
+              htmlEl.style.marginTop = `${sBeforePx}px`;
             }
-          }
+            if (spacingAfter) {
+              const sAfterPx = Math.round(parseInt(spacingAfter) * 0.0667);
+              htmlEl.style.marginBottom = `${sAfterPx}px`;
+            }
+
+            // Apply Indentation (preserving margin limits and list indentations)
+            if (leftInd) {
+              const leftIndPx = Math.round(parseInt(leftInd) * 0.0667);
+              // Maintain lists standard padding-left by adding extra indentation if any
+              if (htmlEl.tagName.toLowerCase() === "li") {
+                htmlEl.style.marginLeft = `${leftIndPx}px`;
+              } else {
+                htmlEl.style.paddingLeft = `${leftIndPx}px`;
+              }
+            }
 
             // Apply Colors (preserving color)
             if (runColor && runColor !== "auto") {
@@ -1506,6 +1234,7 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
             xmlIndex = matchedIndex + 1;
           }
         }
+      }
     } catch (e) {
       console.warn("Could not perfectly match formatting alignment from Raw XML archive, using style-only fallbacks.", e);
     }
