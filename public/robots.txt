@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://foldpdf.com/sitemap.xml
+Sitemap: https://foldpdf.online/sitemap.xml
