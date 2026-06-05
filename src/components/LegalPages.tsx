@@ -431,7 +431,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
       </h1>
       <p className="mb-8 text-sm text-neutral-500">Last Revised: May 21, 2026</p>
       <p className="mb-4">
-        Since our system operates as an **on-the-fly, immediate file-handling service**, we do NOT store or compile archives of documents on our servers. As a result, there are no online copyright-infringing files maintained inside our domain registry.
+        Since our system operates as an on-the-fly, immediate file-handling service, we do NOT store or compile archives of documents on our servers. As a result, there are no online copyright-infringing files maintained inside our domain registry.
       </p>
       <p className="mb-4">
         If you are a copyright owner and have inquiries regarding trademark uses, submit your detailed reports directly to support via our interactive <span onClick={() => navigate('/contact')} className="text-indigo-600 font-semibold cursor-pointer underline">Contact Form</span> and we will audit logs within 12 hours.
