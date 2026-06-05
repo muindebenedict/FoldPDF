@@ -685,173 +685,44 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→WORD */
 export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(15, "Opening PDF layout structure…");
-    const ab = await readAB(files[0]);
-    const lib = await getPdfJs();
-    const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
-    
-    let rtfBody = "";
-    const rtfEsc = (s: string) => {
-      return s
-        .replace(/[\\{}]/g, "\\$&")
-        .replace(/[^\x00-\x7F]/g, (char) => `\\u${char.charCodeAt(0)}?`);
-    };
+    prog(10, "Uploading PDF to conversion engine…");
 
-    for (let i = 1; i <= doc.numPages; i++) {
-      prog(20 + Math.round((i / doc.numPages) * 60), `Structuring page layouts ${i}/${doc.numPages}…`);
-      const pg = await doc.getPage(i);
-      const tc = await pg.getTextContent();
-      
-      const items = tc.items
-        .filter((x: any) => x && typeof x.str === "string")
-        .map((x: any) => {
-          const matrix = x.transform || [1, 0, 0, 1, 0, 0];
-          const fontSize = Math.abs(matrix[3]) || x.height || 10;
-          
-          // Detect styles from font mapping if available
-          const style = tc.styles?.[x.fontName];
-          const fontFamily = style?.fontFamily || "";
-          const isBold = fontFamily.toLowerCase().includes("bold") || x.fontName?.toLowerCase().includes("bold");
-          const isItalic = fontFamily.toLowerCase().includes("italic") || fontFamily.toLowerCase().includes("oblique") || x.fontName?.toLowerCase().includes("italic") || x.fontName?.toLowerCase().includes("oblique");
+    const formData = new FormData();
+    formData.append("file", files[0]);
 
-          return {
-            text: x.str,
-            x: matrix[4],
-            y: matrix[5],
-            fontSize,
-            width: x.width || 0,
-            height: x.height || fontSize,
-            isBold,
-            isItalic
-          };
-        });
+    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-word", {
+      method: "POST",
+      body: formData,
+    });
 
-      if (items.length === 0) {
-        rtfBody += `\\page\n`;
-        continue;
-      }
-
-      // Sort items by Y coordinate descending
-      items.sort((a, b) => b.y - a.y);
-
-      // Group into lines
-      const lines: Array<{ y: number; fontSize: number; items: typeof items }> = [];
-      for (const item of items) {
-        let foundLine = false;
-        for (const line of lines) {
-          const tolerance = Math.max(item.fontSize, line.fontSize) * 0.45;
-          if (Math.abs(item.y - line.y) < tolerance) {
-            line.items.push(item);
-            foundLine = true;
-            break;
-          }
-        }
-        if (!foundLine) {
-          lines.push({
-            y: item.y,
-            fontSize: item.fontSize,
-            items: [item]
-          });
-        }
-      }
-
-      // Sort horizontally
-      for (const line of lines) {
-        line.items.sort((a, b) => a.x - b.x);
-      }
-
-      let pageRtf = "";
-      for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-        const line = lines[lineIndex];
-        let lineStr = "";
-        
-        for (let j = 0; j < line.items.length; j++) {
-          const curr = line.items[j];
-          let chunkStr = rtfEsc(curr.text);
-          if (curr.isBold && curr.isItalic) {
-            chunkStr = `{\\b\\i ${chunkStr}}`;
-          } else if (curr.isBold) {
-            chunkStr = `{\\b ${chunkStr}}`;
-          } else if (curr.isItalic) {
-            chunkStr = `{\\i ${chunkStr}}`;
-          }
-
-          if (j === 0) {
-            lineStr += chunkStr;
-          } else {
-            const prev = line.items[j - 1];
-            const approxCharWidth = curr.fontSize * 0.38;
-            const prevWidth = prev.width || (prev.text.length * approxCharWidth);
-            const gap = curr.x - (prev.x + prevWidth);
-            
-            const endsWithSpace = /\s$/.test(prev.text);
-            const startsWithSpace = /^\s/.test(curr.text);
-            
-            if (endsWithSpace || startsWithSpace) {
-              lineStr += chunkStr;
-            } else if (gap > curr.fontSize * 1.5) {
-              lineStr += "\\tab " + chunkStr;
-            } else if (gap > curr.fontSize * 0.16) {
-              lineStr += " " + chunkStr;
-            } else {
-              lineStr += chunkStr;
-            }
-          }
-        }
-
-        // Detect spacing and paragraph alignment control codes
-        const lineStartX = line.items[0].x;
-        const lastItem = line.items[line.items.length - 1];
-        const approxCharWidth = lastItem.fontSize * 0.38;
-        const lastItemWidth = lastItem.width || (lastItem.text.length * approxCharWidth);
-        const lineEndX = lastItem.x + lastItemWidth;
-        const lineWidth = lineEndX - lineStartX;
-
-        let prgControlWord = "\\ql"; // default left
-        if (lineWidth > 30 && lineWidth < 400) {
-          const lineMid = (lineStartX + lineEndX) / 2;
-          const pageMid = 595 / 2;
-          if (Math.abs(lineMid - pageMid) < 35) {
-            prgControlWord = "\\qc"; // center
-          } else if (lineStartX > 250) {
-            prgControlWord = "\\qr"; // right
-          }
-        }
-
-        if (lineIndex < lines.length - 1) {
-          const nextLine = lines[lineIndex + 1];
-          const yGap = line.y - nextLine.y;
-          const verticalTolerance = Math.max(line.fontSize, nextLine.fontSize) * 1.6;
-          if (yGap > verticalTolerance) {
-            pageRtf += `${prgControlWord} ${lineStr}\\par\n\\par\n`;
-          } else {
-            pageRtf += `${prgControlWord} ${lineStr}\\par\n`;
-          }
-        } else {
-          pageRtf += `${prgControlWord} ${lineStr}\\par\n`;
-        }
-      }
-
-      rtfBody += pageRtf;
-      if (i < doc.numPages) {
-        rtfBody += `\\page\n`; // RTF page break
-      }
+    if (!response.ok) {
+      throw new Error("Conversion failed. Please try again.");
     }
 
-    prog(90, "Assembling elegant Word structures…");
-    const rtfHeader = `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\\f0\\fs24\n`;
-    const rtf = rtfHeader + rtfBody + "\n}";
+    prog(80, "Downloading converted document…");
+    const blob = await response.blob();
+    const docxBlob = new Blob([blob], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    });
 
     return {
-      blob: new Blob([rtf], { type: "application/rtf" }),
-      name: getOutputFile(files[0]?.name, "word", ".rtf"),
-      info: "Converted from PDF — complex layouts may need manual adjustment"
+      blob: docxBlob,
+      name: getOutputFile(files[0]?.name, "converted", ".docx"),
+      info: "Converted using Adobe PDF Services — structure preserved"
     };
   }, []);
 
-  return <Proc id="pdf-to-word" label="Convert to RTF / Word" accept=".pdf" run={run} onSuccess={onSuccess} toolName={toolName} />;
+  return (
+    <Proc
+      id="pdf-to-word"
+      label="Convert to Word (DOCX)"
+      accept=".pdf"
+      run={run}
+      onSuccess={onSuccess}
+      toolName={toolName}
+    />
+  );
 };
-
 /* WORD→PDF */
 export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
