@@ -1300,7 +1300,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
                               <div>
                                 <p className="font-bold">Pro Tip: Stamping Signatures Directly on ID Photos</p>
                                 <p className="mt-0.5 text-[11px] leading-relaxed opacity-90">
-                                  To stamp your signature directly over your ID card without changing or removing the image background, please upload your card as a **Photo file** (such as JPG, JPEG, or PNG). PDFs are processed with our highly secure Sandboxed Certification Sheet.
+                                  To stamp your signature directly over your ID card without changing or removing the image background, please upload your card as a <strong>Photo file</strong> (such as JPG, JPEG, or PNG). PDFs are processed with our highly secure Sandboxed Certification Sheet.
                                 </p>
                               </div>
                             </div>

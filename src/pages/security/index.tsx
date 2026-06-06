@@ -256,7 +256,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             Data Retention Policy
           </h3>
           <p className="text-xs text-slate-555 dark:text-slate-400 leading-relaxed">
-            Our storage threshold is mathematically **Zero Seconds**. 
+            Our storage threshold is mathematically <strong>Zero Seconds</strong>. 
             <br /><br />
             Since the FoldPDF layout avoids hard disk writes entirely, we never compile document backup bundles. If your computer power fails mid-conversion, that state is permanently lost—the cleanest storage guarantee possible.
           </p>
