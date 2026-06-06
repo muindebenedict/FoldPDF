@@ -35,10 +35,6 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
       
       {/* Title Header Section */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-605 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/30">
-          <Lucide.ShieldCheck className="h-3.5 w-3.5 text-emerald-555" />
-          Enterprise-Grade Protection Framework
-        </span>
         <h1 className="mt-4 font-display text-4xl sm:text-5.5xl font-extrabold tracking-tight text-slate-800 dark:text-white leading-[1.1]">
           Security Hub & <span className="text-indigo-650 dark:text-indigo-400">Zero-Knowledge Architecture</span>
         </h1>

@@ -73,6 +73,10 @@ async function startServer() {
 
   const uploadMiddleware = upload.single("file");
 
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
+  });
+
   app.post("/api/compress", (req, res, next) => {
     const ip = req.ip || "unknown";
     if (isRateLimited(ip)) {
