@@ -240,7 +240,7 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
       const timeoutPromise = new Promise((_, reject) => {
         const tid = setTimeout(() => {
           reject(new Error("TIMEOUT_ERROR"));
-        }, 30000);
+        }, 120000);
         timeoutIdRef.current = tid;
       });
 
