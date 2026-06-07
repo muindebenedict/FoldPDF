@@ -82,13 +82,13 @@ export function Footer({ navigate }: FooterProps) {
               <FoldPdfLogo className="h-6.5 w-6.5" showText={true} showTagline={false} />
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
-              <strong>Our Mission:</strong> FoldPDF delivers high-speed, secure, and 100% cloud-free document conversions directly inside your browser RAM. Decrypting, merging, and editing PDFs locally prevents physical file caching, ensuring complete data sovereignty.
+              <strong>Our Mission:</strong> FoldPDF delivers high-speed, secure, and 100% on-device document conversions directly inside your browser. Editing PDFs locally protects your privacy, ensuring your files never leave your device.
             </p>
             {/* Security Verification Link */}
             <div className="pt-2">
               <a href="/security" onClick={(e) => { e.preventDefault(); handleLinkClick("/security"); }} className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition" aria-label="Security Framework Details">
                 <Lucide.ShieldCheck className="h-4.5 w-4.5" />
-                <span>Zero-Knowledge Verified</span>
+                <span>On-Device Verified</span>
               </a>
             </div>
           </div>

@@ -1112,10 +1112,211 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
         return processedLines.filter(line => line.length > 0).join("\n");
       };
 
+      // Helper to wrap lines and partition text into individual slide-sized pages
+      const getPageChunks = (text: string, hasDiagram: boolean): { chunks: string[]; layouts: boolean[] } => {
+        const chunks: string[] = [];
+        const layouts: boolean[] = [];
+        const paragraphs = text.split("\n");
+
+        if (hasDiagram) {
+          // Slide 1 has split layout (isSplit = true) fitting up to 12 lines
+          let firstSlideLines: string[] = [];
+          let paragraphIndex = 0;
+          let lineCount = 0;
+
+          while (paragraphIndex < paragraphs.length && lineCount < 12) {
+            const para = paragraphs[paragraphIndex];
+            const trimmed = para.trim();
+            if (!trimmed) {
+              if (lineCount < 12) {
+                firstSlideLines.push("");
+                lineCount++;
+              }
+              paragraphIndex++;
+              continue;
+            }
+
+            const words = trimmed.split(/\s+/);
+            let currentLine = "";
+            const paraLines: string[] = [];
+            
+            for (const word of words) {
+              if (!currentLine) {
+                currentLine = word;
+              } else if (currentLine.length + 1 + word.length <= 45) { // 45 chars for split layout
+                currentLine += " " + word;
+              } else {
+                paraLines.push(currentLine);
+                currentLine = word;
+              }
+            }
+            if (currentLine) {
+              paraLines.push(currentLine);
+            }
+
+            const spaceLeft = 12 - lineCount;
+            if (paraLines.length <= spaceLeft) {
+              firstSlideLines.push(...paraLines);
+              lineCount += paraLines.length;
+              paragraphIndex++;
+            } else {
+              const fitLines = paraLines.slice(0, spaceLeft);
+              firstSlideLines.push(...fitLines);
+              lineCount += fitLines.length;
+              
+              const fitTextWordCount = fitLines.length === 0 ? 0 : fitLines.join(" ").trim().split(/\s+/).length;
+              const remainingWords = words.slice(fitTextWordCount);
+              if (remainingWords.length > 0) {
+                paragraphs[paragraphIndex] = remainingWords.join(" ");
+              } else {
+                paragraphIndex++;
+              }
+              break;
+            }
+          }
+
+          chunks.push(firstSlideLines.join("\n"));
+          layouts.push(true);
+
+          // Remaining paragraphs use full width layout (isSplit = false) up to 14 lines per slide
+          let currentSlideLines: string[] = [];
+          lineCount = 0;
+
+          while (paragraphIndex < paragraphs.length) {
+            const para = paragraphs[paragraphIndex];
+            const trimmed = para.trim();
+            if (!trimmed) {
+              currentSlideLines.push("");
+              lineCount++;
+              paragraphIndex++;
+              if (lineCount >= 14) {
+                chunks.push(currentSlideLines.join("\n"));
+                layouts.push(false);
+                currentSlideLines = [];
+                lineCount = 0;
+              }
+              continue;
+            }
+
+            const words = trimmed.split(/\s+/);
+            let currentLine = "";
+            const paraLines: string[] = [];
+            for (const word of words) {
+              if (!currentLine) {
+                currentLine = word;
+              } else if (currentLine.length + 1 + word.length <= 90) { // 90 chars for full width
+                currentLine += " " + word;
+              } else {
+                paraLines.push(currentLine);
+                currentLine = word;
+              }
+            }
+            if (currentLine) {
+              paraLines.push(currentLine);
+            }
+
+            const spaceLeft = 14 - lineCount;
+            if (paraLines.length <= spaceLeft) {
+              currentSlideLines.push(...paraLines);
+              lineCount += paraLines.length;
+              paragraphIndex++;
+            } else {
+              const fitLines = paraLines.slice(0, spaceLeft);
+              currentSlideLines.push(...fitLines);
+              chunks.push(currentSlideLines.join("\n"));
+              layouts.push(false);
+
+              currentSlideLines = [];
+              lineCount = 0;
+
+              const fitTextWordCount = fitLines.length === 0 ? 0 : fitLines.join(" ").trim().split(/\s+/).length;
+              const remainingWords = words.slice(fitTextWordCount);
+              if (remainingWords.length > 0) {
+                paragraphs[paragraphIndex] = remainingWords.join(" ");
+              } else {
+                paragraphIndex++;
+              }
+            }
+          }
+
+          if (currentSlideLines.length > 0) {
+            chunks.push(currentSlideLines.join("\n"));
+            layouts.push(false);
+          }
+        } else {
+          // No diagram, all slides list at full width layout (90 chars per line, up to 14 lines)
+          let currentSlideLines: string[] = [];
+          let lineCount = 0;
+          let paragraphIndex = 0;
+
+          while (paragraphIndex < paragraphs.length) {
+            const para = paragraphs[paragraphIndex];
+            const trimmed = para.trim();
+            if (!trimmed) {
+              currentSlideLines.push("");
+              lineCount++;
+              paragraphIndex++;
+              if (lineCount >= 14) {
+                chunks.push(currentSlideLines.join("\n"));
+                layouts.push(false);
+                currentSlideLines = [];
+                lineCount = 0;
+              }
+              continue;
+            }
+
+            const words = trimmed.split(/\s+/);
+            let currentLine = "";
+            const paraLines: string[] = [];
+            for (const word of words) {
+              if (!currentLine) {
+                currentLine = word;
+              } else if (currentLine.length + 1 + word.length <= 90) {
+                currentLine += " " + word;
+              } else {
+                paraLines.push(currentLine);
+                currentLine = word;
+              }
+            }
+            if (currentLine) {
+              paraLines.push(currentLine);
+            }
+
+            const spaceLeft = 14 - lineCount;
+            if (paraLines.length <= spaceLeft) {
+              currentSlideLines.push(...paraLines);
+              lineCount += paraLines.length;
+              paragraphIndex++;
+            } else {
+              const fitLines = paraLines.slice(0, spaceLeft);
+              currentSlideLines.push(...fitLines);
+              chunks.push(currentSlideLines.join("\n"));
+              layouts.push(false);
+
+              currentSlideLines = [];
+              lineCount = 0;
+
+              const fitTextWordCount = fitLines.length === 0 ? 0 : fitLines.join(" ").trim().split(/\s+/).length;
+              const remainingWords = words.slice(fitTextWordCount);
+              if (remainingWords.length > 0) {
+                paragraphs[paragraphIndex] = remainingWords.join(" ");
+              } else {
+                paragraphIndex++;
+              }
+            }
+          }
+
+          if (currentSlideLines.length > 0) {
+            chunks.push(currentSlideLines.join("\n"));
+            layouts.push(false);
+          }
+        }
+
+        return { chunks, layouts };
+      };
+
       prog(70, "Framing presentation slides layout…");
       for (let i = 0; i < numPages; i++) {
-        const slide = pptx.addSlide();
-        
         // Retrieve matching page details containing diagram/text data
         const detail = pageDetails && pageDetails[i] ? pageDetails[i] : { text: pages[i] || "", pageNumber: i + 1, hasDiagram: false, image: undefined };
         
@@ -1145,58 +1346,69 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
         slideTitle = cleanPresentationText(slideTitle).trim() || `Slide Section ${i + 1}`;
         bodyContent = cleanPresentationText(bodyContent).trim();
         
-        const snippet = bodyContent.slice(0, 1000) + (bodyContent.length > 1000 ? "..." : "");
-
-        // Standalone title banner with a highly presentable clean corporate font (Arial/Helvetica style) 
-        // to maintain the true, natural text styling of the original PDF
-        slide.addText(slideTitle, { 
-          x: 0.6, 
-          y: 0.5, 
-          w: 8.8, 
-          h: 0.8, 
-          fontSize: 24, 
-          bold: true, 
-          color: "0F172A", // Deep Charcoal slate (maintains PDF body text natural coloring)
-          fontFace: "Arial"
-        });
-
-        if (detail.hasDiagram && detail.image) {
-          // SPLIT LAYOUT (Diagram alongside text): Avoids dedicated slides so that text and figures stay together in the correct flow
-          slide.addText(snippet, { 
+        const pageSplit = getPageChunks(bodyContent, detail.hasDiagram && !!detail.image);
+        
+        for (let chunkIdx = 0; chunkIdx < pageSplit.chunks.length; chunkIdx++) {
+          const chunkText = pageSplit.chunks[chunkIdx];
+          const isSplitLayout = pageSplit.layouts[chunkIdx];
+          const slide = pptx.addSlide();
+          
+          let currentTitle = slideTitle;
+          if (chunkIdx > 0) {
+            currentTitle += " (Continued)";
+          }
+          
+          // Standalone title banner with a highly presentable clean corporate font (Arial/Helvetica style) 
+          // to maintain the true, natural text styling of the original PDF
+          slide.addText(currentTitle, { 
             x: 0.6, 
-            y: 1.4, 
-            w: 4.2, 
-            h: 3.8, 
-            fontSize: 12, 
-            color: "1E293B", // Neutral grey-slate text
-            fontFace: "Arial",
-            align: "left",
-            valign: "top",
-            lineSpacing: 18
-          });
-
-          slide.addImage({
-            data: detail.image,
-            x: 5.1,
-            y: 1.4,
-            w: 4.3,
-            h: 3.8,
-            sizing: { type: "contain", w: 4.3, h: 3.8 }
-          });
-        } else {
-          // FULL LAYOUT (Standard full-width presentation text)
-          slide.addText(snippet, { 
-            x: 0.6, 
-            y: 1.4, 
+            y: 0.5, 
             w: 8.8, 
-            h: 3.8, 
-            fontSize: 13, 
-            color: "1E293B", // Sophisticated slate grey text
-            fontFace: "Arial",
-            align: "left",
-            valign: "top",
-            lineSpacing: 18
+            h: 0.8, 
+            fontSize: 24, 
+            bold: true, 
+            color: "0F172A", // Deep Charcoal slate (maintains PDF body text natural coloring)
+            fontFace: "Arial"
           });
+
+          if (isSplitLayout) {
+            // SPLIT LAYOUT (Diagram alongside text): Avoids dedicated slides so that text and figures stay together in the correct flow
+            slide.addText(chunkText, { 
+              x: 0.6, 
+              y: 1.4, 
+              w: 4.2, 
+              h: 3.8, 
+              fontSize: 12, 
+              color: "1E293B", // Neutral grey-slate text
+              fontFace: "Arial",
+              align: "left",
+              valign: "top",
+              lineSpacing: 18
+            });
+
+            slide.addImage({
+              data: detail.image,
+              x: 5.1,
+              y: 1.4,
+              w: 4.3,
+              h: 3.8,
+              sizing: { type: "contain", w: 4.3, h: 3.8 }
+            });
+          } else {
+            // FULL LAYOUT (Standard full-width presentation text)
+            slide.addText(chunkText, { 
+              x: 0.6, 
+              y: 1.4, 
+              w: 8.8, 
+              h: 3.8, 
+              fontSize: 13, 
+              color: "1E293B", // Sophisticated slate grey text
+              fontFace: "Arial",
+              align: "left",
+              valign: "top",
+              lineSpacing: 18
+            });
+          }
         }
       }
 

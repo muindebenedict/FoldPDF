@@ -132,7 +132,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             <Lucide.ShieldCheck className="h-8 w-8 text-indigo-550 mb-3" />
             <h4 className="text-sm font-bold text-slate-850 dark:text-white">Active Cryptography</h4>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Maintains secure standard cryptographic keys and structures locally, rendering data leakage mathematically impossible.
+              Maintains secure standard cryptographic keys and structures locally, ensuring complete private security on your device.
             </p>
           </div>
 

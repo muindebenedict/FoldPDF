@@ -20,7 +20,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
     {
       num: "03",
       title: "Dynamic Transformations",
-      desc: "Adjustments (compression, watermarking, merges) compile directly within the browser's sandbox. It runs calculations purely on your workstation hardware."
+      desc: "Most adjustments (such as watermarking, splits, or merges) compile directly within the browser's sandbox. It runs calculations purely on your workstation hardware."
     },
     {
       num: "04",
@@ -90,7 +90,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
               Unlike typical SaaS utilities that force uploads onto remote hosts, FoldPDF turns your web browser into an isolated, hyper-secure document workstation. By shifting execution loads to your local hardware, we prevent data leakage and bypass server wait queues.
             </p>
             <div className="border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-955/20 p-4 rounded-r-2xl text-xs text-slate-600 dark:text-slate-350">
-              💡 <strong>Developer audit note:</strong> All file reading, conversion, and assembly operates in-memory. No document content is ever sent to any remote server or API endpoint.
+              💡 <strong>Developer audit note:</strong> For our browser-only tools, all file operations run in-memory inside your browser tab. For server-required tools like Compress PDF or PDF to Word, files upload securely, process instantly, and delete permanently from our servers immediately.
             </div>
           </div>
 

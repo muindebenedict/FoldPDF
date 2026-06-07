@@ -10,7 +10,7 @@ export default function AboutPage({ navigate }: AboutProps) {
     {
       icon: <Lucide.ShieldCheck className="h-6 w-6 text-indigo-500" />,
       title: "1. Security & Privacy First",
-      desc: "All files process on your own computer. We do not upload your documents to remote storage systems."
+      desc: "Most of our tools process files on your own computer. For tools requiring server processing (such as Compress PDF), files are deleted instantly."
     },
     {
       icon: <Lucide.Key className="h-6 w-6 text-indigo-500" />,
@@ -33,7 +33,7 @@ export default function AboutPage({ navigate }: AboutProps) {
     {
       phase: "Phase 1: Foundation",
       status: "Completed",
-      desc: "Release over 25 core client-side converter tools that let you merge, split, compress, and convert files."
+      desc: "Release over 25 core tools to let you merge, split, compress, and convert files safely."
     },
     {
       phase: "Phase 2: Offline OCR",
@@ -87,6 +87,9 @@ export default function AboutPage({ navigate }: AboutProps) {
             <p className="text-sm text-slate-600 dark:text-slate-355 leading-relaxed">
               We realized that modern browser technology is strong enough to process documents securely inside your own tab. FoldPDF exists to prove that safe, professional PDF utilities can run at lightspeed with zero file tracking.
             </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-4 leading-normal font-normal">
+              Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+            </p>
           </div>
         </div>
 
@@ -109,6 +112,11 @@ export default function AboutPage({ navigate }: AboutProps) {
                     <p className="text-xs text-slate-550 dark:text-slate-400 mt-1 leading-relaxed">
                       {val.desc}
                     </p>
+                    {id === 0 && (
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-normal font-normal">
+                        Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

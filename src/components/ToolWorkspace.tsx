@@ -1112,6 +1112,11 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                 {tool.shortDesc}
               </p>
+              {['compress-pdf', 'pdf-to-word'].includes(tool.id) && (
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                  Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+                </p>
+              )}
             </div>
 
             {renderRealTool() ? (
@@ -1148,14 +1153,20 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
                         if (idLower === "webp-to-pdf") return "Drag and drop your WebP file here";
                         if (idLower === "word-to-pdf") return "Drag and drop your Word document here";
                         if (idLower === "excel-to-pdf") return "Drag and drop your Excel spreadsheet here";
-                        if (idLower === "ppt-to-pdf") return "Drag and drop your PowerPoint document here";
+                        if (idLower === "ppt-to-pdf" || idLower === "pptx-to-pdf") return "Drag and drop your PowerPoint file here";
                         if (idLower === "txt-to-pdf") return "Drag and drop your TXT file here";
                         if (idLower.includes("pdf")) return "Drag and drop your PDF file here";
                         return "Drag and drop your document file here";
                       })()}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
-                      or click to browse local files. Supports PDF, DOCX, TXT, Excel, PPTX & flat photos up to 50MB.
+                      {(() => {
+                        const idLower = tool.id.toLowerCase();
+                        if (idLower === "ppt-to-pdf" || idLower === "pptx-to-pdf") {
+                          return "Supports PPTX and PPT files up to 50MB.";
+                        }
+                        return "or click to browse local files. Supports PDF, DOCX, TXT, Excel, PPTX & flat photos up to 50MB.";
+                      })()}
                     </p>
                     <div className="mt-6 rounded-full bg-indigo-600 px-6 py-2.5 text-xs font-semibold text-white shadow-premium-md shadow-indigo-600/20 group-hover:bg-indigo-750 transition duration-200">
                       Select PDF File
@@ -1428,6 +1439,11 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
               {tool.longDesc}
             </p>
+            {['compress-pdf', 'pdf-to-word'].includes(tool.id) && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 -mt-4">
+                Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+              </p>
+            )}
 
             <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-3">
               Benefits of our FoldPDF System:
@@ -1510,10 +1526,21 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3">
               <Lucide.ShieldCheck className="h-5 w-5" />
             </div>
-            <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">RAM-Only Processing</span>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
-              All files process strictly in memory and are deleted automatically off our servers instantly.
-            </p>
+            {tool.id === 'compress-pdf' ? (
+              <>
+                <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">Secure Processing</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
+                  Your file is sent to our server, compressed, and deleted immediately after download. Nothing is stored.
+                </p>
+              </>
+            ) : (
+              <>
+                <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">RAM-Only Processing</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
+                  All files process strictly in memory and are deleted automatically off our servers instantly.
+                </p>
+              </>
+            )}
             <div className="text-[10px] font-semibold text-slate-400">100% Free & Secure</div>
           </div>
 

@@ -11,59 +11,59 @@ interface ToolSeoData {
 
 const SEO_CONTENT_MAP: Record<string, ToolSeoData> = {
   "compress-pdf": {
-    title: "Secure Client-Side PDF Compressor",
-    description: "Our high-fidelity PDF compression engine executes entirely within your browser's private sandbox. Shifting calculation loads to WebAssembly lets you shrink file payload weights by up to 90% without losing critical text layer layouts or core image crispness. Because standard PDF helpers force users to send sensitive invoices, agreements, and receipts over public networks, we designed FoldPDF to run locally. Under no condition do any raw file bytes travel to remote target storage units. Modern companies rely on this browser-only approach to maintain data integrity and speed. In typical operations, server queues add massive delays; our client-side compiler finishes compression calculations in volatile RAM inside fragments of seconds, rendering transmission security leaks mathematically impossible.",
+    title: "Helpful Guide on PDF Compression",
+    description: "Trying to email a giant file but it keeps getting rejected? We can help with that. This compression tool shrinks your file size so modern layouts and charts stay readable. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged. Your data is kept safe while we decrease the space your files take up.",
     features: [
-      { icon: "ShieldAlert", title: "100% In-Memory RAM", desc: "No disk writes. Garbage collection erases all caches the millisecond the compilation completes." },
-      { icon: "Gauge", title: "WebAssembly Compiler", desc: "Launches local multi-threaded parsing on your GPU/CPU threads for peak execution speed." },
-      { icon: "Network", title: "Offline-Capable Core", desc: "The page functions perfectly even when you pull your internet connection line." }
+      { icon: "Shield", title: "Immediate Deletion", desc: "Your file is sent to our secure server, processed, and deleted immediately after you download. Nothing is saved." },
+      { icon: "Gauge", title: "Super Fast Scale", desc: "No queue waits. The compression runs on our secure backend and completes within a few seconds." },
+      { icon: "Lock", title: "Clean Visual Quality", desc: "We scale bulky pictures inside your PDF while keeping standard text boundaries crisp." }
     ],
     faqs: [
-      { q: "Is there a file size capacity constraint on local compression?", a: "No! Because calculations execute locally, there are no unsecure cloud bandwidth limits. Large 500MB documents compile comfortably in your client thread." },
-      { q: "Does compressing a layout flatten standard form fields?", a: "No. Our compression sweeps metadata and downscales raw image nodes while preserving Interactive forms and text markers perfectly." },
-      { q: "How can I verify that my assets never left my hardware?", a: "You can open your browser's developer console network audit tool and verify that zero packets travel while pressing the compress action." }
+      { q: "Are there file size limits?", a: "You can compress files up to a few hundred megabytes securely. The server will handle it and erase it right after." },
+      { q: "Will it flatten form inputs?", a: "No! Interactive checkboxes, forms, and signatures remain fully clickable in your smaller PDF draft." },
+      { q: "How is security handled?", a: "Files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged." }
     ]
   },
   "protect-pdf": {
-    title: "Military-Grade Client-Side PDF Protection",
-    description: "Locking legal documents and personal folders requires absolute trust in the protective engine. Our PDF protect utility conducts full standard 128-bit and 256-bit AES encryption inside your browser. By generating mathematical security keys locally, FoldPDF seals the file framework and guarantees that unauthorized systems cannot decrypt or alter document layouts. Standard online locker scripts receive your key and original text streams onto their servers, raising safety concerns; our tool runs entirely in-browser, meaning your passwords and file bytes never traverse the wire. Enforcing lock parameters locally maintains standard HIPAA and corporate regulatory compliance.",
+    title: "Protecting Your Files with Strong Passwords",
+    description: "Need to make sure your private agreements and financial charts remain confidential? You can add a password to your document using this secure locking tool. Choose a custom password and disable copying or printing text so nobody can alter your work. Since everything runs inside your browser, your file never leaves your device at any point.",
     features: [
-      { icon: "Lock", title: "Local AES Encryption", desc: "Applies rigid password constraints natively on the client level using standard math models." },
-      { icon: "EyeOff", title: "Zero Key Logging", desc: "We hold zero registers. If you forget your chosen password string, we cannot retrieve it." },
-      { icon: "ServerOff", title: "No Server Handshakes", desc: "Everything is bundled right inside the static code. Safe from remote interceptions." }
+      { icon: "Lock", title: "Strong Password Protection", desc: "Set encryption passwords on your local device to lock pages and margins." },
+      { icon: "EyeOff", title: "No Passwords Saved", desc: "We hold no records of your password string. If you forget it, we cannot help unlock your files." },
+      { icon: "ServerOff", title: "Entirely On-Device", desc: "No data is sent over the internet. Calculations run inside your own browser tab." }
     ],
     faqs: [
-      { q: "Can I choose which actions are locked (such as printing or editing)?", a: "Yes, our native compiler maps custom permissions to disable layout replication, text selection, printing, or form adjustments." },
-      { q: "Are passwords saved in any temporary server session registries?", a: "Absolutely not. Passwords are utilized purely to compile the encrypted vector stream and are discarded from RAM instantly." },
-      { q: "Is the final encrypted PDF standard-compliant?", a: "Yes. It utilizes globally recognized AES standards compatible with Adobe Acrobat Reader, Apple Preview, and institutional decrypters." }
+      { q: "Can I restrict specific actions, like printing or text copies?", a: "Yes. You can disable standard printing, text selection, and form alterations." },
+      { q: "Are my passwords saved in history?", a: "Absolutely not. Passwords are only used on your local machine to lock the file and are discarded from memory immediately." },
+      { q: "Is the locked PDF standard-compliant?", a: "Yes! Any standard reader like Adobe Acrobat or Apple Preview will ask for the password upon opening." }
     ]
   },
   "unlock-pdf": {
-    title: "Instant Decryption & Restriction Removal",
-    description: "Unlock file permissions and strip passcode barriers without compromising document integrity. While remote systems require you to upload locked files, FoldPDF strips passwords directly within your browser thread. If you possess the passcode or need to clear permission constraints, our WebAssembly compiler reformats the metadata catalog, delivering an unlocked document instantly. This keeps corporate contracts and banking papers completely safe. No external physical databases hold copies of decrypted information, satisfying strict corporate security protocols and keeping your records private.",
+    title: "Removing Outdated PDF Password Restricts",
+    description: "Do you have a PDF document that won't let you select text, copy paragraphs, or press print? When you possess the password keys, we can remove those restrictions immediately. Clear out administrative permission flags so you can resume your work without roadblocks. Since everything runs inside your browser, your file never leaves your device at any point.",
     features: [
-      { icon: "Unlock", title: "Instant Local Removal", desc: "Strips password barriers and structural restriction flags inside browser RAM threads." },
-      { icon: "Cpu", title: "Preserved Alignments", desc: "Strips encryption without rasterizing pages or corrupting text indexes." },
-      { icon: "CloudOff", title: "Zero Upload Risks", desc: "Decryption happens completely on-device, shielding secret contents from standard networks." }
+      { icon: "Unlock", title: "Local Lock Stripping", desc: "Clear permissions blocks and passwords within your own browser tab." },
+      { icon: "Cpu", title: "Keeps Layouts Crisp", desc: "We remove locks without altering any elements, texts, or pictures." },
+      { icon: "CloudOff", title: "No Cloud Uploads", desc: "File handling takes place completely on-device, keeping corporate sheets secure." }
     ],
     faqs: [
-      { q: "Does this locker tool crack files without passwords?", a: "If the file requires a password to read, you must input the correct passcode string. Our tool removes edit and print locks instantly without keys." },
-      { q: "Are decoded credentials stored in standard history logs?", a: "No. FoldPDF maintains an absolute zero-tracking registry policy. Decoded file paths never write to local disk databases." },
-      { q: "Does the output remain compatible with standard PDF engines?", a: "Yes. The resulting unlocked document is standard-compliant and readable on any modern reader." }
+      { q: "Can this crack a password?", a: "If the document has an open password, you need to type the correct passcode string. If it only has print or copy restrictions, we can strip them instantly." },
+      { q: "Are my credentials logged?", a: "Never, we have no backend databases to store logs and maintain an absolute zero-tracking policy." },
+      { q: "Is the unlocked PDF standard-compliant?", a: "Yes. The resulting PDF is fully compliant and opens easily on all standard document reading apps." }
     ]
   },
   "ocr-pdf": {
-    title: "Client-Side Optical Character Recognition (OCR)",
-    description: "Convert flat scanned page pixels and image templates into searchable text layers with complete privacy. FoldPDF conducts OCR using browser compilers, bypassing target server conversions. By parsing character coordinates inside your local web app browser sandbox, our OCR system layers digital text nodes over physical scan layers without transferring files across cloud databases. This approach avoids standard information leaks, allowing legal counsel and clinical practitioners to scan confidential briefs and medical records without SOC-2 or compliance violations.",
+    title: "Scanning and Extracting Text with OCR",
+    description: "Getting tired of typing out paragraphs from flat photo scans or unsearchable PDF receipts? Our optical scanner identifies character shapes in picture files, creating selectable text fields. You can search, edit, and copy from your scans directly. Since everything runs inside your browser, your file never leaves your device at any point.",
     features: [
-      { icon: "BookOpen", title: "Local Optical Grid", desc: "Character matrix mapping occurs purely inside local client rendering canvases." },
-      { icon: "FileText", title: "Selectable Overlay Layers", desc: "Produces searchable text grids that let users copy metadata contents with exact coordinates." },
-      { icon: "Cpu", title: "Zero Processing Queues", desc: "No queue queues exist. OCR tasks run continuously directly inside local hardware cores." }
+      { icon: "BookOpen", title: "Local Character Reading", desc: "Character coordinate scanning executes entirely within your browser." },
+      { icon: "FileText", title: "Searchable Overlay Lines", desc: "Lays selectable text fields over flat scans so you can copy text easily." },
+      { icon: "Cpu", title: "Instant Scans", desc: "No server queue waits. The scanner processes pages on your local device." }
     ],
     faqs: [
-      { q: "Which language templates does the client-side character compiler support?", a: "It currently features deep support for English, Latin characters, and common Western European scripts, running entirely client-side." },
-      { q: "Does running OCR locally consume heavy server resources?", a: "No, it utilizes your local computer hardware. Performance is determined entirely by your device processor and page counts." },
-      { q: "Can I export OCR outcomes into standard text layouts?", a: "Yes, our compiler lets you download either searchable PDFs or isolated text drafts." }
+      { q: "What languages does it read?", a: "It features supreme recognition for English and common Latin scripts." },
+      { q: "Does the scanner consume internet bandwidth?", a: "Not at all. You can run the entire OCR process offline once the website has finished loading." },
+      { q: "Can I download raw text?", a: "Yes, you can extract either a selectable page PDF or a simple text notepad file." }
     ]
   }
 };
@@ -80,11 +80,17 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
   
   const selectedData = SEO_CONTENT_MAP[normalizedId] || {
     title: `${toolId.split('-').map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' ')} - Secure Workspace Options`,
-    description: `Conduct zero-knowledge ${toolId.replace('-', ' ')} adjustments completely inside your browser local sandbox. FoldPDF leverages modern client WebAssembly compilers to execute rich modifications inside isolated heap structures, preventing external security liabilities. No documents are transmitted over standard networks, keeping organizational metrics and private documents safe from data leakage. Closing active browser tabs clears processing RAM instantly, delivering high-speed, secure calculations without forced registrations.`,
-    features: [
-      { icon: "ShieldAlert" as const, title: "Zero Cloud Logging", desc: "No tracking parameters, physical logs, or record queues exist in our backend framework." },
-      { icon: "Cpu" as const, title: "WebAssembly Compiler", desc: "Heavy layout transformations run locally at Peak CPU speeds inside browser sandbox sandboxes." },
-      { icon: "Lock" as const, title: "Regulatory Conformity", desc: "Safely complies with HIPAA, SOC-2, and GDPR standards by omitting physical data collections." }
+    description: normalizedId === 'pdf-to-word'
+      ? `Need to convert your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. For this tool, files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.`
+      : `Need to adjust your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. Since everything runs inside your browser, your file never leaves your device at any point. We never use remote servers or keep records of your documents. Closing your active browser tab will instantly erase your file from memory, ensuring you can process documents cleanly without forced registrations or tracking cookies.`,
+    features: normalizedId === 'pdf-to-word' ? [
+      { icon: "Shield" as const, title: "Immediate Deletion", desc: "Your file is sent to our secure server, processed, and deleted immediately after you download." },
+      { icon: "Gauge" as const, title: "Super Fast Scale", desc: "No queue waits. The conversion runs on our secure backend and completes within a few seconds." },
+      { icon: "Lock" as const, title: "Clean Visual Quality", desc: "We convert layout files while keeping standard text boundaries crisp." }
+    ] : [
+      { icon: "Shield" as const, title: "No Server Uploads", desc: "Your files never leave your device at any point and are never saved on a remote disk." },
+      { icon: "Cpu" as const, title: "On-device Processing", desc: "Heavy formatting tasks are processed directly using user's computer processing power." },
+      { icon: "Lock" as const, title: "Standard Security", desc: "Works beautifully to satisfy corporate standards by omitting external database storage." }
     ],
     faqs: []
   };
@@ -94,8 +100,8 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
     ? matchedTool.faqs.map(f => ({ q: f.question, a: f.answer }))
     : (SEO_CONTENT_MAP[normalizedId]?.faqs || [
         { q: `Does ${toolId.replace('-', ' ')} require paid account memberships?`, a: "No. Core features are 100% free and open, letting users execute documents endlessly without limits." },
-        { q: "Are temporary file backups compiled on FoldPDF cloud systems?", a: "Absolutely not. Our server-free architecture ensures documents never write to external hard disk databases." },
-        { q: "Can I process documents on mobile browser tabs?", a: "Yes. FoldPDF is responsive and executes comfortably within modern iOS, Android, and tablet sandboxes." }
+        { q: "Are temporary file backups kept on our cloud systems?", a: "Absolutely not. Our server-free architecture ensures documents never write to external hard disk databases." },
+        { q: "Can I process documents on mobile browser tabs?", a: "Yes. Our tools are responsive and execute comfortably within modern iOS, Android, and tablet browsers." }
       ]);
 
   return (
@@ -109,15 +115,20 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           {selectedData.description}
         </p>
+        {['compress-pdf', 'pdf-to-word'].includes(normalizedId) && (
+          <p className="text-2xs text-slate-505 dark:text-indigo-400 mt-4 leading-normal font-normal">
+            Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+          </p>
+        )}
       </div>
 
       {/* Feature visual cards */}
       <div className="grid gap-6 sm:grid-cols-3">
         {selectedData.features.map((feat, idx) => {
           // Resolve icon safely
-          const IconComponent = (Lucide as any)[feat.icon] || Lucide.ShieldAlert;
+          const IconComponent = (Lucide as any)[feat.icon] || Lucide.Shield;
           return (
-            <div key={idx} className="bg-slate-50 dark:bg-slate-905 p-5 border border-slate-100 dark:border-slate-850 rounded-2xl flex flex-col items-start">
+            <div key={idx} className="bg-slate-50 dark:bg-slate-905 p-5 border border-slate-100 dark:border-slate-850 rounded-2xl flex flex-col items-start font-body">
               <div className="h-9 w-9 bg-white dark:bg-slate-850 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shadow-sm mb-3">
                 <IconComponent className="h-4.5 w-4.5" />
               </div>
@@ -126,31 +137,6 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
             </div>
           );
         })}
-      </div>
-
-      {/* 3 Accordion FAQ Area */}
-      <div className="space-y-4">
-        <h3 className="font-display text-base font-bold text-slate-850 dark:text-white">
-          🛡️ Secure Frequently Asked Questions
-        </h3>
-        <div className="space-y-3">
-          {displayFaqs.map((faq, idx) => (
-            <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-850 rounded-2xl p-4 shadow-premium-sm">
-              <button
-                onClick={() => setActiveIdx(activeIdx === idx ? null : idx)}
-                className="w-full text-left font-bold text-xs sm:text-sm text-slate-850 dark:text-white flex items-center justify-between cursor-pointer outline-none border-none p-0 bg-transparent"
-              >
-                <span>{faq.q}</span>
-                <Lucide.ChevronDown className={`h-4.5 w-4.5 text-slate-450 transition-transform ${activeIdx === idx ? "rotate-180" : ""}`} />
-              </button>
-              {activeIdx === idx && (
-                <p className="text-xs text-slate-500 dark:text-slate-405 mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 leading-relaxed font-body">
-                  {faq.a}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
       </div>
 
     </div>

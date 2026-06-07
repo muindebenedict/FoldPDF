@@ -180,7 +180,7 @@ export function BlogSection({ postSlug, navigate }: BlogSectionProps) {
           Document Archiving Blog
         </h1>
         <p className="mt-3.5 text-sm text-neutral-500 dark:text-neutral-400 leading-normal">
-          Learn expert tips to simplify PDFs, accelerate studying, optimize images, and safeguard legal documents using state-of-the-art systems.
+          Read our guides on how to shrink files, copy scanned pages, clean up images, and keep your legal documents private.
         </p>
       </div>
 

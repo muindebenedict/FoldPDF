@@ -657,7 +657,10 @@ export default function App() {
                 </h1>
                 
                 <p className="mx-auto mt-5 max-w-3xl text-sm sm:text-base md:text-lg text-slate-650 dark:text-slate-300 leading-relaxed font-body">
-                  Process medical records, financial files, legal certificates, and personal documents completely inside your browser sandbox. Your data never touches our servers—guaranteeing 100% zero-knowledge client-side processing, absolute privacy, and sandbox-isolated security.
+                  Process medical records, financial files, legal certificates, and personal documents completely inside your browser. Your files stay on your device for absolute privacy and safety.
+                </p>
+                <p className="mx-auto mt-3 max-w-2xl text-xs text-slate-500 dark:text-slate-400 font-normal leading-normal">
+                  Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
                 </p>
 
                 {/* 2 COMPLEMENTARY CTAs */}
@@ -892,7 +895,7 @@ export default function App() {
                         Secure Editing & Security
                       </h3>
                       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Control visual layers with watermark text overlays, inject page numbering structures, signature blocks, and optimize file payload sizes seamlessly while protecting privacy.
+                        Add watermarks, page numbers, and signatures, and shrink your files easily while keeping all your documents private.
                       </p>
                     </div>
                     <div className="mt-6">
@@ -938,7 +941,10 @@ export default function App() {
                         Why Browser-Based PDF Tools Are More Secure
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Standard online PDF converters present immediate security vulnerabilities because they require uploading files onto third-party cloud engines. When a document transfers, it crosses unsecure networks and resides on server disks. In contrast, browser-based tools isolate processing right inside your machine's local RAM. Utilizing standard WebAssembly binaries, FoldPDF executes file conversions, compression, or page merges inside a private browser thread. Since no files stream to a network endpoint, your sensitive data remains completely isolated and immune to network sniffers or datacenter breaches. Traditional systems compile massive server logs containing metadata and original file names; local browser architectures run completely stateless, meaning no record of your documents or actions leaves your browser cache. This protects companies against regulatory exposure while giving developers a fast, efficient, and privacy-focused document compiler. By taking advantage of client-side multi-threading, modern laptops can execute heavy rasterizations and layout adjustments locally, without the latency associated with waiting on crowded public queue structures. This client-native approach removes standard bottlenecks, providing a safe alternative that guarantees absolute security by design. When you utilize browser-only tools, you can confirm that your data remains safe by inspecting active outgoing connections in your browser developer console, confirming that files never upload. Decoupled from public SaaS datacenters, you are protected against third-party service interruptions or target server compromise. Choose sovereign data controls today.
+                        Most online PDF tools copy every file you upload onto their servers, keeping them on someone else's computer. Our browser-based tools work differently, running completely inside your computer's temporary memory (RAM). For the two tools that require server processing (Compress PDF and PDF to Word), files are processed and then permanently deleted immediately after downloading. We never store, read, or share your documents under any circumstances. You can even check your browser's inspect menu on our native browser tools to prove that zero files leave your machine.
+                      </p>
+                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
+                        Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
                       </p>
                     </div>
                   </section>
@@ -950,10 +956,13 @@ export default function App() {
                         <Lucide.EyeOff className="h-5.5 w-5.5" />
                       </div>
                       <h2 className="font-display text-xl sm:text-2xl font-black text-slate-850 dark:text-white mb-4">
-                        What Is Zero-Knowledge File Processing?
+                        What Is Secure Browser-Based File Processing?
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Zero-knowledge architecture means a platform has zero access, authority, or insight into the files you process. Traditional online document services behave like unsecure brokers: they require visibility into your file names, text components, embedded schemas, and images to complete conversions. Our browser-based systems employ strict cryptographic zero-knowledge constraints, performing all rendering logic inside local volatile sandbox frames. By operating within these boundaries, we remain blind to your content layers. Since the underlying algorithms never copy or serialize data, FoldPDF has no potential way of exposing text, layouts, or meta keys to external leaks. No logs are produced, no background file indexes are gathered, and no tracking profiles are built. Enjoy absolute visual confidentiality. This zero-knowledge approach represents a profound upgrade over typical public converters. By maintaining complete separation between the processing thread and incoming cloud channels, we render data intercept risks mathematically impossible. For organizations handling sensitive intellectual properties or secret proprietary records, this architecture satisfies compliance guidelines without demanding costly dedicated cloud networks. Every file undergoes secure processing entirely on your local core threads. Once the browser window or tab is closed, standard system garbage selectors clear the RAM allocated to the operation, leaving absolutely no trace behind. Choose FoldPDF to preserve ultimate sovereignty over your files, guaranteeing that secret documents remain completely secure and unreadable as they undergo rapid transformations.
+                        Secure browser-based processing means our system cannot see, keep, or access the files you edit. Ordinary online tools force you to upload your files to their servers. This means they can read your file names and private documents. Our website is completely different. All the actions you take run right inside your own internet browser window. We never see your text, sheets, or photos. No logs or backups are ever made. It is a much safer option than public converters that require data uploads. Your files stay perfectly secure on your own computer.
+                      </p>
+                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
+                        Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
                       </p>
                     </div>
                   </section>
@@ -968,7 +977,10 @@ export default function App() {
                         PDF Security Best Practices for Businesses
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Safeguarding business data requires enforcing strict document management guidelines. Here is a review of actionable practices for modern departments. First, completely avoid uploading confidential blueprints, tax registers, audits, or HR records to open-source public cloud databases. Second, make sure employees use reliable, local client-side-only engines like FoldPDF to handle daily editing tasks, such as merging slides or compressing reports. Third, strip embedded document metadata prior to final distributions. Standard PDFs often contain hidden text layers, historical edit logs, and previous author identities that remain accessible unless carefully sanitized. Fourth, enforce policies requiring employees to immediately close active document handles and browser tabs once conversions complete to clear volatile RAM. Finally, educate remote workers on the dangers of public network sniffing. Transmitting unencrypted documents over public Wi-Fi access points allows bad actors to intercept files in transit. Operating completely within browser-based sandboxes prevents network transmission, keeping client information secure. By shifting business operations to local WebAssembly compilers, corporations can satisfy audit conditions in SOC-2 or ISO-27001 checklists without installing intrusive local software packages. This keeps employee devices clean and saves standard IT teams from managing configurations. Establish a secure workspace strategy today.
+                        Keeping your company files secure is simple if you follow a few guidelines. First, do not upload private tax receipts or contract documents to open-source websites that store files in cloud databases. Second, use friendly utilities like FoldPDF that process files directly inside your browser so nothing is sent over the internet. Third, remove hidden layers and authors from your PDFs before sending them. Fourth, close your browser tabs when you finish editing to completely clear local memory. Finally, avoid using public Wi-Fi networks when editing files on remote server pages. Simple actions like these keep your business data private and compliant.
+                      </p>
+                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
+                        Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
                       </p>
                     </div>
                   </section>
@@ -983,7 +995,10 @@ export default function App() {
                         Why Privacy Matters for Legal and Medical Documents
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Legal and clinical documents contain highly personal parameters. For clinicians, maintaining compliance under the Health Insurance Portability and Accountability Act (HIPAA) is a serious requirement. HIPAA requires complete security for Protected Health Information (PHI). Standard online PDF conversion scripts that upload clinical records to unknown servers are a major violation, risking massive agency penalties. Similarly, legal paralegals handle custom patent filings, corporate mergers, and criminal briefs that hold severe liability if exposed. Utilizing server-based PDF helpers introduces third-party risk. Shifting editing operations to local, zero-knowledge browser compilers keeps PHI and corporate legal secrets completely isolated to employee machines. Under General Data Protection Regulation (GDPR) mandates, European residents hold fundamental rights regarding data removal and tracking prevention. Typical online tools fail these parameters because their servers cache incoming and outgoing folders for support inquiries. FoldPDF eliminates this compliance risk completely, utilizing a volatile memory engine that stores absolutely no records. No database clusters exist to hold your records, and standard compliance frameworks remain satisfied. Keep legal and medical records safe from the start.
+                        Medical files and legal contracts contain highly private details. Doctors must safeguard patient health records to comply with privacy laws. Normal online converters that send papers to unknown databases violate these safety standards. Similarly, legal assistants handle patent filings or contracts that must remain secret. Shifting your work to on-device browser applications keeps patient files and company secrets safe from data leaks. Since everything runs right in your browser, no tracking databases exist to hold your records, and regulatory frameworks are fully satisfied. Keep your files guarded from day one.
+                      </p>
+                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
+                        Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
                       </p>
                     </div>
                   </section>
@@ -1011,6 +1026,9 @@ export default function App() {
                       We developed FoldPDF because we believe document utilities should never act as middlemen. Every other popular PDF software online operates by forcing raw document structures onto private servers. This creates unnecessary operational liabilities, network vulnerabilities, and regulatory exposure for clinicians, paralegals, and financial analysts alike.
                       <br /><br />
                       Under the hood, we saw that modern browser sandboxes had evolved to a state that could easily shoulder heavy compilation math. By compiling high-speed layouts and raster engines into localized WebAssembly binaries, we decoupled document processing from server storage entirely. Your files remain where they belong: inside your sovereign machine terminal, deleted from volatile memory the microsecond you close the viewport.
+                    </p>
+                    <p className="text-2xs text-slate-500 dark:text-slate-400 mt-3 font-normal">
+                      Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
                     </p>
                     
                     <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-4">
@@ -1054,9 +1072,9 @@ export default function App() {
                         <div className="h-8 w-8 bg-indigo-50 dark:bg-indigo-955/40 text-indigo-605 rounded-xl flex items-center justify-center mb-4 text-xs font-bold shadow-sm">
                           02
                         </div>
-                        <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2">WASM Compilation</h4>
+                        <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2">Local Browser Engine</h4>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Our isolated C++ WebAssembly compiler runs formatting calculations on your local hardware cores.
+                          Our isolated code runs all formatting calculations directly on your own computer.
                         </p>
                       </div>
                     </div>
@@ -1137,7 +1155,7 @@ export default function App() {
                       </div>
                       <div className="flex gap-3">
                         <span className="font-mono text-indigo-500 pr-2 shrink-0">RAM v3</span>
-                        <p className="text-slate-500 dark:text-slate-400">Optimized client-side memory buffers to handle extremely large documents seamlessly.</p>
+                        <p className="text-slate-500 dark:text-slate-400">Optimized client-side memory buffers so you can handle very large documents directly in your browser.</p>
                       </div>
                     </div>
                   </div>

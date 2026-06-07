@@ -317,7 +317,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
         <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
           <p>
-            At FoldPDF, we care about your privacy. This page explains what information we gather and how we use it.
+            Your privacy is incredibly important to us. This page lays out what little information we collect and how we keep it safe.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -325,7 +325,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             1. We Do Not Store Your Files
           </h2>
           <p>
-            We do not store or save any uploaded files. Your documents are processed directly in-browser on your own computer. All files are deleted completely as soon as you close the website tab.
+            We do not save or hold onto any of your uploaded files. Most of our tools process your documents directly inside your web browser on your own computer, so your files never upload to the internet. For the two tools that do require server processing to function properly (Compress PDF and PDF to Word), your files are processed and then permanently deleted immediately after you download your result. We never store, log, read, or share your documents under any circumstances.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -333,7 +333,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             2. Cookies and Ads
           </h2>
           <p>
-            We use Google AdSense and Google Analytics on our website. These services use cookies to display relevant advertisements and analyze reader traffic patterns.
+            To help support this free service, we display advertisements via Google AdSense and use Google Analytics to learn how visitors use our site. These helper services use cookies (tiny text files) to show ads that match your interests and help us understand website traffic.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -341,7 +341,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             3. Disabling Cookies
           </h2>
           <p>
-            You have complete control over cookies. You can choose to disable cookies through your browser settings at any time if you prefer not to use them.
+            You are fully in charge of cookies. If you prefer not to use them, you can block or turn cookies off in your browser settings whenever you want.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -349,7 +349,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             4. Contact Us
           </h2>
           <p>
-            If you have questions about our privacy practices, please contact us at:{" "}
+            If you ever have any questions about how we look after your privacy, please send Benedict an email at:{" "}
             <a href="mailto:foldpdf.support@gmail.com" className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold">
               foldpdf.support@gmail.com
             </a>
@@ -373,7 +373,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
         <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
           <p>
-            Welcome to FoldPDF. Please read these simple Terms of Service before using our website.
+            Welcome to FoldPDF! Please take a moment to read these simple rules before you start using our tools.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -381,7 +381,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             1. Allowed Use
           </h2>
           <p>
-            You agree to use our tools for legal purposes only. You must not use our service to process illegal files or try to damage our website.
+            Please use our tools only for honest, lawful purposes. Do not use our service to process illegal files and do not try to hack, break, or slow down our website.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -389,7 +389,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             2. Provided As-Is
           </h2>
           <p>
-            We provide all tools as-is with no warranty. We do our best to make sure the tools work, but we cannot promise they will always be perfect or available.
+            We offer our tools exactly as they are, without any formal guarantees. While we do our very best to make sure the site works as expected, we cannot promise it will always be online, completely free of errors, or perfect for every single file.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -397,7 +397,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             3. No Liability for Data Loss
           </h2>
           <p>
-            We process files locally on your device. We are not liable for any data loss, file corruption, or issues that happen during file processing. Always keep backups of your originals.
+            Two of our tools — Compress PDF and PDF to Word — process files on our secure server. This is necessary to deliver high quality results. Your file is uploaded, processed, and permanently deleted immediately after you download your result. We do not store, log, read, or share your files under any circumstances. Most of our other tools process files locally in your browser. Because we never store or keep copies of any of your documents, we cannot be held responsible for files that go missing, get corrupted, or have errors during processing. Please make sure you always keep a backup of your original files safely saved on your own computer.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -405,7 +405,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             4. Updating These Terms
           </h2>
           <p>
-            We can update these terms at any time. We will change the "Last Updated" date at the top of this page when we make modifications.
+            Sometimes we will need to update these terms as we improve the site. When we do, we will change the "Last Updated" date at the very top of the page. If you continue using FoldPDF after we make changes, it means you are happy with the new rules.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -413,7 +413,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             5. Site Operation
           </h2>
           <p>
-            This website is operated by Benedict Muinde in Nairobi, Kenya.
+            This website is built and run by Benedict Muinde, based in Nairobi, Kenya.
           </p>
         </div>
       </div>
@@ -431,10 +431,10 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
       </h1>
       <p className="mb-8 text-sm text-neutral-500">Last Revised: May 21, 2026</p>
       <p className="mb-4">
-        Since our system operates as an on-the-fly, immediate file-handling service, we do NOT store or compile archives of documents on our servers. As a result, there are no online copyright-infringing files maintained inside our domain registry.
+        Because of how FoldPDF works, we do not store, host, or archive any documents on our servers. Your files are processed instantly and deleted right after. Because we do not keep any files, there is nothing stored on our website that could infringe on your copyrights.
       </p>
       <p className="mb-4">
-        If you are a copyright owner and have inquiries regarding trademark uses, submit your detailed reports directly to support via our interactive <span onClick={() => navigate('/contact')} className="text-indigo-600 font-semibold cursor-pointer underline">Contact Form</span> and we will audit logs within 12 hours.
+        If you are a copyright owner and have any questions or concern about intellectual property or trademarks on our site, please send a message directly using our simple and quick <span onClick={() => navigate('/contact')} className="text-indigo-600 font-semibold cursor-pointer underline">Contact Form</span>. We read every message and will get back to you within 12 hours.
       </p>
     </div>
   );

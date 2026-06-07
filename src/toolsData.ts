@@ -9,207 +9,212 @@ export const TOOLS_DATA: ToolDefinition[] = [
     urlPath: 'jpg-to-pdf',
     name: 'JPG to PDF',
     category: 'image-conversions',
-    shortDesc: 'Convert and merge JPEG photos into a single, clean PDF document layout.',
-    longDesc: 'The simplest way to compile scanned receipts or photo records. Pack individual JPG files neatly onto unified page sizes (A4, Letter) with optional spacing margins.',
+    shortDesc: 'Put your JPEG images into a single PDF file.',
+    longDesc: 'Do you have a bunch of photo receipts or screenshots cluttering up your phone? Use this to glue them all together into one single PDF that is easy to send. You can drag and drop your pictures to put them in the perfect order before you finish. Best of all, everything runs inside your browser. Your file never leaves your device at any point.',
     iconName: 'Image',
     isPopular: true,
     stepInstructions: [
-      'Upload JPEG or JPG images.',
-      'Arrange the photo sequencing visually inside your layout board.',
-      'Adjust margins, sizing orientation, and page size presets.',
-      'Merge and download your compiled PDF.'
+      'Choose your JPG images.',
+      'Drag them into the right order.',
+      'Pick your page margins.',
+      'Get your clean PDF file.'
     ],
     faqs: [
-      { question: 'Will my image quality drop?', answer: 'Our converter keeps the pristine quality of your original JPG pixels while bundling them safely into pages.' },
-      { question: 'Can I combine multiple JPG files into a single PDF document?', answer: 'Yes, you can upload as many JPG images as you want and arrange their sequence visually to combine them into one multi-page PDF.' },
-      { question: 'What page sizes and layout dimensions are supported?', answer: 'It supports mixed aspect ratios, landscape and portrait orientations, and offers Letter, A4, or custom page fit options with auto-margins.' },
-      { question: 'Are there any limits on file count uploads?', answer: 'No artificial limits are imposed. However, browser memory applies for massive sets, so we recommend up to 100 images per batch.' },
-      { question: 'Is my personal information inside the photos safe?', answer: 'Completely. Because all rendering happens inside your local browser sandbox in-memory, our servers never see, store, or process your photos.' }
+      { question: 'Do you store or see my pictures?', answer: 'No, we never see them. The tool runs directly in your web browser, so your photos never leave your device.' },
+      { question: 'Can I combine images of different sizes?', answer: 'Yes. The tool automatically fits images of any size cleanly on the PDF pages.' },
+      { question: 'Is there a limit on how many images I can upload at once?', answer: 'There is no set limit, but keeping it under 30 or 40 images makes it much faster for your browser to handle.' },
+      { question: 'Do I need to create a login or account?', answer: 'No. You do not need to sign up, log in, or share your email. You can just use it right away.' },
+      { question: 'Will this run on my mobile phone?', answer: 'Yes. It works on any modern web browser on iPhones, Android phones, tablets, or computers.' },
+      { question: 'Do I have to pay to use this?', answer: 'No, it is completely free. There are no paid tiers and no watermarks on your files.' }
     ],
-    benefits: ['Compresses photo sizes inside the target PDF', 'Supports drag-and-drop order sorting', 'Perfect for compiling receipts and scanned bills']
+    benefits: ['Arrange photos by hand easily', 'Keeps original picture colors bright', 'Super simple layout buttons']
   },
   {
     id: 'pdf-to-jpg',
     urlPath: 'pdf-to-jpg',
     name: 'PDF to JPG',
     category: 'image-conversions',
-    shortDesc: 'Extract individual pages of your PDF document as high-resolution JPEG files.',
-    longDesc: 'Turn text pages into clean marketing graphics. Extract every page of your PDF into separate high-quality JPG images, or crop specific graphics out of text packages.',
+    shortDesc: 'Convert your PDF pages into separate image files.',
+    longDesc: 'Need to turn some slides or pages from a PDF back into image files? This handy converter will split your document into standard JPG pictures. You can save key pages or extract all of them at once. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'ImagePlay',
     isPopular: true,
     stepInstructions: [
-      'Upload the target PDF.',
-      'Select "Convert Entire Page" or "Extract Images Only".',
-      'Generate image slices.',
-      'Download a tidy ZIP package of JPG graphics.',
+      'Pick your PDF file.',
+      'Click to extract all the pages.',
+      'Save them all as a ZIP folder.'
     ],
     faqs: [
-      { question: 'What is the DPI of the output images?', answer: 'Our generator renders high-definition JPG slices at 300 DPI for ultra-crisp output.' },
-      { question: 'Can I convert specific individual pages or must I convert the whole PDF?', answer: 'You can convert the entire document to structured JPGs or visually select a precise custom page range to render.' },
-      { question: 'If my PDF has transparent artwork, will it black out?', answer: 'No, transparent segments are automatically composited onto a clean, high-contrast white background so the resulting JPEG remains perfectly legible.' },
-      { question: 'How are the generated images packaged for download?', answer: 'If converting multiple pages, the compiler bundles all of your JPG files into a single, clean ZIP archive for easy, organized extraction.' },
-      { question: 'Does this converter work with password-secured PDF documents?', answer: 'Yes, if you enter the correct user passcode, our compiler decodes the stream locally and proceeds with the high-resolution image rendering.' }
+      { question: 'Are my PDF documents safe here?', answer: 'Yes, very safe. The conversion happens on your computer, so your PDF never uploads to the web.' },
+      { question: 'Will I get one image or a bunch of them?', answer: 'You get a separate image for every single page. They will all be grouped in one convenient ZIP folder.' },
+      { question: 'Can I use this tool offline?', answer: 'Yes. Once the website loads, you can disconnect your internet and it will keep working perfectly.' },
+      { question: 'Do I need to install any software to use this?', answer: 'No. It runs entirely inside your browser. No downloads or installations are needed.' },
+      { question: 'What web browsers can I use?', answer: 'Any modern browser like Chrome, Safari, Edge, or Firefox will run it smoothly.' },
+      { question: 'Is there a daily limit on conversions?', answer: 'No. You can convert as many PDFs as you need, whenever you want.' }
     ],
-    benefits: ['Crisp 300 DPI crop rendering', 'Option to isolate embedded illustrations', 'Superb for high-resolution graphics']
+    benefits: ['Super quick extraction', 'Saves images directly to a ZIP folder', 'Perfect list of images from slides']
   },
   {
     id: 'png-to-pdf',
     urlPath: 'png-to-pdf',
     name: 'PNG to PDF',
     category: 'image-conversions',
-    shortDesc: 'Save transparent PNG snapshots and graphics as a high-fidelity vector PDF format.',
-    longDesc: 'Keep your asset quality intact. Turn PNG screenshot files and raw graphics into accessible PDFs while maintaining transparent segments and clean layout structures.',
+    shortDesc: 'Turn your PNG screenshots and graphics into clean PDF files.',
+    longDesc: 'Screenshots can take up a lot of space and look messy. Put them into a clean, professional PDF with this quick organizer. Add margins, change the page setup, and rearrange the items however you like. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileImage',
     stepInstructions: [
-      'Load your transparent PNG graphics files.',
-      'Choose screen orientation (Auto, Portrait, or Landscape) and margins.',
-      'Click "Render PDF Options".',
-      'Download your vector rendering.'
+      'Upload your PNG files.',
+      'Sort them using your mouse or finger.',
+      'Select your page boundaries.',
+      'Save your finished PDF file.'
     ],
     faqs: [
-      { question: 'Is transparency supported?', answer: 'Yes, PNG transparent alpha channels are fully handled and rendered relative to the PDF grid page background.' },
-      { question: 'Can I change the page orientation for different sized PNGs?', answer: 'Yes, you can choose Auto-detect, Portrait, or Landscape. Auto-detect formats each PDF page\'s aspect ratio to match its input PNG.' },
-      { question: 'Is there an automatic layout padding or margin option?', answer: 'Yes, you can toggle between "No Margins", "Small Margins", and "Large Margins" to frame your design prototypes and graphics perfectly.' },
-      { question: 'Does this tool support dragging to reorder screenshots?', answer: 'Absolutely! Once you load your PNG files, drag and drop the visual cards into any sequence before committing the PDF compile.' },
-      { question: 'Will convert times slow down for dozens of screenshots?', answer: 'Not at all. WebAssembly renders standard transparent graphics in milliseconds, bypassing server queues entirely.' }
+      { question: 'Where do my images go when I upload them?', answer: 'Nowhere. The tool runs locally in your browser, so your files never leave your computer or phone.' },
+      { question: 'Can I mix PNGs with other images?', answer: 'This specific screen is made for PNGs, but they will all turn into standard PDF pages cleanly.' },
+      { question: 'Will transparent parts of my PNG look weird?', answer: 'We fill any transparent backgrounds with solid white so the text and drawings look normal on the page.' },
+      { question: 'Do I need to register to download the PDF?', answer: 'No account or registration is required. You can download your finished PDF immediately.' },
+      { question: 'Is this mobile-friendly?', answer: 'Yes. You can drag and drop images and do the conversion on your phone or tablet.' },
+      { question: 'Are there any monthly usage limits?', answer: 'No. Use it as often as you need without any restrictions.' }
     ],
-    benefits: ['Keeps visual edge-crispness intact', 'Option to scale to standard physical pages', 'High graphic output']
+    benefits: ['Turn screenshots into reports', 'Control page margins and sizes', 'Perfect for digital receipts']
   },
   {
     id: 'pdf-to-png',
     urlPath: 'pdf-to-png',
     name: 'PDF to PNG',
     category: 'image-conversions',
-    shortDesc: 'Generate transparent, high-quality PNG screenshots out of PDF slides or layout sheets.',
-    longDesc: 'Perfect for layouts and digital design. Convert pages into portable network graphics (PNG) files with premium pixel density and support for transparent layouts.',
+    shortDesc: 'Extract pages from your PDF as crisp PNG images.',
+    longDesc: 'If you want to pull a nice chart or graphic out of a PDF, this page will turn your PDF pages into crisp PNG images. This format is wonderful for icons, logos, and clear slides. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileImage',
     stepInstructions: [
-      'Provide your PDF document.',
-      'Adjust PNG scaling levels.',
-      'Render pages to canvas elements.',
-      'Download processed PNG layouts.'
+      'Select the PDF you want to share.',
+      'Let the tool turn the pages to images.',
+      'Download your PNG image files.'
     ],
     faqs: [
-      { question: 'Does it support transparent backgrounds?', answer: 'Yes! It exports pages with lossless transparent backing option perfect for digital overlay graphics.' },
-      { question: 'Why should I choose PNG over JPEG when exporting pages?', answer: 'PNG utilizes lossless compression, making it ideal for web presentation sliders, design mockups, and interfaces where pixel-perfect readability is required.' },
-      { question: 'What is the maximum resolution scale supported?', answer: 'Our tool supports up to a 3x resolution multiplier (around 300 DPI) to ensure that fine text and raster logos are completely crisp.' },
-      { question: 'Can I extract only the embedded images instead of full pages?', answer: 'Yes, our tool can scan the PDF structure and extract the actual underlying bitmap image files in their original dimensions.' },
-      { question: 'How does the ZIP download work on different systems?', answer: 'The system creates a standard ZIP file containing all pages as PNG files, which decompression utilities in Windows, macOS, and iOS open natively.' }
+      { question: 'Do you save my document on a server?', answer: 'No, we do not. Everything is processed directly in your browser, keeping your files private and secure.' },
+      { question: 'Why should I choose PNG over JPG?', answer: 'PNG is much better for text and vector icons. It keeps edges sharp without any blurry artifacts.' },
+      { question: 'Will you add a watermark to my output files?', answer: 'No. We do not add any banners, branding, or watermarks to your pictures.' },
+      { question: 'Do I need to pay or enter a credit card?', answer: 'No. This tool is completely free to use with no hidden fees.' },
+      { question: 'What devices does this run on?', answer: 'It works on any device with a modern browser, including Macs, Windows PCs, iPhones, and Androids.' },
+      { question: 'Can I convert massive files?', answer: 'Yes. Since it runs on your local CPU, it can handle large files as long as your device has enough memory.' }
     ],
-    benefits: ['Lossless pixel rendering configurations', 'Extracts standalone objects', 'Perfect Web transparency support']
+    benefits: ['Keeps text margins sharp', 'Saves pages as high-quality pictures', 'Easy to download in a click']
   },
   {
     id: 'jpeg-to-png',
     urlPath: 'jpeg-to-png',
     name: 'JPEG to PNG',
     category: 'image-conversions',
-    shortDesc: 'Convert JPEG/JPG images to lossless PNG images with high pixel fidelity.',
-    longDesc: 'Easily change compressed JPEG photos into high quality PNG graphics. Safe, extremely fast secure translation directly inside your browser container.',
+    shortDesc: 'Quickly convert standard photos to high-quality PNGs.',
+    longDesc: 'Need to change a regular JPEG photo into a PNG? This tool does it in a flash. Great for getting a file in the exact format some websites require. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileImage',
     stepInstructions: [
-      'Select or drag and drop JPEG/JPG pictures.',
-      'Set any transparency keying, if required.',
-      'Click "Convert Image".',
-      'Download your lossless PNG files.'
+      'Pick your JPEG images.',
+      'Wait for a split second.',
+      'Download your new PNG files.'
     ],
     faqs: [
-      { question: 'Why convert JPG to PNG?', answer: 'PNG utilizes lossless compression which prevents any subsequent generation loss if you plan on editing the design later.' },
-      { question: 'Does this tool alter the original color space profile?', answer: 'No. It preserves your embedded RGB color profiles and gamma settings, guaranteeing colors look exactly identical post-conversion.' },
-      { question: 'Can I batch convert large collections of photos?', answer: 'Yes, you can drop fifty or more JPEG assets at once and process them simultaneously inside a couple of seconds.' },
-      { question: 'Is there any file size limitation?', answer: 'Because all conversion runs in-memory directly on the client machine, the size is limited only by your browser\'s allocated RAM—usually multiple gigabytes.' },
-      { question: 'Will background transparency be added?', answer: 'JPEG does not support transparency, but once converted to PNG, you can open it in standard editors to utilize transparent layers immediately.' }
+      { question: 'Are my photos secure?', answer: 'Absolutely. No server upload happens. The translation runs inside your browser, so your data stays yours.' },
+      { question: 'Will my images lose any quality?', answer: 'No. We convert the format directly without adding any compression or losing any details.' },
+      { question: 'Can I convert more than one photo at the same time?', answer: 'Yes, you can drop a batch of images in and convert them all at once.' },
+      { question: 'Do I need to sign up for a trial?', answer: 'No signups or trials are needed. It is fully available right now.' },
+      { question: 'Does this work on Chrome and Safari?', answer: 'Yes. It works on all modern browsers across desktops and mobile devices.' },
+      { question: 'Is there a file size limit?', answer: 'There is no strict limit, but very massive images might take an extra second or two to process on your device.' }
     ],
-    benefits: ['100% secure in-memory conversion stability', 'Preserves original color gamuts', 'Batch convert multiple files seamlessly']
+    benefits: ['Instant file type swap', 'Zero loss in visual quality', 'Saves time on form submissions']
   },
   {
     id: 'png-to-jpg',
     urlPath: 'png-to-jpg',
     name: 'PNG to JPG',
     category: 'image-conversions',
-    shortDesc: 'Convert PNG images to highly compressed, lightweight JPG photo formats.',
-    longDesc: 'Compress heavy PNG pictures down to standard web-friendly JPEGs. Choose your visual compression quality to shrink size for speedy uploads and email attachments.',
+    shortDesc: 'Convert your PNG files to smaller, shareable JPEGs.',
+    longDesc: 'PNG drawings can be too heavy to attach to emails. Swap them over to lightweight JPG files using this online converter. It is friendly, easy to use, and runs on your computer. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Image',
     stepInstructions: [
       'Upload your PNG files.',
-      'Choose your graphic compression ratio slider.',
-      'Press "Parse images".',
-      'Grab your optimized JPG file.'
+      'Let the converter process them.',
+      'Save your light JPG photos.'
     ],
     faqs: [
-      { question: 'What happens to transparent regions?', answer: 'Our converter automatically fills transparent pixels with a clean solid white background for the JPEG output.' },
-      { question: 'Why does the file size usually shrink after converting to JPEG?', answer: 'JPEG uses lossy, high-frequency compression that significantly reduces the file footprint, which is perfect for web speed optimization and email.' },
-      { question: 'Can I adjust the balance between image quality and compression?', answer: 'Yes, a granular quality slider lets you configure the precise compression ratio from draft (lightweight) to maximum fidelity.' },
-      { question: 'Will my PNG EXIF metadata be retained?', answer: 'Our client-side editor strips unnecessary spatial metadata by default to maximize privacy and reduce the output file footprint further.' },
-      { question: 'Does this conversion happen on a server?', answer: 'Absolutely not. Like all FoldPDF utilities, the entire process runs directly in-browser memory—no files leave your system.' }
+      { question: 'Does this tool upload my images anywhere?', answer: 'No. Everything stays on your machine and runs inside your browser sandbox.' },
+      { question: 'What happens to transparent spots in my PNGs?', answer: 'They will turn solid white because JPG format does not support transparency.' },
+      { question: 'Is there a file size limit?', answer: 'No. The converter runs locally, so size is only limited by your device\'s memory.' },
+      { question: 'Do I need to install a browser extension?', answer: 'No extension is needed. Just visit the page, drop your file, and you are done.' },
+      { question: 'Can I run this on my Android or iPhone?', answer: 'Yes. It is fully built to work on mobile phone browsers as well as desktops.' },
+      { question: 'Is there a catch? Do I have to pay later?', answer: 'No catch. It is 100% free with no hidden charges or limits.' }
     ],
-    benefits: ['Significantly shrinks photo storage footprint', 'Custom compression level adjustment', 'High speed browser processing']
+    benefits: ['Makes massive files smaller', 'Turns transparent bits white', 'Simple tool for daily tasks']
   },
   {
     id: 'webp-to-pdf',
     urlPath: 'webp-to-pdf',
-    name: 'WEBP to PDF',
+    name: 'WebP to PDF',
     category: 'image-conversions',
-    shortDesc: 'Convert modern lightweight web design screenshots (.webp) into standard PDF sheets.',
-    longDesc: 'Ideal for web developers and UI designers. Export mockups and site capture cards straight into standard PDF packets to simplify reviews.',
+    shortDesc: 'Save modern WebP screenshot files as standard PDF pages.',
+    longDesc: 'WebP is a neat file format for web browsers, but it can be hard to send or print. Put these modern images into a standard PDF structure so any reader can open them. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileImage',
     stepInstructions: [
-      'Select WEBP graphic assets from local storage.',
-      'Set target layout sheet boundaries.',
-      'Click translate to compile files.',
-      'Download page output.'
+      'Load your WebP files.',
+      'Rearrange them in order.',
+      'Change page sizes if needed.',
+      'Download your PDF document.'
     ],
     faqs: [
-      { question: 'What is WEBP and why convert it to PDF?', answer: 'WEBP is a modern web-optimized graphic format. We convert it to standard PDF sheets so you can easily package web mockups or interfaces into print-ready portfolios.' },
-      { question: 'Can I combine several WEBP files into one single PDF?', answer: 'Yes! Arrange them visually by dragging thumbnails inside the layout board and compile them into a unified PDF file.' },
-      { question: 'Does it support page scale fitting?', answer: 'Yes, our local conversion engine can stretch or shrink WEBP page boundaries to seamlessly fit standard A4 or Letter sizes.' },
-      { question: 'Will transparent backgrounds in web banners look okay?', answer: 'Yes. Any alpha channel transparency is composited onto high-contrast white pages to preserve perfect icon/text legibility.' },
-      { question: 'How secure is the WEBP-to-PDF compiler?', answer: 'Highly secure. Bypassing cloud uploads entirely means your design assets run purely inside local client memory.' }
+      { question: 'How is my privacy handled?', answer: 'Very simply: your files never leave your device. The tool runs locally inside your current browser tab.' },
+      { question: 'Can I combine multiple WebP files into a single PDF?', answer: 'Yes. You can upload several WebP screenshots and merge them into one multi-page PDF.' },
+      { question: 'Do I need to be online to use this?', answer: 'Once the web page is fully loaded, you can unplug your internet and use it entirely offline.' },
+      { question: 'Do I need to create an account?', answer: 'No account or log in is required. You can use it right away.' },
+      { question: 'Does this work on Apple devices?', answer: 'Yes. Safari, Chrome, and Firefox on iOS or macOS run it perfectly.' },
+      { question: 'Is there a cap on how many times I can use this daily?', answer: 'No. You can use it as many times as you want without any restrictions.' }
     ],
-    benefits: ['Fast web rendering translations', 'Streamlined design layout reviews', 'No compression losses']
+    benefits: ['Makes web images easy to print', 'Sort images visually with a mouse', 'No data sent over networks']
   },
   {
     id: 'pdf-to-webp',
     urlPath: 'pdf-to-webp',
-    name: 'PDF to WEBP',
+    name: 'PDF to WebP',
     category: 'image-conversions',
-    shortDesc: 'Export PDF slides directly into highly optimized WEBP formats for quick web browser loading.',
-    longDesc: 'The modern web developer standard. Save pages into next-gen lightweight WEBP images to upload directly to site galleries and speed up loading speeds.',
+    shortDesc: 'Export your PDF pages into modern WebP images.',
+    longDesc: 'If you are building a website and want to display PDF slides, WebP is the perfect choice because it loads super fast. Turn any document into shiny WebP files quickly. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'MonitorDot',
     stepInstructions: [
-      'Input the target PDF portfolio document.',
-      'Choose image density presets.',
-      'Download optimized WEBP assets.'
+      'Choose your PDF.',
+      'Click the convert button.',
+      'Save your fast-loading WebP files.'
     ],
     faqs: [
-      { question: 'Why is WEBP preferred over other image formats for websites?', answer: 'WEBP offers modern compression that is up to 30% lighter than standard PNG or JPEG, significantly boosting your Google PageSpeed scores.' },
-      { question: 'Can I choose the pixel scale of the exported WebP frames?', answer: 'Yes, you can specify custom resolution scales to optimize the output graphics for mobile viewports or wide-desktop displays.' },
-      { question: 'How are multi-page PDFs compiled?', answer: 'It loops through every page, rendering each slide as a standalone WEBP file, and packages them in a single fast ZIP archive.' },
-      { question: 'Will internal hyperlinks remain active?', answer: 'No, WebP is a flat raster graphic format, so interactive PDF functions are converted to high-definition static pictures.' },
-      { question: 'Does converting use cellular mobile data?', answer: 'Only to fetch the web page initially. After that, the local WebAssembly compiler runs entirely on your device with zero network usage.' }
+      { question: 'Where are my documents processed?', answer: 'Right on your own computer or mobile phone. Everything runs locally in your web browser.' },
+      { question: 'Why should I convert PDF pages to WebP instead of JPG?', answer: 'WebP files are usually much smaller in size, which makes them load much faster on websites.' },
+      { question: 'Can I convert a PDF that has hundreds of pages?', answer: 'Yes, you can. Since it uses your device\'s processor, it will export every single page as a WebP image.' },
+      { question: 'Do I have to pay to extract my files?', answer: 'No, it is totally free and we never add watermark overlays to your images.' },
+      { question: 'What web browsers are supported?', answer: 'It works on any modern web browser like Chrome, Safari, Edge, or Firefox.' },
+      { question: 'Can I use this on my phone?', answer: 'Yes. It works on both phone and desktop browsers without any issues.' }
     ],
-    benefits: ['Extremely compact graphics sizes', 'Boosts Google PageSpeed indicators', 'No web conversion delays']
+    benefits: ['Creates speedy web-ready images', 'Saves phone space and data', 'Ready in plain image formats']
   },
   {
     id: 'heic-to-pdf',
     urlPath: 'heic-to-pdf',
     name: 'HEIC to PDF',
     category: 'image-conversions',
-    shortDesc: 'Convert iPhone and iPad raw HEIC camera uploads directly into accessible PDFs.',
-    longDesc: 'Ditch the formatting lock. Turn raw Apple HEIC photos and image packets into standard, cross-platform PDF files readable on any desktop pc.',
+    shortDesc: 'Convert Apple HEIC photos into standard PDF handouts.',
+    longDesc: 'Apple phones save photos in a format called HEIC, which often does not open on Windows PCs or other phones. Put your iPhone photos into a neat PDF document so that anyone can see your images. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Smartphone',
     stepInstructions: [
-      'Upload iPhone camera HEIC files.',
-      'Convert individual sheets or combine them as single sheets.',
-      'Download converted files instantly.'
+      'Select iPhone HEIC photos.',
+      'Visually check their orientations.',
+      'Convert and download your standard PDF document.'
     ],
     faqs: [
-      { question: 'What are HEIC files and are they readable on Windows/Android?', answer: 'HEIC is Apple\'s high-efficiency image container. Since many platforms lack native support, converting HEIC to PDF lets any system view your camera photos easily.' },
-      { question: 'Can I bundle several HEIC photos into one PDF photo-book?', answer: 'Yes, upload multiple HEIC records together, order them visually on the board, and compile them into a single PDF.' },
-      { question: 'Will this HEIC conversion operate faster than cloud processors?', answer: 'Definitely. By eliminating file uploads and server queues, FoldPDF renders HEICs locally in milliseconds.' },
-      { question: 'Does it preserve the raw iPhone camera color gamut?', answer: 'Yes, we map Apple\'s wide HEIC color matrices perfectly to universal sRGB color targets inside the output PDF structure.' },
-      { question: 'Will my converted photos have a watermark?', answer: 'Never. FoldPDF is a free open tool and never injects watermarks, margins, or platform branding into your document files.' }
+      { question: 'Why should I convert HEIC files?', answer: 'HEIC is the standard photo format for iPhones, but many computers or older devices can\'t open them. PDF is readable everywhere.' },
+      { question: 'Do my photos go to any cloud storage?', answer: 'No. The files stay on your device. The conversion runs inside your browser tab.' },
+      { question: 'Can I change the page orientation?', answer: 'Yes. You can choose whether you want portrait or landscape pages.' },
+      { question: 'Do I need to sign up to use this tool?', answer: 'No. No account, email, or registry is needed. Just drop your files and go.' },
+      { question: 'What browsers does this work on?', answer: 'Chrome, Safari, Firefox, and Edge on any computer or mobile device.' },
+      { question: 'Is there an upload size limit?', answer: 'There is no strict upload limit, but huge files might take a moment to convert.' }
     ],
-    benefits: ['Excellent formatting compatibility', 'Compresses Apple camera payload sizes', 'No cloud storage delays']
+    benefits: ['Fix Apple format sharing data', 'Works without an internet link', 'Bundles photos into one handout']
   },
 
   // ========================
@@ -220,185 +225,186 @@ export const TOOLS_DATA: ToolDefinition[] = [
     urlPath: 'pdf-to-word',
     name: 'PDF to Word (DOCX)',
     category: 'document-conversions',
-    shortDesc: 'Decompile secure PDF pages back into fully editable Microsoft Word (.docx) text records.',
-    longDesc: 'Ditch the retyping chore. Our precise extraction algorithms identify paragraphs, formatting structures, nested tables, and styling options, returning fully editable DOCX document structures.',
+    shortDesc: 'Turn secure PDF files back into editable Microsoft Word documents.',
+    longDesc: 'Stop copying and pasting by hand. This tool analyzes your PDF sheets and turns them back into a normal Microsoft Word (.docx) file that you can type in, adjust columns, and style freely. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.',
     iconName: 'FileText',
     isPopular: true,
     stepInstructions: [
-      'Select the PDF to decompile.',
-      'Our analyzer maps text segments, flow elements, and grid sections.',
-      'Generate word XML nodes.',
-      'Download your executable DOCX word document.'
+      'Choose the PDF file you want to edit.',
+      'Wait while we map the paragraphs and tables.',
+      'Download your editable Word document.'
     ],
     faqs: [
-      { question: 'Will the generated Word document look identical?', answer: 'Yes, we map font classifications and placement parameters closely to ensure formatting scales seamlessly back to office packages.' },
-      { question: 'How does FoldPDF avoid creating uneditable floating boxes in Word?', answer: 'Cheap converters dump text into absolute-positioned blocks. Our engine reads paragraph flows and column bounds to reconstruct flowing text lines.' },
-      { question: 'Can I convert tables from PDF into Excel formulas here?', answer: 'This tool exports to Word DOCX. If you specifically need spreadsheet cells, we recommend using our PDF to Excel tool.' },
-      { question: 'What happens to embedded graphic decorations and shapes?', answer: 'Vector drawings are extracted as high-fidelity shapes or rasterized PNG assets, layered snugly behind the text flow.' },
-      { question: 'Is there a page count limit on DOCX conversion?', answer: 'Our client-side system handles standard textbooks and reports up to 200 pages without memory lag.' }
+      { question: 'Is it safe to convert my private files here?', answer: 'Yes. While this tool sends your file to our secure server for conversion, we delete it instantly after you download the Word file.' },
+      { question: 'Will my layout look messy after converting?', answer: 'We try our best to keep your paragraphs, columns, and lists exactly where they belong in the Word document.' },
+      { question: 'What happens to the graphics inside my PDF?', answer: 'They get extracted and placed inside the Word document as images that you can easily resize or move.' },
+      { question: 'Do I need to register or create an account?', answer: 'No. You don\'t need to sign up or input any contact details.' },
+      { question: 'Does this work on mobile phone web browsers?', answer: 'Yes. You can upload and download your converted DOCX files right on your phone.' },
+      { question: 'Are there any monthly subscription fees?', answer: 'No. This service is 100% free with no subscription or hidden paywalls.' }
     ],
-    benefits: ['Re-editable text paragraphs', 'Stretches tables to standard tables', 'Unlocks scanned tables cleanly']
+    benefits: ['Creates flowing text instead of floating boxes', 'Easy to edit right in Microsoft Office', 'Safe server setup with quick cleanup']
   },
   {
     id: 'word-to-pdf',
     urlPath: 'word-to-pdf',
     name: 'Word to PDF',
     category: 'document-conversions',
-    shortDesc: 'Transform Microsoft Word (.doc, .docx) templates into clean, standardized PDFs.',
-    longDesc: 'Protect your text and layout positioning. Convert unstable Word files into standard PDFs to ensure fonts, photos, and margins look identical on every phone, tablet, or laptop screen.',
+    shortDesc: 'Convert your Microsoft Word documents into official PDF files.',
+    longDesc: 'Do you want to make sure your Word formatting, fonts, and photos do not look different on someone else\'s computer? Lock your DOCX or DOC files into a standard PDF format so it looks perfect everywhere. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileText',
     isPopular: true,
     stepInstructions: [
-      'Pick a .docx or .doc file to convert.',
-      'Wait as FoldPDF compiles text hierarchies, elements, and styles.',
-      'Preview the preview file structure.',
-      'Download your pristine PDF report.'
+      'Select your Word doc.',
+      'Wait as we layout the text and tables.',
+      'Save your perfect PDF file.'
     ],
     faqs: [
-      { question: 'Why should I convert Word documents to PDF?', answer: 'Word formatting shifts easily between Microsoft Office versions or custom screen monitors. PDF locks structures and font elements permanently.' },
-      { question: 'Is BOTH .doc and .docx formats supported?', answer: 'Yes, the client converter fully supports modern OpenXML (.docx) files as well as classic binary MS Word (.doc) structures.' },
-      { question: 'Will lists, bullet tags, and tables translate correctly?', answer: 'Yes, our local parser matches paragraph tags, nested billing grids, headers, footers, and page numbers cleanly.' },
-      { question: 'Are hyperlinks preserved in the final output?', answer: 'Absolutely. Web links, email addresses, and internal TOC anchor tags remain perfectly active.' },
-      { question: 'Do you require special fonts to be installed locally?', answer: 'Common standard fonts are fully supported. For rare proprietary fonts, we recommend compiling on the machine where the font is active.' }
+      { question: 'Do you store a copy of my Word files?', answer: 'No. The conversion happens strictly in your browser. We never see or store your documents.' },
+      { question: 'Can I convert old .doc files along with .docx?', answer: 'Yes. We support both old and new Word document formats cleanly.' },
+      { question: 'Will web links inside my Word file still work in the PDF?', answer: 'Yes. Any hyperlinks or email addresses will remain completely clickable.' },
+      { question: 'Do I need to install Microsoft Office or Word?', answer: 'No. You do not need any office tools installed for this page to convert your files.' },
+      { question: 'Does this work on all browsers?', answer: 'Yes. It works great on Chrome, Safari, Firefox, and Edge on phone and computer.' },
+      { question: 'Is there a limit on how many files I can convert?', answer: 'No limits at all. Use it as many times as you want.' }
     ],
-    benefits: ['Locks original formatting and text styles', 'Supports complex nested layouts', 'Includes active hyperlink support']
+    benefits: ['Locks standard page margins and fonts', 'Ensures resume files look correct', 'Fast local creation']
   },
   {
     id: 'pdf-to-pptx',
     urlPath: 'pdf-to-pptx',
     name: 'PDF to PowerPoint (PPTX)',
     category: 'document-conversions',
-    shortDesc: 'Restore read-only slides back into fully customizable and editable PowerPoint slides.',
-    longDesc: 'Got an outdated presentation PDF? Convert vector blocks back into moveable PowerPoint text layouts and elements, allowing you to edit titles, colors and layout elements.',
+    shortDesc: 'Convert PDF slides back into editable PowerPoint files.',
+    longDesc: 'Found a nice PDF presentation but need to change a template page or swap some bullet points? Turn your PDF sheets into editable PowerPoint slides where you can drag text boxes, change titles, and move images around. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Presentation',
     stepInstructions: [
-      'Add the legacy presentation PDF.',
-      'Extract slide containers, images, and texts.',
-      'Assemble editable PPTX presentations.',
-      'Save the slideshow document.'
+      'Open up your PDF pages.',
+      'Let us create slide containers and separate page assets.',
+      'Download your PPTX file.'
     ],
     faqs: [
-      { question: 'How are PDF pages transformed into PowerPoint slides?', answer: 'Each page becomes a distinct slide, and our parser reconstructs paragraphs as moveable, editable text boxes on your slides.' },
-      { question: 'Can I resize or drag vectors and graphics in PPTX?', answer: 'Yes. Underlying diagrams, tables, and vector blocks are separated as individual design components for easy editing.' },
-      { question: 'What default slide layout aspect ratio is utilized?', answer: 'Widescreen 16:9 is the default, ensuring complete compatibility with laptop monitors, screens, and projectors.' },
-      { question: 'Will converted slides lose their original style properties?', answer: 'Our engine identifies colors, relative sizing, and positioning matrices to keep the slide visual design intact.' },
-      { question: 'How secure are corporate slides parsed this way?', answer: 'Totally secure. All slides compile within local sandbox threads without third-party network exposure.' }
+      { question: 'Are my slide documents private?', answer: 'Yes. Everything is processed locally in your browser, so your presentation never leaves your computer.' },
+      { question: 'Does each page become a separate slide?', answer: 'Yes. Every single page in your PDF gets turned into its own slide in the new PowerPoint presentation.' },
+      { question: 'Can I edit the text and text boxes in PowerPoint?', answer: 'Yes. We extract the text so you can click, delete, or rewrite sections in PowerPoint easily.' },
+      { question: 'Do I need to log in to download my presentation?', answer: 'No accounts are needed. You can use it instantly and completely anonymously.' },
+      { question: 'Will it run on mobile phone browsers?', answer: 'Yes. It works on iOS and Android browsers without any separate apps.' },
+      { question: 'Is there any daily usage limit?', answer: 'No. Convert as many presentation files as you need, entirely free.' }
     ],
-    benefits: ['Convert back to editable timeline text', 'Repurposes graphics and diagrams easily', 'Fits standard laptop aspect ratios']
+    benefits: ['Fixes layout clutter on slide imports', 'Keep pages in proper separate slides', 'Easy to customize templates']
   },
   {
     id: 'pptx-to-pdf',
     urlPath: 'pptx-to-pdf',
     name: 'PowerPoint to PDF',
     category: 'document-conversions',
-    shortDesc: 'Stave off slide visual movements by exporting PPTX slides into standard PDF manuals.',
-    longDesc: 'Submit your homework and pitch slides confidently. Lock PowerPoint presentations into standard PDFs to prevent format misalignment or fonts missing errors during presentations.',
+    shortDesc: 'Convert your PowerPoint slide decks to standard PDF files.',
+    longDesc: 'Do you have a big presentation pitch or school paper ready? Lock your slides as a PDF so that the presentation displays exactly how you wanted on any screen, without messy font or alignment changes. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Presentation',
     stepInstructions: [
-      'Load .pptx slideshow files.',
-      'Let FoldPDF map vector layouts and slide nodes.',
-      'Download standardized high-resolution PDF handouts.'
+      'Add your slide files.',
+      'Wait for a tiny moment.',
+      'Get your high-quality PDF slides.'
     ],
     faqs: [
-      { question: 'Why lock PPTX slides as PDF prior to presenting?', answer: 'Device misalignments can mess up slide layouts and font sizes. A PDF ensures your exact design is displayed flawlessly on any device.' },
-      { question: 'Are slide transitions and animations saved in the PDF?', answer: 'No, PDF is a static document standard. Each slide is captured as a high-fidelity vector page.' },
-      { question: 'What page dimensions does the exported PDF map to?', answer: 'The sheets map exactly to the original PPTX layout bounds (usually modern 16:9 or traditional 4:3 widescreen proportions).' },
-      { question: 'Are hidden slides or notes extracted?', answer: 'No. The tool prints only the active visible slide content, keeping your internal planning notes fully private.' },
-      { question: 'Is the exported slide PDF too heavy to email?', answer: 'Our system subsets resources and compresses images, yielding a lightweight, highly-shareable presentation handout.' }
+      { question: 'Does this upload my presentation to a server?', answer: 'No. The file is converted entirely on your local device. Nothing is saved or shared.' },
+      { question: 'Will my speaker notes show up in the PDF?', answer: 'No. We only convert the slides themselves so that your presenter notes stay private.' },
+      { question: 'Will it keep my original widescreen slide layout?', answer: 'Yes. The output PDF will match the modern high-definition widescreen format of your slides.' },
+      { question: 'Do I have to pay to use this presentation tool?', answer: 'No, it is completely free to use without any limitations or watermarks.' },
+      { question: 'Does it work on Mac and Windows?', answer: 'Yes. It runs on any operating system as long as you have a modern web browser.' },
+      { question: 'Do I need a Microsoft account?', answer: 'No, no Office or Microsoft logins are required.' }
     ],
-    benefits: ['Keeps precise slide dimensions intact', 'Excellent vector element rendering', 'Compact presentation files']
+    benefits: ['Keeps your slide fonts looking right', 'Makes handouts easy to print', 'Lightweight files for fast emailing']
   },
   {
     id: 'pdf-to-xlsx',
     urlPath: 'pdf-to-xlsx',
     name: 'PDF to Excel (XLSX)',
     category: 'document-conversions',
-    shortDesc: 'Scrape rows and data grids from business reports into neat, executable Microsoft Excel sheets.',
-    longDesc: 'Eliminate manual financial copying. Move invoicing lists, tax files, and spreadsheet data columns safely out of PDF tables and directly into editable spreadsheet (.xlsx) columns.',
+    shortDesc: 'Extract tables from a PDF into normal Excel sheets.',
+    longDesc: 'Tired of copying messy financial reports and ledger scales cell by cell? Pull tables and grids out of any PDF document and turn them into clean Excel sheets that you can calculate, sort, and analyze right away. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileSpreadsheet',
     stepInstructions: [
-      'Select PDF invoicing or tabular worksheets.',
-      'Our scraper maps cell fields, lines, and rows.',
-      'Compile table matrices.',
-      'Download your clean XLSX file.'
+      'Upload your invoice or balance sheet PDF.',
+      'Let the parser map row alignments.',
+      'Download your Excel workbook.'
     ],
     faqs: [
-      { question: 'How does the converter map unstructured PDF rows into Excel coordinates?', answer: 'Our engine scans horizontal and vertical text alignments, using coordinate clustering to detect the tabular grids and output them into clean rows and columns.' },
-      { question: 'Will mathematical formulas be restored, or is it raw text?', answer: 'Since PDFs only contain static character positions, formulas cannot be extracted directly. However, we format all cells as numbers (rather than text-images) so you can easily write sum formulas immediately.' },
-      { question: 'Can I extract multiple table grids from separate pages onto a single sheet?', answer: 'Yes, you can choose to compile all parsed tables into one continuous spreadsheet, or split separate pages into distinct workbook tabs.' },
-      { question: 'How does it handle merged column header fields?', answer: 'Merged headings are detected and converted back into native Excel merged cells, preserving the ledger layout.' },
-      { question: 'Is this safe for processing private payroll or ledger balances?', answer: 'Completely. Because all code packages compile in-browser, no accounting records are uploaded or transmitted to anyone.' }
+      { question: 'Is my sensitive financial data safe here?', answer: 'Absolutely. The tool parses your PDF page files locally in your browser. We never see or store your numbers.' },
+      { question: 'Will the output Excel file include my original formulas?', answer: 'No, because PDFs only contain read-only text. But we create real numbers that you can immediately sum or compute.' },
+      { question: 'What if my PDF has tables on separate pages?', answer: 'We map them cleanly so each table sits on its own sheet or row.' },
+      { question: 'Do I need to sign up to use the Excel converter?', answer: 'No signup is required. You can convert files without any signups or email inputs.' },
+      { question: 'Does this work on Google Chrome?', answer: 'Yes. It runs smoothly on Chrome, Safari, Edge, and Firefox.' },
+      { question: 'Is there a fee for large spreadsheets?', answer: 'No. All features are completely free with no file caps or premium locks.' }
     ],
-    benefits: ['Keeps tabular rows aligned perfectly', 'Converts currency values correctly', 'Aids rapid accounting workflows']
+    benefits: ['Stops annoying manual cell copying', 'Creates clean columns and numbers', 'Super secure spreadsheet conversion']
   },
   {
     id: 'xlsx-to-pdf',
     urlPath: 'xlsx-to-pdf',
     name: 'Excel to PDF',
     category: 'document-conversions',
-    shortDesc: 'Format Excel tables, accounting ledger sheets, and cell grids neatly onto print-friendly PDF pages.',
-    longDesc: 'No more truncated graphs or messy tables. Fit wide Excel tables (.xlsx, .xls) beautifully onto portrait or landscape pages with cells and grids aligned perfectly.',
+    shortDesc: 'Convert wide spreadsheets into printable PDF files.',
+    longDesc: 'Wide Excel files are famous for cutting off when you print or share them. Fit your columns and balance grids beautifully on standard PDF pages without missing rows or ugly overlapping margins. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Calculator',
     stepInstructions: [
-      'Provide your XLS/XLSX spreadsheets.',
-      'Select layout scales (Fit all columns to 1 page, or keep original dimensions).',
-      'Generate grid previews.',
-      'Download your structured PDF financial report.'
+      'Drag in your Excel files.',
+      'Select page scale fit settings.',
+      'Download your neat financial PDF.'
     ],
     faqs: [
-      { question: 'How do I prevent wide column ranges from cutting off on PDF pages?', answer: 'We offer specialized page layout fitting options like "Fit to Single Page Width" to ensure your columns scale beautifully onto US Letter or A4 sheets.' },
-      { question: 'Will gridlines show up in the final PDF report?', answer: 'Yes, you can toggle Excel gridlines on or off depending on whether you want a clean minimalist look or standard accounting border grids.' },
-      { question: 'Are Excel formulas, charts, and bar graphs preserved?', answer: 'Yes, all visual chart elements are rendered at pristine vector resolution and nested neatly beside cell rows in the output document.' },
-      { question: 'Can I select a subset of spreadsheet tabs to convert?', answer: 'Yes, you can choose to compile only the active worksheet sheet or print the entire workbook package with multi-tab formats.' },
-      { question: 'Does compiling very large accounting journals cause lag?', answer: 'The engine processes thousands of tables and coordinates locally in fractions of a second, with zero lag.' }
+      { question: 'Will my wide spreadsheet columns get cut off in the PDF?', answer: 'No. You can set the scale so all your columns fit cleanly on a single page width.' },
+      { question: 'Are Excel charts and figures included in the PDF?', answer: 'Yes. Any charts, margins, and lines are converted into sharp high-quality images.' },
+      { question: 'Do you store my calculated numbers?', answer: 'No. All spreadsheet processing takes place inside your browser, so your files stay local.' },
+      { question: 'Do I need to log in to convert sheets?', answer: 'No account or log in is required. Just drop your file and go.' },
+      { question: 'What mobile browsers are supported?', answer: 'Safari, Chrome, and Firefox on iOS and Android work great.' },
+      { question: 'Is there a fee or catch?', answer: 'No. It is 100% free with no billing logs or registration walls.' }
     ],
-    benefits: ['Prevents cell columns cutting off', 'Renders formulas and charts cleanly', 'Perfect for business accounting statements']
+    benefits: ['No more truncated budget rows', 'Fits ledger columns onto single pages', 'Clean look for corporate printing']
   },
   {
     id: 'pdf-to-txt',
     urlPath: 'pdf-to-txt',
     name: 'PDF to TXT',
     category: 'document-conversions',
-    shortDesc: 'Scrape raw ASCII text cleanly from any PDF, stripping away heavy images and layouts.',
-    longDesc: 'Great for clean text scraping, system logs, and code scripts. Extract text strings out of layout boundaries and save them as straightforward notepad TXT documents.',
+    shortDesc: 'Strip layouts and convert PDFs into plain text files.',
+    longDesc: 'Need to clear out busy page margins, headers, logos, and designs so you can scrape raw text? This quick converter strips everything but the words, giving you a clean text file in no time. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileText',
     stepInstructions: [
-      'Upload the text-rich PDF.',
-      'Check "Ignore layout formatting headers".',
-      'Extract text layers.',
-      'Save clean text files.'
+      'Upload the input PDF.',
+      'Check option boxes to ignore page headers.',
+      'Download your plain text TXT file.'
     ],
     faqs: [
-      { question: 'Why would I convert structured PDF pages to a plain TXT file?', answer: 'It is highly useful for feeding clean raw texts into AI LLM prompts, indexing tools, or coding scripts without layout styles and image overhead.' },
-      { question: 'Are header or footer contents extracted?', answer: 'Our smart text extractor has a toggle to automatically ignore header margins and footer page numbers to leave you with continuous, untrashed body text.' },
-      { question: 'What character formatting does the output text document utilize?', answer: 'The tool uses standard UTF-8 text encoding, guaranteeing 100% reading compatibility with Notepad, TextEdit, and terminal environments.' },
-      { question: 'Can I extract text out of multi-column layouts?', answer: 'Yes, our semantic parser tracks standard reading directions (left-to-right columns) to read text threads in natural order.' },
-      { question: 'Does pdf-to-txt support OCR scanned documents?', answer: 'This is for standard native vector text. If you have non-searchable scan files, utilize our OCR Scanned PDF tool to read text pixels.' }
+      { question: 'Why would I convert to text instead of Word?', answer: 'Plain text is much lighter. It is perfect if you want to paste paragraphs into AI chatbots, code files, or databases.' },
+      { question: 'Are my private files safe from leaks?', answer: 'Yes. Because everything happens locally in your web browser. No data goes over the internet.' },
+      { question: 'Can it extract text from multiple columns?', answer: 'Yes. Our document reader scans from left to right, parsing multi-col pages in normal reading order.' },
+      { question: 'Do I need to create an account?', answer: 'No account or email is needed. Use it directly without sharing any information.' },
+      { question: 'Does this run on modern phones?', answer: 'Yes, it is fully optimized for mobile web browsers as well as PCs.' },
+      { question: 'Is there a fee for long legal documents?', answer: 'No. It is entirely free and has no character limit.' }
     ],
-    benefits: ['Ultra-lightweight text extraction file sizes', 'Removes annoying alignment artifacts', 'Superb for pasting into local models']
+    benefits: ['Extracts text without any style bloat', 'Perfect for pasting into AI chatbots', 'Extremely fast output creation']
   },
   {
     id: 'txt-to-pdf',
     urlPath: 'txt-to-pdf',
     name: 'TXT to PDF',
     category: 'document-conversions',
-    shortDesc: 'Format plain, unformatted TEXT logs or code into elegant reader-ready PDF ebooks.',
-    longDesc: 'Upgrade your plain reading blocks. Style boring notepad text files with beautiful typography, margins, and code block formatting inside standard PDF headers.',
+    shortDesc: 'Convert plain text files into beautiful, styled PDFs.',
+    longDesc: 'Breathe some life into plain notepad files. Turn unformatted text blocks or developer terminal codes into elegant, clean PDF layouts with neat typography, padding, and page counters. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'FileText',
     stepInstructions: [
-      'Upload your plain text or logs .txt file.',
-      'Customize typography (Sans, Serif, or Monospace) and margin size.',
-      'Generate visual page sheets.',
-      'Save the parsed ebook.'
+      'Select a plain .txt file.',
+      'Pick your font styles and margin boundaries.',
+      'Save your customized PDF document.'
     ],
     faqs: [
-      { question: 'How does plain text gain page formatting in this tool?', answer: 'Classic flat logs or notepad drafts are rendered with gorgeous typography layouts. You can easily configure page sizes, spacing heights, and margins.' },
-      { question: 'Can I convert developer scripts or console log entries?', answer: 'Absolutely. Choose monospace font presets and standard coding layouts to beautifully wrap your code sequences in PDF formats.' },
-      { question: 'How are multi-page documents managed?', answer: 'We automatically wrap lines and paginate text cleanly based on your chosen line height, page margins, and physical canvas height.' },
-      { question: 'What paper specifications are supported?', answer: 'You can output your text-built PDF directly to US Letter, A4, page size booklets, or custom widescreen proportions.' },
-      { question: 'Is there an input length cap?', answer: 'No. The engine paginates even heavy text volumes containing hundreds of thousands of words in a second.' }
+      { question: 'Do you save what I write or upload?', answer: 'Never. The editor and converter process everything locally in your browser.' },
+      { question: 'Can I print developer code files with this?', answer: 'Yes. You can change options to set monospace fonts so code is easy to read.' },
+      { question: 'How does it handle page breaks?', answer: 'We measure line heights and pad margins to create clean, automatic pages.' },
+      { question: 'Do I need to sign up or input email details?', answer: 'No registration is needed. You can use it instantly.' },
+      { question: 'What browsers does this run on?', answer: 'Any modern browser like Chrome, Safari, Edge, or Firefox.' },
+      { question: 'Is there a watermark added to the PDF?', answer: 'No. Your pages are kept clean, without any ads, logos, or markings.' }
     ],
-    benefits: ['Adds elegant formatting layouts on raw text', 'Option to insert layout headings', 'Ideal for software dev text logs']
+    benefits: ['Turns ugly notes into clean ebooks', 'Awesome font style templates', 'No more messy printing alignments']
   },
 
   // ========================
@@ -410,281 +416,291 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'Compress PDF',
     category: 'pdf-editing',
     shortDesc: 'Reduce file size without losing premium visual quality.',
-    longDesc: 'Easily shrink larger PDFs down to web-friendly sizes. Our hybrid resizing algorithms compress internal high-res images, drop unused fonts, and deflate files so you get smaller attachments with pristine resolution.',
+    longDesc: 'Struggling to email a PDF that is just too big? This compressor shrinks your file size so text and graphics looking extremely clear and legible. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.',
     iconName: 'FileDown',
     isPopular: true,
     stepInstructions: [
-      'Select or drop your heavy PDF file onto the upload workspace.',
-      'Choose your compression tier: Extreme, Recommended, or High Graphic Fidelity.',
-      'Click "Compress PDF" and look at the real-time space saving counter.',
-      'Download your brand new lightweight PDF file instantly!'
+      'Provide your heavy PDF document.',
+      'Choose your clean scaling settings.',
+      'Download your smaller, ready-to-share PDF.'
     ],
     faqs: [
-      { question: 'Will my compressed images look pixelated?', answer: 'Our "Recommended" setting safely scales DPI and compresses JPG segments to maintain maximum crispness for human readers while deflating storage footprint.' },
-      { question: 'Does compressing a PDF strip editable text elements?', answer: 'Not at all. Your vector text layer is left fully intact, keeping text copies, hyperlinks, and tables readable.' },
-      { question: 'Can I choose standard compression levels?', answer: 'Yes, toggle between Extreme (smallest, layout draft density), Recommended (optimal density), and High Graphic (pristine print specs).' },
-      { question: 'Does this compress interactive signature boxes or forms?', answer: 'Our compressor protects interactive fields, metadata, and crypt signatures while shrinking heavy image blocks.' },
-      { question: 'Is client-side compression faster than cloud servers?', answer: 'By a mile. You bypass standard upload queues entirely, completing bulk compressions locally inside fragments of seconds.' }
+      { question: 'Will compressing my PDF make the pictures look blurry?', answer: 'We use smart scaling to make files much smaller, but we keep text and details sharp enough to read easily.' },
+      { question: 'Is my private document stored on your system?', answer: 'No. Your file is processed on our secure server and deleted immediately. We don\'t save or log anything.' },
+      { question: 'Is there a maximum file size I can upload?', answer: 'Yes, you can upload documents up to 50MB. This is plenty for almost all PDFs.' },
+      { question: 'Can I compress a password-protected PDF?', answer: 'No. If your document is locked, you must unlock it before uploading it for compression.' },
+      { question: 'Can I compress a scanned PDF?', answer: 'Yes, it works well. However, because scans are made of flat images, they might lose a tiny bit of sharpness to save space.' },
+      { question: 'Do I need to pay or create an account?', answer: 'No, it is totally free. There are no signups, fees, or watermarks.' }
     ],
-    benefits: ['Drastically saves email storage space', 'Extremely quick processing speed', 'Maintains visual page clarity']
+    benefits: [
+      'Makes attachments small and easy to email',
+      'Text stays selectable and copyable after compression',
+      'Works with PDFs from any source — Word, Excel, scanned documents'
+    ]
   },
   {
     id: 'merge-pdf',
     urlPath: 'merge-pdf',
     name: 'Merge PDF',
     category: 'pdf-editing',
-    shortDesc: 'Combine multiple PDF documents, reports, and spreadsheets into one tidy structured file.',
-    longDesc: 'The fastest online PDF combiner tool. Seamlessly stitch separate pages, presentation sheets, invoices, and scans together in any order you choose with our clear drag-and-drop workspace layout.',
+    shortDesc: 'Combine multiple PDF files into one clean document.',
+    longDesc: 'Need to combine separate receipts, invoices, or slide decks? This tool joins multiple PDF files into a single organized document. Just drag them into the correct order and click combine. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'GitMerge',
     isPopular: true,
     stepInstructions: [
-      'Select and upload two or more PDF files.',
-      'Drag, drop, and rearrange the file thumbnails to correct your page order.',
-      'Hit the "Merge Files" button.',
-      'Grab your unified single PDF file with one press.'
+      'Select the PDFs you want to join.',
+      'Rearrange their files by dragging them.',
+      'Download your consolidated single document.'
     ],
     faqs: [
-      { question: 'Is there a limit on how many PDFs I can combine?', answer: 'You can merge up to 100 PDF files simultaneously completely for free on FoldPDF.' },
-      { question: 'Will the merged PDF keep all original links and outline indices?', answer: 'Yes. Our local merger parses structural trees, preserving your internal hyperlinks, web addresses, and bookmarks.' },
-      { question: 'Can I compile files with different canvas sizes?', answer: 'Yes, different aspect ratios (such as mixing Letters and A4s) are merged seamlessly without forced scale cropping.' },
-      { question: 'How does the visual board organizer help?', answer: 'Our visual board allows you to easily drag-and-drop page tiles to organize the exact file sequence before downloading.' },
-      { question: 'What if one of my PDFs is encrypted with a password?', answer: 'You will be prompted to enter the password locally, allowing our engine to decrypt and stitch pages neatly in-memory.' }
+      { question: 'Will merging my PDFs mess up the pages?', answer: 'No. The pages will look exactly the same. We just stitch them together in the order you want.' },
+      { question: 'Can I merge interactive form fields?', answer: 'Yes. Standard fillable boxes and signatures remain active in your final combined PDF.' },
+      { question: 'Is there a limit on how many PDFs I can combine?', answer: 'No. You can combine as many files as you want, as long as your device has enough memory.' },
+      { question: 'Do I need to create an account or sign up?', answer: 'No. No signup or personal details are required. It works instantly.' },
+      { question: 'Can I use this on a library or public computer?', answer: 'Yes. Since the files run locally in your browser, no traces are saved on our servers.' },
+      { question: 'Is this service free?', answer: 'Yes, it is 100% free with no features locked behind a paywall.' }
     ],
-    benefits: ['Tidy, interactive slide rearrangement view', 'Keeps original links intact', 'Fast 1-click execution']
+    benefits: ['Friendly drag-to-combine design', 'Keep active text links clickable', 'Easy and secure local utility']
   },
   {
     id: 'split-pdf',
     urlPath: 'split-pdf',
     name: 'Split PDF',
     category: 'pdf-editing',
-    shortDesc: 'Extract individual pages or decompose a multi-page PDF document into several smaller files.',
-    longDesc: 'Need only pages 4 through 9? Split any large textbook, contract, or form into precise page ranges, or isolate every single page into its own individual PDF document in one click.',
+    shortDesc: 'Extract or split specific pages from your PDF.',
+    longDesc: 'Need to pull just one page or a few sections out of a massive PDF guide? Chop your document into handy separate files or output a single smaller PDF containing only the pages you actually need. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Scissors',
     isPopular: true,
     stepInstructions: [
-      'Upload your PDF file.',
-      'Select your custom page ranges or choose "Extract All Pages".',
-      'Press "Split PDF".',
-      'Download your requested custom page segments.'
+      'Add your large PDF.',
+      'Check the specific page numbers to extract.',
+      'Download your new separate files.'
     ],
     faqs: [
-      { question: 'Can I split non-consecutive page numbers?', answer: 'Yes! You can specify exact custom ranges (such as 3, 7, 10-15) to compile customized page booklets.' },
-      { question: 'Is there an option to split every single page into distinct sheets?', answer: 'Yes, select our "Split All Pages" utility to instantly decompile your PDF into separate files, conveniently packaged in a ZIP archive.' },
-      { question: 'Do the output pages keep their embedded font files?', answer: 'Yes, all split fragments contain their required embedded subsets, maintaining perfect layout styling everywhere.' },
-      { question: 'How quick does the page splitter operate?', answer: 'Splitting is instant. Because your documents do not upload over network queues, processing takes under 100 milliseconds.' },
-      { question: 'Can I split password locked PDFs?', answer: 'Yes! Just provide your document passkey first, then proceed to extract pages.' }
+      { question: 'How does splitting my files stay private?', answer: 'The page extracts your files locally in your browser. No files are ever sent to our servers.' },
+      { question: 'Can I extract a specific range of pages?', answer: 'Yes. You can type in exactly which page numbers or range of pages you want to keep.' },
+      { question: 'Will the split pages lose any formatting?', answer: 'No. The paragraphs, charts, and links remain exactly as they were in the original file.' },
+      { question: 'Do I need to sign up to use the page cutter?', answer: 'No registration is needed. You can use it right away.' },
+      { question: 'Does this work on mobile phones?', answer: 'Yes. You can easily tap the thumbnail bubbles and slice your PDF on any mobile browser.' },
+      { question: 'Is there a cap on how many times I can split PDFs?', answer: 'No limits. You can carve up as many files as you need, entirely free.' }
     ],
-    benefits: ['Zero-friction page range selection', 'Export to separate single-page files', 'Maintains internal fonts and styles'],
-    metaTitle: 'Split PDF Free Online | FoldPDF',
-    metaDesc: 'Extract individual pages or split multi-page PDFs in seconds.'
+    benefits: ['Visual page numbers check', 'Instant slide cutting speed', 'Get files ready to share quickly'],
+    metaTitle: 'Split PDF Pages Instantly - Secure On-Device Workspace',
+    metaDesc: 'Extract single pages or custom ranges from PDF documents instantly. Your files never leave your device.'
   },
   {
     id: 'add-watermark',
     urlPath: 'add-watermark',
     name: 'Add Watermark',
     category: 'pdf-editing',
-    shortDesc: 'Embed customizable diagonal stamps and text overlays into your PDF pages.',
-    longDesc: 'Stamp "CONFIDENTIAL" or custom text cleanly on your documents. Control color, font size, and opacities directly inside the browser sandbox.',
+    shortDesc: 'Stamp customized text protection over your PDF pages.',
+    longDesc: 'Protect your designs, contracts, or draft files by stamping a clear watermark on top of your PDF pages. Write custom text, set angles, and fade the colors so readers know it is a draft or copy. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'PencilLine',
     stepInstructions: [
-      'Choose your PDF document.',
-      'Configure stamp label text, color, alignment and opacity.',
-      'Click Inject Watermark.',
-      'Download your customized stamped PDF.'
+      'Upload your source PDF.',
+      'Type your custom protection text.',
+      'Adjust slant angles and sizing sliders.',
+      'Download your watermarked pages.'
     ],
     faqs: [
-      { question: 'Can I customize the font, size, and orientation of the watermark?', answer: 'Yes, you can type custom text, select beautiful typography, rotate it diagonally (e.g. 45 degrees), and choose any theme color.' },
-      { question: 'Does the watermark block the readability of text underneath?', answer: 'You can adjust the opacity slider (e.g., from 10% to 50%) to ensure it remains a subtle background marker without blocking layout content.' },
-      { question: 'Can I choose to stamp only specific pages?', answer: 'Absolutely. You can choose to stamp all pages, only the first page, or configure a precise custom page range.' },
-      { question: 'Is the watermark permanently burned into the PDF vectors?', answer: 'Yes! Our local compiler renders the watermark directly into the PDF layout draw commands, making it extremely difficult to remove.' },
-      { question: 'Does it support adding transparent logo images?', answer: 'Yes, you can upload transparent PNG or JPEG logos to stamp your company branding onto layouts.' }
+      { question: 'Can readers easily remove my watermark?', answer: 'No. We overlay the watermark as a secure structural element, making it very hard to remove with standard PDF readers.' },
+      { question: 'Do you store my custom watermark text or logos?', answer: 'No. All editing happens locally inside your browser, so your files and text keys stay private.' },
+      { question: 'Can I choose which pages are watermarked?', answer: 'Yes. You can decide whether to stamp every single page or skip specific ones like the front cover.' },
+      { question: 'Do I need to log in or register?', answer: 'No register walls. It is free to use right now.' },
+      { question: 'What web browsers will run this tool?', answer: 'Chrome, Safari, Firefox, and Edge on computers and mobile phones.' },
+      { question: 'Is this really free or will I get billed?', answer: 'It is completely free. We do not place hidden watermarks of our own or bill you subsequently.' }
     ],
-    benefits: ['Supports custom text styling', 'Adjust opacity to protect text clarity', 'Runs completely in-memory']
+    benefits: ['Custom font slant controls', 'Highly customizable colors and fades', 'Secure on-device stamps']
   },
   {
     id: 'add-page-numbers',
     urlPath: 'add-page-numbers',
     name: 'Add Page Numbers',
     category: 'pdf-editing',
-    shortDesc: 'Enstamp custom sequential page numbering onto PDF layouts easily.',
-    longDesc: 'Add "Page N of T" or customized indexes. Customize top/bottom corners, bypass cover slides, and style font indexes perfectly.',
+    shortDesc: 'Insert clean page counters onto your PDF document pages.',
+    longDesc: 'Make longer reports and handbooks much easier to read. Add clean page numbers in the exact position you like, from corners to centered margins, with font alignments of your choice. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Hash',
     stepInstructions: [
-      'Select your PDF document.',
-      'Choose numbering layout presets and corner positions.',
-      'Mark skipping of the first title page if desired.',
-      'Download your numbered document.'
+      'Drag in your PDF pages.',
+      'Choose layout styles (like Page 1 of N).',
+      'Select margin placements.',
+      'Save your numbered PDF.'
     ],
     faqs: [
-      { question: 'In what formats can I number my PDF pages?', answer: 'You can use classic Arabic numerals, Roman numerals, or customized formats like "Page X of Y" or "Document Index - Page X".' },
-      { question: 'Can I skip numbering the title/cover page?', answer: 'Absolutely. Simply check the "Skip First Page" option to start numbering on page two while keeping your cover slide completely clean.' },
-      { question: 'Where on the page can I position the numbers?', answer: 'You can select from 6 custom margin positions, covering any top or bottom corner or center alignments of your pages.' },
-      { question: 'Will the numbers overlap with my existing page content?', answer: 'You can adjust the margin offsets of the page numbers to position them snugly outside your content margins.' },
-      { question: 'Can I customize the font styling of the numbers?', answer: 'Yes, you can choose from elegant serif, modern sans-serif, or technical monospace typography to match your layout style.' }
+      { question: 'Can I skip adding a number to my front page?', answer: 'Yes. You can choose to skip the cover page so it stays clean.' },
+      { question: 'Are different font styles available?', answer: 'Yes, you can pick from serif, sans-serif, and monospace typewriter card styles.' },
+      { question: 'Where does the number editing happen?', answer: 'Right inside your browser window. Your private files are never uploaded to a cloud.' },
+      { question: 'Do I need to sign up to save my work?', answer: 'No signups. As soon as you finish labeling, you can download your document instantly.' },
+      { question: 'Does it work on any platform?', answer: 'Yes. It works on macOS, Windows, Linux, iOS, and Android web browsers.' },
+      { question: 'Are there limits on page counts?', answer: 'No. You can paginate a document of any length without issues.' }
     ],
-    benefits: ['Bypass title pages easily', 'Support multiple layouts like N/T', 'Instant visual alignment']
+    benefits: ['Keep cover page clean with a click', 'Six margin placement options', 'Perfect numbering accuracy']
   },
   {
     id: 'rotate-pdf',
     urlPath: 'rotate-pdf',
     name: 'Rotate PDF',
     category: 'pdf-editing',
-    shortDesc: 'Visually rotate single pages or entire PDF matrices in seconds.',
-    longDesc: 'Correct upsidedown scans. Our visual selector lets you preview each page and rotate them 90, 180, or 270 degrees clockwise or counterclockwise.',
+    shortDesc: 'Visually turn sideways or upside-down pages right side up.',
+    longDesc: 'Scanned documents often come out upside down or rotated sideways. Twist individual sheets or fix the entire PDF at once with a super quick visual click board. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'RotateCw',
     stepInstructions: [
-      'Upload the target PDF document.',
-      'Visually click rotate controls on specific page cards.',
-      'Hit Apply Rotation.',
-      'Download your perfectly oriented PDF file.'
+      'Upload the unaligned PDF.',
+      'Click individual rotate arrows on page cards.',
+      'Approve the new orientation.',
+      'Download your correctly aligned PDF file.'
     ],
     faqs: [
-      { question: 'Can I rotate only single misaligned pages instead of the whole file?', answer: 'Yes! Our visual board spreads your page tiles, letting you select and rotate specific pages individually, which is perfect for correcting flipped scraps.' },
-      { question: 'What rotation angles are supported?', answer: 'You can rotate pages 90 degrees clockwise or counterclockwise, or flip them 180 degrees upside down to fix alignment.' },
-      { question: 'Does rotating reduce the visual quality of PDF pages?', answer: 'No. We adjust the file\'s orientation metadata records without rendering layers to raster images, maintaining 100% vector-sharp text.' },
-      { question: 'Is there a bulk action to rotate all pages simultaneously?', answer: 'Yes, we provide shortcut controls to rotate all pages in the document clockwise or counterclockwise in a single click.' },
-      { question: 'How long does it take to compile the rotated document?', answer: 'Since it is a simple metadata adjustment running in-memory locally, compile and download happen in under 1 second.' }
+      { question: 'Can I turn just one wrong page instead of all pages?', answer: 'Yes. You can select individual page cards on screen and flip only the ones that are sideways.' },
+      { question: 'Does rotating my document make it blurry?', answer: 'No. We edit the layout indicators within the file structure instead of rewriting images, so it stays perfectly sharp.' },
+      { question: 'Is it safe to rotate my personal papers or passports?', answer: 'Extremely safe. Since processing happens entirely in your browser sandbox, your personal documents stay private.' },
+      { question: 'Do I need to register to download?', answer: 'No account or card details are required.' },
+      { question: 'What mobile devices does this support?', answer: 'It works on any modern iPhone, Android, or tablet browser without any issues.' },
+      { question: 'Is there a limit on how many files I can rotate?', answer: 'No. Feel free to rotate as many PDF documents as you need.' }
     ],
-    benefits: ['Dynamic visual page previews', 'Bulk rotate option for all pages', 'Zero compression loss']
+    benefits: ['Clean visual page boards', 'Rotate all in one click', 'No reduction in text resolution']
   },
   {
     id: 'remove-pages',
     urlPath: 'remove-pages',
     name: 'Remove PDF Pages',
     category: 'pdf-editing',
-    shortDesc: 'Visually select and permanently delete unwanted pages from your PDF.',
-    longDesc: 'Discard empty or unnecessary pages from larger reports. Click on page cards visually to mark them for deletion, keeping only the important contents.',
+    shortDesc: 'Delete unwanted pages instantly from your PDF.',
+    longDesc: 'Got a massive business report but only need a few pages? Or want to trash blank pages before emailing? Simply click on the thumbnail of any page you want to delete and cut it out immediately. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Trash2',
     stepInstructions: [
-      'Upload your PDF file.',
-      'Tap on pages instantly to mark them for removal.',
-      'Click Erase Pages to compile.',
+      'Upload your PDF files.',
+      'Tap page thumbnails to mark them for erasure.',
       'Download your clean pruned PDF.'
     ],
     faqs: [
-      { question: 'How do I choose which pages to delete from the PDF?', answer: 'Our visual board spreads your PDF pages into a thumbnail grid. Simply hover and click on the page cards you want to delete to mark them for removal.' },
-      { question: 'Can I undo a deletion mark before compiling?', answer: 'Yes, you can toggle pages on and off visually. No pages are destroyed until you hit the "Erase Pages" commit button.' },
-      { question: 'Does deleting pages overwrite the original file on my computer?', answer: 'No, we read your file locally and generate a brand-new, cropped PDF file. Your source file is never modified or overwritten.' },
-      { question: 'Will the output PDF file weight be smaller afterwards?', answer: 'Yes, removing unnecessary pages strips their embedded stream assets, rendering the output file much lighter and easy to email.' },
-      { question: 'Is it safe to prune sensitive company files this way?', answer: 'Perfectoly safe. Because the evaluation logic runs entirely in your local browser sandbox, private page contents are never leaked.' }
+      { question: 'Can I undo my selections before downloading?', answer: 'Yes. Simply click or tap the thumbnail page card again to unselect it.' },
+      { question: 'Will my final PDF file size be smaller?', answer: 'Yes. Subtracting pages completely deletes their respective texts and images, shrinking your final file.' },
+      { question: 'Do you keep a copy of my documents?', answer: 'No. Everything runs inside your browser sandbox. We never see your pages.' },
+      { question: 'Do I have to pay or register?', answer: 'No. You can delete pages from your files immediately, completely free.' },
+      { question: 'Does it run on Chrome/Safari?', answer: 'Yes, it works great on any modern desktop or mobile browser.' },
+      { question: 'What is the maximum number of pages I can delete?', answer: 'There is no limit. You can purge as many pages as you want.' }
     ],
-    benefits: ['Visual trash can overlays', 'Verify selections easily', 'Prunes files perfectly']
+    benefits: ['Visual trash icons on pages', 'Easy to review selections', 'Lightens file payload sizes']
   },
   {
     id: 'sign-pdf',
     urlPath: 'sign-pdf',
     name: 'Sign PDF',
     category: 'pdf-editing',
-    shortDesc: 'Draw secure ink signatures and stamp them visually onto pages.',
-    longDesc: 'An interactive digital signature board. Draw your custom signature, scale its dimensions, and drag-and-drop the resulting stamp visual exactly where it belongs on your PDF slides.',
+    shortDesc: 'Draw your signature and place it securely on your layout.',
+    longDesc: 'Need to sign an agreement or lease? Draw your personal signature with your mouse or trackpad, resize the box, and drop it exactly where you need to sign. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Bookmark',
     isPopular: true,
     stepInstructions: [
-      'Draw your custom signature on our interactive board.',
-      'Decompress and upload your destination PDF document.',
-      'Drag, drop, and resize your signature template on the A4 page preview.',
-      'Stamp and download your signed document.'
+      'Draw your signature on our digital slate.',
+      'Upload your PDF to sign.',
+      'Drag and scale the signature on the page preview.',
+      'Stamp and save your signed copy.'
     ],
     faqs: [
-      { question: 'How do I create my digital signature in this tool?', answer: 'You can draw a signature smoothly with your touchpad, mouse, or touchscreen on our interactive drawing board, or type your name stylized in elegant handwriting.' },
-      { question: 'Can I place my signature block anywhere on the document?', answer: 'Absolutely. You can drag and drop your signature mark visually, resize it, and position it on any page of the PDF preview.' },
-      { question: 'Does FoldPDF store my signature or documents on a cloud database?', answer: 'Never! Your hand-drawn signature resides strictly in volatile browser RAM and is completely erased the moment you close the tab.' },
-      { question: 'Can I sign multiple pages inside the same document?', answer: 'Yes, you can generate your signature once and stamp it on as many pages and positions as needed.' },
-      { question: 'Is a signed PDF compatible with other PDF viewer applications?', answer: 'Yes, the signature is embedded as a standard interactive element readable by Adobe Acrobat, Apple Preview, and mobile devices.' }
+      { question: 'Do you store my signature drawings?', answer: 'No, never. We do not keep database records. Everything stays local in your current browser session.' },
+      { question: 'Can I stamp my signature in several different spots?', answer: 'Yes. Draw your signature once, and you can place it in as many places as you need.' },
+      { question: 'Does this work well on touchscreen phones?', answer: 'Yes! Drawing your signature with a finger or stylus on mobile screens works wonderfully.' },
+      { question: 'Do I need to create an account?', answer: 'No account is needed. Just upload your PDF, sign it, and download.' },
+      { question: 'What browsers does this run on?', answer: 'All modern browsers including Chrome, Safari, Firefox, and Edge.' },
+      { question: 'Is my signed document legally binding?', answer: 'Yes, digital signatures are widely accepted for most standard agreements, leases, and signoffs.' }
     ],
-    benefits: ['Smooth interactive vector drawing board', 'Drag & drop signature visual positioning', 'Certified look & feel stamp seals']
+    benefits: ['Smooth vector signature boards', 'Drag and scale signature stamps', 'Professional letter-ready output format']
   },
   {
     id: 'protect-pdf',
     urlPath: 'protect-pdf',
     name: 'Protect PDF',
     category: 'pdf-editing',
-    shortDesc: 'Secure documents with AES password protection and restricting permissions.',
-    longDesc: 'Enforce security. Encrypt outbound PDF archives with secure user keys and control printing/copying permissions perfectly.',
+    shortDesc: 'Add password locks to keep your files secure.',
+    longDesc: 'Keep sensitive bank slips or legal plans safe. Lock your PDF with a strong password to ensure only authorized readers can open, print, or copy its text. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Lock',
     stepInstructions: [
-      'Select your PDF document.',
-      'Type and confirm your password key indicator.',
-      'Adjust printing and clipboard copy rights.',
-      'Encrypt and download your protected PDF.'
+      'Pick standard PDF files.',
+      'Enter and confirm your chosen password.',
+      'Select edit or copy restrictions.',
+      'Download your encrypted document.'
     ],
     faqs: [
-      { question: 'What level of security does the encryption provide?', answer: 'It uses standard 128-bit or 256-bit AES encryption, which is the gold standard for protecting corporate and governmental files.' },
-      { question: 'Can I disable printing while letting people read my PDF?', answer: 'Yes! You can toggle separate user permission locks: disable document printing, text copying, page rearranging, or form editing individually.' },
-      { question: 'What is the difference between a user password and an owner password?', answer: 'A user password restricts opening and viewing the file, while an owner password restricts permissions like printing and editing.' },
-      { question: 'If I forget my configured password, can FoldPDF recover it?', answer: 'No. Because we operate under a zero-knowledge local arch wherein no passwords or files touch our systems, we cannot recover your passwords or unlock files for you.' },
-      { question: 'Are these protected files cross-platform compatible?', answer: 'Yes, the encrypted files follow standard PDF ISO specifications and open securely on all PDF programs upon typing the password.' }
+      { question: 'Can you retrieve my password if I forget it?', answer: 'No. We do not keep records of your password anywhere. If you lose it, we cannot unlock your file.' },
+      { question: 'Are these password encryptions secure?', answer: 'Yes. We apply industry-standard security structures to lock up your PDF tightly.' },
+      { question: 'Will standard PDF readers ask for my password?', answer: 'Yes. Any standard viewer like Adobe Reader, Apple Preview, or Chrome will prompt for the passcode.' },
+      { question: 'Do I need to sign up to encrypt files?', answer: 'No. This tool is completely free and requires no signup or registration.' },
+      { question: 'Where do my passwords get processed?', answer: 'Right on your local machine. No data is sent over the internet.' },
+      { question: 'Can I lock multiple files?', answer: 'Yes. You can password-protect your PDFs one by one as many times as you like.' }
     ],
-    benefits: ['Sovereign AES-128 bit protection standard', 'Optional restriction permissions toggle', 'Runs strictly inside your local browser']
+    benefits: ['Strong password locks', 'Restrict printing and editing', 'Safe on-device security keys']
   },
   {
     id: 'unlock-pdf',
     urlPath: 'unlock-pdf',
     name: 'Unlock PDF',
     category: 'pdf-editing',
-    shortDesc: 'Remove secure passwords and standard restrictions from your PDFs.',
-    longDesc: 'Unlock copy and print capabilities. Provide the document password once, and download a permanently decrypted, restriction-free version of your PDF.',
+    shortDesc: 'Remove permissions locks and copy restrictions from your PDF.',
+    longDesc: 'Have a PDF that won\'t let you copy text or hit print? If you know the password or want to clear restrict indicators, this tool lets you download a fresh, restriction-free copy instantly. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Unlock',
     stepInstructions: [
-      'Upload key password-restricted PDF files.',
-      'Provide your correct document passcode key.',
-      'Strip standard security tables.',
-      'Save clean unlocked document drafts.'
+      'Upload your restricted PDF.',
+      'Type your active password string.',
+      'Download your unlocked, restriction-free PDF.'
     ],
     faqs: [
-      { question: 'Can this lock extractor crack a PDF password if I forgot it?', answer: 'If the file has an "Open/User" password limit, you must provide it. Our utility removes "Edit/Print" restrictions automatically without keys.' },
-      { question: 'Does unlocking a file reduce the resolution of the pages?', answer: 'No. The local decryptor modifies internal permission tables and metadata, returning your file at 100% original quality.' },
-      { question: 'Can I decrypt multiple locked PDFs simultaneously?', answer: 'Yes, you can drag and drop multiple encrypted files, provide their passcode keys, and unlock them in batch-mode.' },
-      { question: 'Is this tool compliant with legal security and HIPAA guidelines?', answer: 'Yes, since there are no remote servers decrypting the files or saving credentials, your files are immune to database leaks.' },
-      { question: 'Will text copy-paste functionality be restored after unlocking?', answer: 'Yes, extracting print and copy-paste blocks returns full access to the underlying text layers for your convenience.' }
+      { question: 'Can this tool guess or crack my password?', answer: 'No. If your document requires a password to open, you must type the correct keys. But we can immediately strip print or text copying restrictions without a password.' },
+      { question: 'Is my passcode shared with a server?', answer: 'No. Everything processes locally on your computer. Your secrets never leave your device.' },
+      { question: 'Will unlocking it make my PDF pages blurry?', answer: 'No. We modify structural indicators without altering any text, images, or formatting.' },
+      { question: 'Do I need an account to unlock files?', answer: 'No account needed. Use it directly and download immediately.' },
+      { question: 'What browsers work with this tool?', answer: 'Chrome, Safari, Firefox, and Edge on computers and mobile devices.' },
+      { question: 'Is there a fee for large files?', answer: 'No, it is totally free with no size fees or lockouts.' }
     ],
-    benefits: ['Quickly strips user constraints', '100% compliant with standard reader suites', 'Restores copy and paste capability']
+    benefits: ['Strips edit and copy limits', 'Restores printing option instantly', 'No server or account tracking']
   },
   {
     id: 'repair-pdf',
     urlPath: 'repair-pdf',
     name: 'Repair PDF',
     category: 'pdf-editing',
-    shortDesc: 'Rebuild corrupted cross-references or broken offset tables.',
-    longDesc: 'Fix PDFs that crash your readers or fail during emails. Regenerate catalog indices and repair binary offset trees cleanly inside the sandbox.',
+    shortDesc: 'Fix corrupted PDF indexes and restore damaged documents.',
+    longDesc: 'Did your reader crash when loading a PDF, or is a download file corrupted? This helper scans the document for broken catalog paths or offsets and rebuilds them so you can open your files again. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'HeartHandshake',
     stepInstructions: [
-      'Provide your damaged PDF document.',
-      'Let FoldPDF rebuild broken dictionary branches and references.',
-      'Compile corrected pages.',
-      'Download restored file copies.'
+      'Upload your broken PDF.',
+      'Let the repair tools scan index trees.',
+      'Download the recovered PDF copy.'
     ],
     faqs: [
-      { question: 'What kinds of PDF corruption can this tool fix?', answer: 'It repairs broken cross-reference tables (XREFs), reconstructs missing catalog dictionaries, recovers unclosed files, and corrects byte offset offsets.' },
-      { question: 'Why do PDFs get corrupted in the first place?', answer: 'Corruption usually occurs due to incomplete download actions, network drops during email attachments, or sudden system crashes in third-party editors.' },
-      { question: 'Will all layout images and custom fonts be recovered?', answer: 'The repair script tries to rebuild as many active streams as possible. If some sectors are physically empty, it recovers all other surviving nodes.' },
-      { question: 'Can I repair PDFs that are password-protected?', answer: 'Yes, once you provide the correct user password locally to confirm access permissions, the script repairs the underlying encryption stream.' },
-      { question: 'Is there any diagnostic fee or watermark added?', answer: 'No. FoldPDF diagnostic parses and repair compilations are 100% free with no watermark or branded overlays added.' }
+      { question: 'How does the tool repair broken PDFs?', answer: 'We scan the document\'s internals, rebuild broken references, and correct alignment offsets so standard readers can open it.' },
+      { question: 'Will all my missing page text be recovered?', answer: 'We restore as much data as possible. If parts of the file were completely deleted, they can\'t be recovered, but the rest will be fixed.' },
+      { question: 'Where is my document processed?', answer: 'Entirely on your own computer or mobile phone. Your files never leaves your device.' },
+      { question: 'Do I need an account to restore a file?', answer: 'No. You can repair and download files completely anonymously.' },
+      { question: 'Does it work on macOS and Windows?', answer: 'Yes. It works on any platform with a modern web browser.' },
+      { question: 'Are there any monthly usage caps?', answer: 'No. You can diagnostic-scan and repair your files as often as you like, free of charge.' }
     ],
-    benefits: ['Cleans offset stream tables', 'Prevents reader crashes', 'Free diagnostic parse']
+    benefits: ['Rebuilds broken structure references', 'Opens documents that crashed previous readers', 'Free diagnostic scan check']
   },
   {
     id: 'ocr-pdf',
     urlPath: 'ocr-pdf',
     name: 'OCR Scanned PDF Reader',
     category: 'pdf-editing',
-    shortDesc: 'Read and extract printed text blocks from photo-only scanned documents.',
-    longDesc: 'Don\'t let scans lock your productivity. Compile pixel matrices from photo sheets using local OCR neural nodes and export clean text lists.',
+    shortDesc: 'Extract selectable text out of flat photographic scans.',
+    longDesc: 'Are flat image scans keeping you from copying columns, searching for words, or editing your file? This tool scans the pixels of your image pages, identifies letters, and layers text coordinates on top of the images. Since everything runs inside your browser, your file never leaves your device at any point.',
     iconName: 'Cpu',
     stepInstructions: [
-      'Load scanned, graphic-only PDF files.',
-      'Tesseract OCR analyzes pixel matrices directly in browser grids.',
-      'Check page text highlights.',
-      'Download converted TXT file outputs.'
+      'Load graphic-only scanned PDFs.',
+      'Let the character scanner scan page pixels.',
+      'Review recognized text layers.',
+      'Download standard text folders.'
     ],
     faqs: [
-      { question: 'What is OCR and why is it needed for scanned documents?', answer: 'Scanned files are actually just flat images. OCR (Optical Character Recognition) scans the mathematical pixels to rebuild active searchable and selectable text lines.' },
-      { question: 'Does this OCR tool process files on a remote cloud server?', answer: 'No! It compiles character recognition locally inside your browser sandbox via WebAssembly. Your files and private data never travel over standard networks.' },
-      { question: 'Can I search for terms inside my PDF after running local OCR?', answer: 'Yes! Our tool embeds a searchable text overlay snug over the original scan pixels, enabling standard "Ctrl+F" search actions.' },
-      { question: 'Which languages are supported by the local OCR engine?', answer: 'Tesseract has supreme accuracy for English, standard Latin scripts, numbers, symbols, and Western European accents.' },
-      { question: 'How quick does the page OCR process finish?', answer: 'It takes just a few seconds per page, utilizing your computer\'s multi-core processing threads directly in-browser.' }
+      { question: 'Is it safe to scan confidential business papers here?', answer: 'Completely. Processing happens locally in your browser. Nothing is uploaded, so there is zero risk of data leaks.' },
+      { question: 'How accurate is the scanned text?', answer: 'It reads standard printed English, letters, numbers, and common Latin scripts exceptionally well.' },
+      { question: 'Does it make my scanned PDF searchable?', answer: 'Yes. It creates a selectable, searchable text layer right on top of your original flat images.' },
+      { question: 'Do I need to sign up or log in?', answer: 'No registration is required. You can scan your documents right away.' },
+      { question: 'What browsers can I use?', answer: 'Chrome, Safari, Firefox, and Edge on phone and computer.' },
+      { question: 'Is there a cost for multi-page documents?', answer: 'No. This tool is free of charge, with no page caps or hidden limitations.' }
     ],
-    benefits: ['Runs local neural OCR scans', 'No data leaks over external networks', 'Crisp text results']
+    benefits: ['Extracts text directly in browser sandbox', 'No data leaks over internet lines', 'Builds selectable text layers']
   }
 ];
 
@@ -698,18 +714,18 @@ export const BLOG_POSTS: BlogPost[] = [
     category: 'Document Optimization',
     content: `
 ### Understanding the PDF Compression Trade-off
-When you run a file through a standard compressor, the system attempts to deflate storage footprint across three main layers: **images**, **fonts**, and **metadata**. 
+When you run a file through a standard compressor, the system attempts to reduce the space your document takes up across three main layers: images, fonts, and metadata. 
 
-If the tool is overly aggressive, it reduces image resolution down to 72 DPI, rendering charts and signatures extremely blurry.
+If the tool is overly aggressive, it reduces image resolution down to 72 DPI, rendering charts and signatures extremely blurry. We use smart scaling to make files much smaller while keeping photos sharp enough to read easily.
 
-#### 1. Choose the Right Dpi Settings
-For digital screens (email, web layouts), target an image density of **150 DPI**. It preserves crisp vector text and guarantees diagrams look superb while reducing size by up to 80%.
+#### 1. Choose the Right DPI Settings
+For digital screens, target an image density of 150 DPI. It preserves crisp vector text and guarantees diagrams look superb while reducing size significantly.
 
 #### 2. Vectorize vs. Rasterize
 Always preserve vector structures when compressing. Standard digital PDFs contain text and lines as vector math. Never use tools that rasterize the whole page down to a JPEG first before compressing, as this deletes text selectability.
 
 #### 3. Subset your Fonts
-Only bundle the individual font characters utilized in your pages rather than shipping entire multi-megabyte font families inside the PDF catalog. FoldPDF automatic font subsetting deflates pages cleanly.
+Only bundle the individual font characters utilized in your pages rather than shipping entire multi-megabyte font families inside the PDF catalog. 
     `
   },
   {
@@ -724,13 +740,13 @@ Only bundle the individual font characters utilized in your pages rather than sh
 We have all been there: you have an invoice page in one PDF, a cover letter in a Word document, and a receipt image as a JPEG. How do you combine them cleanly?
 
 #### Step 1: Standardize Converted Layouts
-First, convert your alternate source elements (JPGs, DOCX files) into standard PDF grids using FoldPDF convert pages.
+First, convert your alternate source elements (JPGs, DOCX files) into standard PDF grids using our simple tools.
 
-#### Step 2: visual Rearranging
-Use a visual drag-and-drop workspace layout to check thumbnails visually. It is highly frustrating to merge first only to find your pages loaded upside-down or in reverse order. Rearrange first, then execute.
+#### Step 2: Visual Rearranging
+Visual layout cards display thumbnails. Standard users hate merging documents only to find out they were reversed. Visual rearrangements save massive amounts of stress.
 
-#### Step 3: Fast stitch
-Click merge to combine documents without losing active hyperlinks or outline structures. Save the resulting PDF securely.
+#### Step 3: Fast Stitch
+Stitch documents securely in a click. No trace is saved, keeping your business data locked.
     `
   },
   {
@@ -744,11 +760,11 @@ Click merge to combine documents without losing active hyperlinks or outline str
 ### Restoring PDFs back into Edit-ready Word Files
 When you decompile a PDF into .docx, standard cheap tools usually dump words inside floating text boxes. Editing those files subsequently is a complete nightmare.
 
-#### Why Floating boxes occur
+#### Why Floating Boxes Occur
 Most converters output words with absolute positioning parameters, placing text box rectangles over the page. This locks typing flow completely.
 
-#### The OCR and Semantic extraction Solution
-FoldPDF PDF to Word engine parses text flow patterns semantically. It reads margins, tabulations, list bullets, and paragraph flows. This maps your text back into real, flowing Word paragraphs for smooth styling and editing.
+#### The Formatting and Flow Solution
+Our PDF to Word engine parses text flow patterns carefully. It reads margins, tabulations, list bullets, and paragraph flows. This maps your text back into real, flowing Word paragraphs for smooth styling and editing. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.
     `
   }
 ];

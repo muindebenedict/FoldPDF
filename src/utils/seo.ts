@@ -107,7 +107,7 @@ export function generateStructuredData(type: "Article" | "FAQPage" | "WebSite" |
       "@type": "WebSite",
       "name": "FoldPDF",
       "url": "https://foldpdf.com",
-      "description": "Private, zero-knowledge browser-based PDF utilities.",
+      "description": "Private, secure browser-based PDF utilities.",
       ...data
     };
   } else if (type === "SoftwareApplication") {

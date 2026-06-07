@@ -31,7 +31,7 @@ export default function BlogIndex({ navigate }: BlogIndexProps) {
           Securing Your Digital Workflows
         </h1>
         <p className="mt-4 text-slate-500 dark:text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
-          Deep-dive guides on browser security, document privacy compliance, WebAssembly compilers, and standard zero-knowledge mechanics.
+          Deep-dive guides on browser security, document privacy compliance, on-device tools, and keeping your files safe.
         </p>
       </div>
 

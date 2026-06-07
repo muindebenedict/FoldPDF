@@ -96,7 +96,7 @@ export default function TransparencyPage({ navigate }: TransparencyProps) {
             How to Audit the Code Yourself
           </h2>
           <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed mb-4">
-            You do not need to take our word for it. Every modernization step allows network verification in real-time. Follow this simple guide to see our zero-knowledge framework in action.
+            You do not need to take our word for it. You can inspect the network connections in real-time. Follow this simple guide to see our browser-based security in action.
           </p>
           <div className="space-y-4">
             <div className="flex gap-3">
@@ -114,7 +114,7 @@ export default function TransparencyPage({ navigate }: TransparencyProps) {
             <div className="flex gap-3">
               <div className="h-6 w-6 rounded-full bg-indigo-55 text-indigo-550 dark:bg-indigo-955/35 dark:text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0">3</div>
               <p className="text-xs text-slate-505 dark:text-slate-400 mt-0.5">
-                Select your PDF file and execute the <strong>Compress</strong> or <strong>Watermark</strong> action. You can observe that zero document assets are sent to the cloud. All math executes 100% locally.
+                Select one of our browser-based tools and execute an action like <strong>Merge</strong> or <strong>Watermark</strong>. You can observe that zero document assets are sent to the cloud. All math executes 100% locally.
               </p>
             </div>
           </div>
