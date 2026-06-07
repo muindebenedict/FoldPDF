@@ -1097,3 +1097,43 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
 
   return <Proc id="pdf-to-ppt" label="Convert PDF to slides (PPTX)" accept=".pdf" run={run} onSuccess={onSuccess} toolName={toolName} />;
 };
+
+/* PPT→PDF */
+export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
+  const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
+    prog(10, "Uploading PowerPoint file…");
+
+    const formData = new FormData();
+    formData.append("file", files[0]);
+
+    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-pdf", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Conversion failed. Please try again.");
+    }
+
+    prog(80, "Downloading converted PDF…");
+    const blob = await response.blob();
+    const pdfBlob = new Blob([blob], { type: "application/pdf" });
+
+    return {
+      blob: pdfBlob,
+      name: getOutputFile(files[0]?.name, "converted", ".pdf"),
+      info: "Converted using LibreOffice on secure server"
+    };
+  }, []);
+
+  return (
+    <Proc
+      id="ppt-to-pdf"
+      label="Convert PowerPoint to PDF"
+      accept=".pptx,.ppt"
+      run={run}
+      onSuccess={onSuccess}
+      toolName={toolName}
+    />
+  );
+};
