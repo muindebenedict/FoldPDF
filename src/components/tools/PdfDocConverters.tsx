@@ -588,11 +588,11 @@ function parseTxtToBlocks(text: string, fontSize: number): BlockElement[] {
 /* PDF→TXT */
 export const PdfToTxtTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(15, "Opening PDF stream…");
+    prog(15, "Converting your PDF to Text...");
     const ab = await readAB(files[0]);
-    prog(40, "Parsing plain text streams…");
+    prog(40, "Converting your PDF to Text...");
     const { text, numPages } = await extractText(ab);
-    prog(90, "Assembling plain text document…");
+    prog(90, "Converting your PDF to Text...");
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     return {
       blob,
@@ -609,33 +609,33 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const [fs, setFs] = useState(12);
 
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Opening plain text stream…");
+    prog(10, "Converting your text to PDF...");
     const text = await readTxt(files[0]);
 
-    prog(25, "Loading PDF framework engines…");
+    prog(25, "Converting your text to PDF...");
     const { PDFDocument, rgb, StandardFonts } = await getPdfLib();
     const fontkit = await getFontkit();
     const doc = await PDFDocument.create();
     doc.registerFontkit(fontkit);
 
-    const fontBytes = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", (m) => prog(35, m));
-    const fontBoldBytes = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", (m) => prog(45, m));
+    const fontBytes = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", () => prog(35, "Converting your text to PDF..."));
+    const fontBoldBytes = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", () => prog(45, "Converting your text to PDF..."));
     
-    prog(60, "Configuring typography system…");
+    prog(60, "Converting your text to PDF...");
     const hasEmbedded = !!fontBytes && !!fontBoldBytes;
     const fontReg = hasEmbedded ? await doc.embedFont(fontBytes!) : await doc.embedStandardFont(StandardFonts.Helvetica);
     const fontBold = hasEmbedded ? await doc.embedFont(fontBoldBytes!) : await doc.embedStandardFont(StandardFonts.HelveticaBold);
 
     const fontGetter = (b: boolean) => (b ? fontBold : fontReg);
 
-    prog(75, "Compiling logical whitespace blocks…");
+    prog(75, "Converting your text to PDF...");
     const textBlocks = parseTxtToBlocks(text, fs);
 
     const pW = 595;
     const pH = 842;
     const mg = 50;
 
-    prog(85, "Drawing character matrices on canvas…");
+    prog(85, "Converting your text to PDF...");
     const layout = new PageLayoutState(doc, fontGetter, rgb, hasEmbedded, pW, pH, mg);
 
     for (const block of textBlocks) {
@@ -647,7 +647,7 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
       layout.y -= 4; // Add comfortable micro margin after lines
     }
 
-    prog(95, "Compressing offset structures…");
+    prog(95, "Converting your text to PDF...");
     const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
@@ -685,7 +685,7 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→WORD */
 export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Uploading PDF to conversion engine…");
+    prog(10, "Converting your PDF to Word...");
 
     const formData = new FormData();
     formData.append("file", files[0]);
@@ -699,7 +699,7 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
       throw new Error("Conversion failed. Please try again.");
     }
 
-    prog(80, "Downloading converted document…");
+    prog(80, "Converting your PDF to Word...");
     const blob = await response.blob();
     const docxBlob = new Blob([blob], {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -725,14 +725,14 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
 /* WORD→PDF */
 export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Fetching dependencies…");
+    prog(10, "Converting your Word document to PDF...");
     const m = await getMammoth();
     await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
     await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
 
     const ab = await readAB(files[0]);
     
-    prog(25, "Converting DOCX structures to HTML markup…");
+    prog(25, "Converting your Word document to PDF...");
     let html = "";
     try {
       const r = await m.convertToHtml({ arrayBuffer: ab });
@@ -741,7 +741,7 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
       throw new Error("Could not parse DOCX package. File may be password protected or contains unsupported structural macros.");
     }
 
-    prog(50, "Rendering document view in virtual space…");
+    prog(50, "Converting your Word document to PDF...");
 
     // Dynamic hidden document host
     const container = document.createElement("div");
@@ -775,7 +775,7 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     // Give time for markup parsing
     await new Promise((r) => setTimeout(r, 400));
 
-    prog(75, "Compiling page canvas images…");
+    prog(75, "Converting your Word document to PDF...");
 
     const html2canvasLib = (window as any).html2canvas;
     const jspdfLib = (window as any).jspdf;
@@ -852,7 +852,7 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
       document.body.removeChild(container);
     }
 
-    prog(95, "Completing PDF document layer stream…");
+    prog(95, "Converting your Word document to PDF...");
     return {
       blob: new Blob([pdfBytes], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "docx-to-pdf", ".pdf")
@@ -874,19 +874,19 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→EXCEL */
 export const PdfToExcelTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(15, "Opening PDF grid matrix…");
+    prog(15, "Converting your PDF to Excel...");
     const ab = await readAB(files[0]);
-    prog(40, "Scanning table segments…");
+    prog(40, "Converting your PDF to Excel...");
     const { text } = await extractText(ab);
     
-    prog(65, "Spawning SheetJS Excel cells…");
+    prog(65, "Converting your PDF to Excel...");
     const X = await getXLSX();
     const rows = text.split("\n").map((l) => l.split(/\s{2,}|\t/).map((c) => c.trim()).filter(Boolean));
     const ws = X.utils.aoa_to_sheet(rows);
     const wb = X.utils.book_new();
     X.utils.book_append_sheet(wb, ws, "PDF Text Blocks");
 
-    prog(90, "Writing spreadsheet bytes…");
+    prog(90, "Converting your PDF to Excel...");
     const buf = X.write(wb, { bookType: "xlsx", type: "array" });
     return {
       blob: new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
@@ -901,26 +901,26 @@ export const PdfToExcelTool = ({ onSuccess, toolName }: ToolProps) => {
 /* EXCEL→PDF */
 export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Loading SheetJS book reader…");
+    prog(10, "Converting your Excel spreadsheet to PDF...");
     const X = await getXLSX();
     const ab = await readAB(files[0]);
     const wb = X.read(ab, { type: "array" });
     
-    prog(25, "Booting PDF grid compiler…");
+    prog(25, "Converting your Excel spreadsheet to PDF...");
     const { PDFDocument, rgb, StandardFonts } = await getPdfLib();
     const fontkit = await getFontkit();
     const doc = await PDFDocument.create();
     doc.registerFontkit(fontkit);
 
-    const fontBytesReg = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", (msg) => prog(35, msg));
-    const fontBytesBold = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", (msg) => prog(45, msg));
+    const fontBytesReg = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", () => prog(35, "Converting your Excel spreadsheet to PDF..."));
+    const fontBytesBold = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", () => prog(45, "Converting your Excel spreadsheet to PDF..."));
 
-    prog(60, "Embedding unicode typography…");
+    prog(60, "Converting your Excel spreadsheet to PDF...");
     const hasEmbedded = !!fontBytesReg && !!fontBytesBold;
     const fontReg = hasEmbedded ? await doc.embedFont(fontBytesReg!) : await doc.embedStandardFont(StandardFonts.Helvetica);
     const fontBold = hasEmbedded ? await doc.embedFont(fontBytesBold!) : await doc.embedStandardFont(StandardFonts.HelveticaBold);
 
-    prog(75, "Constructing landscape page segments…");
+    prog(75, "Converting your Excel spreadsheet to PDF...");
     for (const sn of wb.SheetNames) {
       const ws = wb.Sheets[sn];
       const data: any[][] = X.utils.sheet_to_json(ws, { header: 1, defval: "" });
@@ -1043,7 +1043,7 @@ export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
       }
     }
 
-    prog(90, "Assembling PDF document layers…");
+    prog(90, "Converting your Excel spreadsheet to PDF...");
     const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
@@ -1057,7 +1057,7 @@ export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→PPT */
 export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Uploading PDF to conversion engine…");
+    prog(10, "Converting your PDF to PowerPoint...");
 
     const formData = new FormData();
     formData.append("file", files[0]);
@@ -1071,7 +1071,7 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
       throw new Error("Conversion failed. Please try again.");
     }
 
-    prog(80, "Downloading converted presentation…");
+    prog(80, "Converting your PDF to PowerPoint...");
     const blob = await response.blob();
     const pptxBlob = new Blob([blob], {
       type: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
@@ -1090,7 +1090,7 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PPT→PDF */
 export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Uploading PowerPoint file…");
+    prog(10, "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait...");
 
     const formData = new FormData();
     formData.append("file", files[0]);
@@ -1104,7 +1104,7 @@ export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
       throw new Error("Conversion failed. Please try again.");
     }
 
-    prog(80, "Downloading converted PDF…");
+    prog(80, "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait...");
     const blob = await response.blob();
     const pdfBlob = new Blob([blob], { type: "application/pdf" });
 

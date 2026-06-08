@@ -599,7 +599,7 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
 /* REPAIR PDF */
 export const RepairTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(20, "Rebuilding catalog references…");
+    prog(20, "Processing your PDF...");
     const { PDFDocument } = await getPdfLib();
     const ab = await readAB(files[0]);
     
@@ -610,7 +610,7 @@ export const RepairTool = ({ onSuccess, toolName }: ToolProps) => {
       throw new Error("This PDF structure is completely corrupted. Consider re-saving using Adobe Reader before repairing.");
     }
     
-    prog(70, "Recalculating offsets stream…");
+    prog(70, "Processing your PDF...");
     const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),

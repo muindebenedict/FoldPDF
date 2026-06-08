@@ -13,15 +13,15 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
   const [qual, setQual] = useState(0.95);
 
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Loading PDFJS engine…");
+    prog(10, "Converting your file...");
     const lib = await getPdfJs();
     const ab = await readAB(files[0]);
-    prog(30, "Parsing PDF structure…");
+    prog(30, "Converting your file...");
     const doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
     const tot = doc.numPages;
 
     const renderSingleAndGetPreview = async () => {
-      prog(50, "Rendering single page to canvas…");
+      prog(50, "Converting your file...");
       const cv = await renderPage(doc, 1, scale);
       const blob = await new Promise<Blob>((resolve) => {
         cv.toBlob(
@@ -31,7 +31,7 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
         );
       });
 
-      prog(98, "Generating preview...");
+      prog(98, "Converting your file...");
       const previewCv = await renderPage(doc, 1, 1.0);
       const previewUrl = previewCv.toDataURL("image/jpeg", 0.85);
 
@@ -61,7 +61,7 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
     const JSZipLib = await getJSZip();
     const zip = new JSZipLib();
     for (let i = 1; i <= tot; i++) {
-      prog(30 + Math.round((i / tot) * 55), `Rendering page ${i}/${tot}…`);
+      prog(30 + Math.round((i / tot) * 55), "Converting your file...");
       const cv = await renderPage(doc, i, scale);
       const blob = await new Promise<Blob>((resolve) => {
         cv.toBlob(
@@ -74,7 +74,7 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
       zip.file(`page-${i}.${targetFormat === "jpeg" ? "jpg" : targetFormat === "png" ? "png" : "webp"}`, buf);
     }
 
-    prog(95, "Generating preview...");
+    prog(95, "Converting your file...");
     const previewCv = await renderPage(doc, 1, 1.0);
     const previewUrl = previewCv.toDataURL("image/jpeg", 0.85);
 
@@ -90,7 +90,7 @@ export const PdfToImgTool = ({ fmt: targetFormat, onSuccess, toolName }: { fmt: 
       </div>
     );
 
-    prog(98, "Zipping all images…");
+    prog(98, "Converting your file...");
     const zb = await zip.generateAsync({ type: "blob" });
     return { blob: zb, name: getOutputFile(files[0]?.name, "images", ".zip"), info: infoNode };
   }, [targetFormat, scale, qual]);
@@ -145,12 +145,12 @@ export const ImgToPdfTool = ({ accept = ".jpg,.jpeg,.png,.webp", onSuccess, tool
   const [ps, setPs] = useState("fit");
 
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Initializing PDF-Lib engine…");
+    prog(10, "Converting your file...");
     const { PDFDocument } = await getPdfLib();
     const doc = await PDFDocument.create();
 
     for (let i = 0; i < files.length; i++) {
-      prog(15 + Math.round((i / files.length) * 75), `Embedding image ${i + 1}/${files.length}…`);
+      prog(15 + Math.round((i / files.length) * 75), "Converting your file...");
       const f = files[i];
       const ab = await readAB(f);
       const isJ = f.type === "image/jpeg" || f.type === "image/jpg" || /\.(jpg|jpeg)$/i.test(f.name);
@@ -207,7 +207,7 @@ export const ImgToPdfTool = ({ accept = ".jpg,.jpeg,.png,.webp", onSuccess, tool
       });
     }
 
-    prog(95, "Serializing clean PDF blocks…");
+    prog(95, "Converting your file...");
     const bytes = await doc.save({ useObjectStreams: true });
     return { blob: new Blob([bytes], { type: "application/pdf" }), name: getOutputFile(files[0]?.name, "converted", ".pdf"), info: `${files.length} photo(s) compiled` };
   }, [ps]);

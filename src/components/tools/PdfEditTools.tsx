@@ -1288,12 +1288,12 @@ export const WatermarkTool = ({ onSuccess, toolName }: ToolProps) => {
   const [col, setCol] = useState("#808080");
 
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Opening PDF document…");
+    prog(10, "Processing your PDF...");
     const { PDFDocument, rgb, degrees } = await getPdfLib();
     const ab = await readAB(files[0]);
     const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
     
-    prog(40, "Embedding diagonal watermarks…");
+    prog(40, "Processing your PDF...");
     const rVal = parseInt(col.slice(1, 3), 16) / 255;
     const gVal = parseInt(col.slice(3, 5), 16) / 255;
     const bVal = parseInt(col.slice(5, 7), 16) / 255;
@@ -1315,7 +1315,7 @@ export const WatermarkTool = ({ onSuccess, toolName }: ToolProps) => {
       });
     }
 
-    prog(85, "Merging PDF structures…");
+    prog(85, "Processing your PDF...");
     const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
@@ -1393,12 +1393,12 @@ export const PageNumTool = ({ onSuccess, toolName }: ToolProps) => {
   const [skip, setSkip] = useState(false);
 
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Opening PDF layout…");
+    prog(10, "Processing your PDF...");
     const { PDFDocument, rgb } = await getPdfLib();
     const ab = await readAB(files[0]);
     const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
     
-    prog(40, "Embossing dynamic index stamps…");
+    prog(40, "Processing your PDF...");
     const pgs = doc.getPages();
     pgs.forEach((pg: any, idx: number) => {
       if (skip && idx === 0) return;
@@ -1435,7 +1435,7 @@ export const PageNumTool = ({ onSuccess, toolName }: ToolProps) => {
       });
     });
 
-    prog(85, "Completing encryption schemas…");
+    prog(85, "Processing your PDF...");
     const bytes = await doc.save({ useObjectStreams: true });
     return {
       blob: new Blob([bytes], { type: "application/pdf" }),
