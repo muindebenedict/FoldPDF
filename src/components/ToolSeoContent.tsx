@@ -77,13 +77,15 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
   
   // Use fallback values if selected tool is not mapped to prevent black screens
   const normalizedId = toolId.toLowerCase();
+  const SERVER_TOOLS = ["compress-pdf", "pdf-to-word", "pdf-to-powerpoint", "powerpoint-to-pdf"];
+  const isServerTool = SERVER_TOOLS.includes(normalizedId);
   
   const selectedData = SEO_CONTENT_MAP[normalizedId] || {
     title: `${toolId.split('-').map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' ')} - Secure Workspace Options`,
-    description: normalizedId === 'pdf-to-word'
+    description: isServerTool
       ? `Need to convert your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. For this tool, files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.`
       : `Need to adjust your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. Since everything runs inside your browser, your file never leaves your device at any point. We never use remote servers or keep records of your documents. Closing your active browser tab will instantly erase your file from memory, ensuring you can process documents cleanly without forced registrations or tracking cookies.`,
-    features: normalizedId === 'pdf-to-word' ? [
+    features: isServerTool ? [
       { icon: "Shield" as const, title: "Immediate Deletion", desc: "Your file is sent to our secure server, processed, and deleted immediately after you download." },
       { icon: "Gauge" as const, title: "Super Fast Scale", desc: "No queue waits. The conversion runs on our secure backend and completes within a few seconds." },
       { icon: "Lock" as const, title: "Clean Visual Quality", desc: "We convert layout files while keeping standard text boundaries crisp." }
@@ -115,9 +117,9 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           {selectedData.description}
         </p>
-        {['compress-pdf', 'pdf-to-word'].includes(normalizedId) && (
+        {SERVER_TOOLS.includes(normalizedId) && (
           <p className="text-2xs text-slate-505 dark:text-indigo-400 mt-4 leading-normal font-normal">
-            Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+            Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
           </p>
         )}
       </div>

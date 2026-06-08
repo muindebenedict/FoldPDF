@@ -1114,9 +1114,9 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                 {tool.shortDesc}
               </p>
-              {['compress-pdf', 'pdf-to-word'].includes(tool.id) && (
+              {['compress-pdf', 'pdf-to-word', 'pdf-to-powerpoint', 'powerpoint-to-pdf'].includes(tool.id) && (
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-normal">
-                  Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+                  Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
                 </p>
               )}
             </div>
@@ -1441,9 +1441,9 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
               {tool.longDesc}
             </p>
-            {['compress-pdf', 'pdf-to-word'].includes(tool.id) && (
+            {['compress-pdf', 'pdf-to-word', 'pdf-to-powerpoint', 'powerpoint-to-pdf'].includes(tool.id) && (
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 -mt-4">
-                Two exceptions: Compress PDF and PDF to Word send your file to our secure server to deliver better quality results. Your file is deleted automatically the moment you download.
+                Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
               </p>
             )}
 

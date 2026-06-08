@@ -726,135 +726,111 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
 export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
     prog(10, "Converting your Word document to PDF...");
-    const m = await getMammoth();
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "JSZip");
     await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
     await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
+    const docxLib = await loadScript("https://cdn.jsdelivr.net/npm/docx-preview@0.1.15/dist/docx-preview.min.js", "docx");
 
     const ab = await readAB(files[0]);
     
-    prog(25, "Converting your Word document to PDF...");
-    let html = "";
+    prog(35, "Rendering layout structure...");
+
+    // Create host structures.
+    // Parent wrapper: positioned off-screen so user doesn't see it flicker.
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "absolute";
+    wrapper.style.left = "-9999px";
+    wrapper.style.top = "-9999px";
+    wrapper.style.width = "820px";
+    wrapper.style.overflow = "hidden";
+    wrapper.style.background = "#ffffff";
+
+    // Target container: this element is cloned by jsPDF's html module.
+    // It should have CLEAN style and NO off-screen absolute positioning itself!
+    const container = document.createElement("div");
+    container.style.width = "794px"; // Standard A4 width in px at 96 DPI
+    container.style.background = "#ffffff";
+    container.style.padding = "0px";
+    container.style.margin = "0px";
+    container.style.boxSizing = "border-box";
+
+    // Custom CSS to strip preview aesthetics and preserve clean layout
+    const styles = document.createElement("style");
+    styles.innerHTML = `
+      .docx-wrapper { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+      .docx-wrapper > section.docx { box-shadow: none !important; margin: 0 !important; border: none !important; padding: 0 !important; }
+    `;
+    container.appendChild(styles);
+
+    wrapper.appendChild(container);
+    document.body.appendChild(wrapper);
+
+    prog(55, "Generating high-fidelity document nodes...");
+
     try {
-      const r = await m.convertToHtml({ arrayBuffer: ab });
-      html = r.value;
-    } catch {
-      throw new Error("Could not parse DOCX package. File may be password protected or contains unsupported structural macros.");
+      await docxLib.renderAsync(ab, container, null, {
+        ignoreWidth: false,
+        ignoreHeight: false,
+        ignoreFonts: false,
+        breakPages: true,
+        debug: false,
+        experimental: false,
+        className: "docx"
+      });
+    } catch (err) {
+      console.error("docx-preview failed:", err);
+      document.body.removeChild(wrapper);
+      throw new Error("Could not parse DOCX package. File may be password protected or invalid.");
     }
 
-    prog(50, "Converting your Word document to PDF...");
+    // Give time for custom styles & font rendering to settle
+    await new Promise((r) => setTimeout(r, 650));
 
-    // Dynamic hidden document host
-    const container = document.createElement("div");
-    container.style.position = "absolute";
-    container.style.left = "-9999px";
-    container.style.top = "-9999px";
-    container.style.background = "white";
-    container.style.width = "794px"; // Standard A4 width in pixels at 96 DPI
-    container.style.color = "black";
-    container.style.fontFamily = "'Times New Roman', Times, serif, Arial, sans-serif";
-    container.style.fontSize = "15px";
-    container.style.lineHeight = "1.6";
-    container.style.padding = "60px"; // Comfortable margins
-    container.style.boxSizing = "border-box";
-    container.innerHTML = `
-      <style>
-        h1 { font-size: 26px; margin-bottom: 12px; font-weight: bold; }
-        h2 { font-size: 20px; margin-bottom: 10px; font-weight: bold; }
-        h3 { font-size: 16px; margin-bottom: 8px; font-weight: bold; }
-        p { margin-bottom: 12px; text-align: justify; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
-        th, td { border: 1px solid #666666; padding: 10px; text-align: left; }
-        th { background: #f5f5f5; font-weight: bold; }
-        ul, ol { padding-left: 20px; margin-bottom: 12px; }
-        li { margin-bottom: 5px; }
-      </style>
-      ${html}
-    `;
-    document.body.appendChild(container);
+    prog(75, "Compiling PDF format vector pages...");
 
-    // Give time for markup parsing
-    await new Promise((r) => setTimeout(r, 400));
-
-    prog(75, "Converting your Word document to PDF...");
-
-    const html2canvasLib = (window as any).html2canvas;
     const jspdfLib = (window as any).jspdf;
 
-    if (!html2canvasLib || !jspdfLib) {
-      document.body.removeChild(container);
+    if (!jspdfLib) {
+      document.body.removeChild(wrapper);
       throw new Error("Failed to load layout rendering libraries. Please check your network and try again.");
     }
 
     let pdfBytes: ArrayBuffer;
     try {
-      const canvas = await html2canvasLib(container, {
-        scale: 2, // Capture at high resolution
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff"
-      });
-
-      const imgWidth = container.offsetWidth;
-      const imgHeight = container.offsetHeight;
-
-      // jsPDF coordinates (A4 is 595.28 pt x 841.89 pt)
-      const pdfPageWidth = 595.28;
-      const pdfPageHeight = 841.89;
-      const onePageImgHeight = imgWidth * (pdfPageHeight / pdfPageWidth);
-
-      let leftHeight = imgHeight;
-      let position = 0;
-
       const pdf = new jspdfLib.jsPDF("p", "pt", "a4");
 
-      let firstPage = true;
-      while (leftHeight > 0) {
-        if (!firstPage) {
-          pdf.addPage();
-        }
-        firstPage = false;
+      // Margins leave pristine spacing for top headers & bottom footer zones
+      const topMargin = 50;
+      const bottomMargin = 50;
+      const leftMargin = 45;
+      const rightMargin = 45;
 
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = Math.min(canvas.height - position * 2, onePageImgHeight * 2);
+      const targetWidth = 595.28 - leftMargin - rightMargin; // Content width in PDF pt
 
-        const pageCtx = pageCanvas.getContext("2d");
-        if (pageCtx) {
-          pageCtx.drawImage(
-            canvas,
-            0,
-            position * 2,
-            canvas.width,
-            pageCanvas.height,
-            0,
-            0,
-            pageCanvas.width,
-            pageCanvas.height
-          );
-        }
-
-        const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.95);
-        pdf.addImage(
-          pageImgData,
-          "JPEG",
-          0,
-          0,
-          pdfPageWidth,
-          Math.min(pdfPageHeight, (pageCanvas.height / 2) * (pdfPageWidth / imgWidth))
-        );
-
-        leftHeight -= onePageImgHeight;
-        position += onePageImgHeight;
-      }
-
-      pdfBytes = pdf.output("arraybuffer");
+      // jsPDF html() does intelligent layout rendering with auto-paging & text preservation
+      pdfBytes = await new Promise<ArrayBuffer>((resolve, reject) => {
+        pdf.html(container, {
+          x: leftMargin,
+          y: topMargin,
+          margin: [topMargin, leftMargin, bottomMargin, rightMargin],
+          autoPaging: "text", // Prevents text lines from being cut in half!
+          width: targetWidth,
+          windowWidth: 794,
+          callback: function (doc: any) {
+            resolve(doc.output("arraybuffer"));
+          },
+          error: function (err: any) {
+            reject(err);
+          }
+        });
+      });
     } finally {
-      document.body.removeChild(container);
+      document.body.removeChild(wrapper);
     }
 
     prog(95, "Converting your Word document to PDF...");
     return {
-      blob: new Blob([pdfBytes], { type: "application/pdf" }),
+      blob: new Blob([pdfBytes!], { type: "application/pdf" }),
       name: getOutputFile(files[0]?.name, "docx-to-pdf", ".pdf")
     };
   }, []);

@@ -640,7 +640,7 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
 
     setSt("processing");
     setPct(10);
-    setPmsg("Fetching OCR engines…");
+    setPmsg("Converting your PDF to Text...");
     setErr("");
 
     let doc: any = null;
@@ -670,7 +670,7 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
         let extTxt = "";
         for (let i = 1; i <= tot; i++) {
           setPct(15 + Math.round((i / tot) * 80));
-          setPmsg(`OCR parsing image frames page ${i}/${tot}…`);
+          setPmsg("Converting your PDF to Text...");
           const cv = await renderPage(doc, i, 1.5);
           const { data: { text } } = await worker.recognize(cv);
           extTxt += `\n--- Page ${i} ---\n${text}\n`;

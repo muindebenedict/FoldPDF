@@ -86,7 +86,7 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     if (!files.length) return;
     setErr("");
     setSt("processing");
-    setStatusMsg("Uploading your file...");
+    setStatusMsg("Processing your PDF...");
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -97,11 +97,11 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     elapsedTimerRef.current = setInterval(() => {
       secondsElapsed += 1;
       if (secondsElapsed >= 30) {
-        setStatusMsg("Still working, thank you for your patience...");
+        setStatusMsg("Processing your PDF...");
       } else if (secondsElapsed >= 15) {
-        setStatusMsg("Almost done, large files take a moment...");
+        setStatusMsg("Processing your PDF...");
       } else if (secondsElapsed >= 2) {
-        setStatusMsg("Compressing your PDF...");
+        setStatusMsg("Processing your PDF...");
       }
     }, 1000);
 
@@ -429,7 +429,7 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
       
       for (let i = 0; i < list.length; i++) {
         setPct(20 + Math.round((i / list.length) * 70));
-        setPmsg(`Merging document ${i + 1}/${list.length}: ${list[i].name}`);
+        setPmsg("Processing your PDF...");
         const ab = await readAB(list[i]);
         const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
         const pgs = await merged.copyPages(doc, doc.getPageIndices());
@@ -437,7 +437,7 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
       }
       
       setPct(95);
-      setPmsg("Writing nested catalog streams…");
+      setPmsg("Processing your PDF...");
       const bytes = await merged.save({ useObjectStreams: true });
       setRes({
         blob: new Blob([bytes], { type: "application/pdf" }),
@@ -591,7 +591,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
       const renderLimit = Math.min(doc.numPages, 24);
       for (let i = 1; i <= renderLimit; i++) {
         setPct(15 + Math.round((i / renderLimit) * 80));
-        setPmsg(`Rendering visual thumbnail ${i}/${renderLimit}…`);
+        setPmsg("Processing your PDF...");
         const cv = await renderPage(doc, i, 0.3);
         t.push(cv.toDataURL("image/jpeg", 0.7));
       }
@@ -644,7 +644,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
 
       if (sets.length === 1) {
         setPct(50);
-        setPmsg("Extracting page frames…");
+        setPmsg("Processing your PDF...");
         const nd = await PDFDocument.create();
         const pgs = await nd.copyPages(src, sets[0]);
         pgs.forEach((p: any) => nd.addPage(p));
@@ -659,7 +659,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
         const zip = new JSZipLib();
         for (let i = 0; i < sets.length; i++) {
           setPct(20 + Math.round((i / sets.length) * 70));
-          setPmsg(`Assembling split Zip segment ${i + 1}…`);
+          setPmsg("Processing your PDF...");
           const nd = await PDFDocument.create();
           const pgs = await nd.copyPages(src, sets[i]);
           pgs.forEach((p: any) => nd.addPage(p));

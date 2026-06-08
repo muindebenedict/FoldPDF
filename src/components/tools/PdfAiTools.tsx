@@ -214,7 +214,7 @@ export const AiSumTool = ({ onSuccess, toolName }: ToolProps) => {
         </p>
       </div>
 
-      {st === "processing" && <Spin msg="Processing local document abstract weight nodes…" />}
+      {st === "processing" && <Spin msg="Processing your PDF..." />}
       <Err msg={err} onClose={() => setErr("")} />
     </div>
   );
@@ -319,7 +319,7 @@ export const AiChatTool = ({ onSuccess, toolName }: ToolProps) => {
             Drop your PDF file here to start immediate, secure chat session
           </p>
         </div>
-        {loading && <Spin msg="Indexing PDF layout channels…" />}
+        {loading && <Spin msg="Processing your PDF..." />}
       </div>
     );
   }
@@ -527,7 +527,7 @@ export const ResumeTool = ({ onSuccess, toolName }: ToolProps) => {
         </p>
       </div>
 
-      {st === "processing" && <Spin msg="Processing local document abstract weight nodes…" />}
+      {st === "processing" && <Spin msg="Processing your PDF..." />}
       <Err msg={err} onClose={() => setErr("")} />
     </div>
   );
@@ -718,7 +718,7 @@ export const ContractTool = ({ onSuccess, toolName }: ToolProps) => {
         </p>
       </div>
 
-      {st === "processing" && <Spin msg="Simplifying legalese matrices…" />}
+      {st === "processing" && <Spin msg="Processing your PDF..." />}
       <Err msg={err} onClose={() => setErr("")} />
     </div>
   );

@@ -418,7 +418,7 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
         </button>
       )}
       
-      {(st === "reading" || st === "processing") && <Bar v={pct} msg={id === "compress-pdf" ? "" : (id === "ppt-to-pdf" ? "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait..." : (pmsg || "Processing…"))} />}
+      {(st === "reading" || st === "processing") && <Bar v={pct} msg={id === "ppt-to-pdf" ? "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait..." : (pmsg || "Processing your PDF...")} />}
       <Err msg={err} onClose={() => setErr("")} />
     </div>
   );

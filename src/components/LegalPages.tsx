@@ -325,7 +325,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             1. We Do Not Store Your Files
           </h2>
           <p>
-            We do not save or hold onto any of your uploaded files. Most of our tools process your documents directly inside your web browser on your own computer, so your files never upload to the internet. For the two tools that do require server processing to function properly (Compress PDF and PDF to Word), your files are processed and then permanently deleted immediately after you download your result. We never store, log, read, or share your documents under any circumstances.
+            We do not save or hold onto any of your uploaded files. Most of our tools process your documents directly inside your web browser on your own computer, so your files never upload to the internet. Four of our tools do require server processing to function properly: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. These tools send files to our secure server for processing, and your files are permanently deleted immediately after you download your result. All other tools run entirely in your browser and your file never leaves your device.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -397,7 +397,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             3. No Liability for Data Loss
           </h2>
           <p>
-            Two of our tools — Compress PDF and PDF to Word — process files on our secure server. This is necessary to deliver high quality results. Your file is uploaded, processed, and permanently deleted immediately after you download your result. We do not store, log, read, or share your files under any circumstances. Most of our other tools process files locally in your browser. Because we never store or keep copies of any of your documents, we cannot be held responsible for files that go missing, get corrupted, or have errors during processing. Please make sure you always keep a backup of your original files safely saved on your own computer.
+            Four of our tools — Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF — send files to our secure server for processing. This is necessary to deliver high quality results. Your file is uploaded, processed, and permanently deleted immediately after you download your result. All other tools run entirely in your browser and your file never leaves your device. Because we never store or keep copies of any of your documents, we cannot be held responsible for files that go missing, get corrupted, or have errors during processing. Please make sure you always keep a backup of your original files safely saved on your own computer.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
