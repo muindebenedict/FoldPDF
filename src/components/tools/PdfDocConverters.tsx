@@ -707,8 +707,7 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
 
     return {
       blob: docxBlob,
-      name: getOutputFile(files[0]?.name, "converted", ".docx"),
-      info: "Converted using Adobe PDF Services — structure preserved"
+      name: getOutputFile(files[0]?.name, "converted", ".docx")
     };
   }, []);
 
@@ -1121,8 +1120,7 @@ export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 
     return {
       blob: pdfBlob,
-      name: getOutputFile(files[0]?.name, "converted", ".pdf"),
-      info: "Converted using LibreOffice on secure server"
+      name: getOutputFile(files[0]?.name, "converted", ".pdf")
     };
   }, []);
 

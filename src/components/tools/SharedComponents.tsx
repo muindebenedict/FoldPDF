@@ -414,7 +414,7 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
           onClick={go}
           className="w-full mt-4 bg-indigo-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-700 shadow-md shadow-indigo-600/15 cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wide"
         >
-          {label === "COMPRESS PDF" || id === "compress-pdf" ? "COMPRESS PDF" : `⚡ ${label} Now`}
+          {label === "COMPRESS PDF" || id === "compress-pdf" ? "COMPRESS PDF" : `${label} Now`}
         </button>
       )}
       
