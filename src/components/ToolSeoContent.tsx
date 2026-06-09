@@ -117,11 +117,7 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           {selectedData.description}
         </p>
-        {SERVER_TOOLS.includes(normalizedId) && (
-          <p className="text-2xs text-slate-505 dark:text-indigo-400 mt-4 leading-normal font-normal">
-            Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-          </p>
-        )}
+
       </div>
 
       {/* Feature visual cards */}

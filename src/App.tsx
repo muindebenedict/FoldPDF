@@ -659,9 +659,7 @@ export default function App() {
                 <p className="mx-auto mt-5 max-w-3xl text-sm sm:text-base md:text-lg text-slate-650 dark:text-slate-300 leading-relaxed font-body">
                   Process medical records, financial files, legal certificates, and personal documents completely inside your browser. Your files stay on your device for absolute privacy and safety.
                 </p>
-                <p className="mx-auto mt-3 max-w-2xl text-xs text-slate-500 dark:text-indigo-400 font-normal leading-normal">
-                  Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-                </p>
+
 
                 {/* 2 COMPLEMENTARY CTAs */}
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -941,10 +939,7 @@ export default function App() {
                         Why Browser-Based PDF Tools Are More Secure
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Most online PDF tools copy every file you upload onto their servers, keeping them on someone else's computer. Our browser-based tools work differently, running completely inside your computer's temporary memory (RAM). For the four tools that require server processing (Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF), files are processed and then permanently deleted immediately after downloading. We never store, read, or share your documents under any circumstances. You can even check your browser's inspect menu on our native browser tools to prove that zero files leave your machine.
-                      </p>
-                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
-                        Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
+                        Most online PDF tools copy every file you upload onto their servers, keeping them on someone else's computer. Our browser-based tools work differently, running completely inside your computer's temporary memory (RAM). We never store, read, or share your documents under any circumstances. You can even check your browser's inspect menu on our native browser tools to prove that zero files leave your machine.
                       </p>
                     </div>
                   </section>
@@ -961,9 +956,6 @@ export default function App() {
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
                         Secure browser-based processing means our system cannot see, keep, or access the files you edit. Ordinary online tools force you to upload your files to their servers. This means they can read your file names and private documents. Our website is completely different. All the actions you take run right inside your own internet browser window. We never see your text, sheets, or photos. No logs or backups are ever made. It is a much safer option than public converters that require data uploads. Your files stay perfectly secure on your own computer.
                       </p>
-                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
-                        Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-                      </p>
                     </div>
                   </section>
 
@@ -979,9 +971,6 @@ export default function App() {
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
                         Keeping your company files secure is simple if you follow a few guidelines. First, do not upload private tax receipts or contract documents to open-source websites that store files in cloud databases. Second, use friendly utilities like FoldPDF that process files directly inside your browser so nothing is sent over the internet. Third, remove hidden layers and authors from your PDFs before sending them. Fourth, close your browser tabs when you finish editing to completely clear local memory. Finally, avoid using public Wi-Fi networks when editing files on remote server pages. Simple actions like these keep your business data private and compliant.
                       </p>
-                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
-                        Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-                      </p>
                     </div>
                   </section>
 
@@ -996,9 +985,6 @@ export default function App() {
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
                         Medical files and legal contracts contain highly private details. Doctors must safeguard patient health records to comply with privacy laws. Normal online converters that send papers to unknown databases violate these safety standards. Similarly, legal assistants handle patent filings or contracts that must remain secret. Shifting your work to on-device browser applications keeps patient files and company secrets safe from data leaks. Since everything runs right in your browser, no tracking databases exist to hold your records, and regulatory frameworks are fully satisfied. Keep your files guarded from day one.
-                      </p>
-                      <p className="text-2xs text-slate-550 dark:text-slate-450 mt-2 font-normal">
-                        Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
                       </p>
                     </div>
                   </section>
@@ -1027,9 +1013,7 @@ export default function App() {
                       <br /><br />
                       Under the hood, we saw that modern browser sandboxes had evolved to a state that could easily shoulder heavy compilation math. By compiling high-speed layouts and raster engines into localized WebAssembly binaries, we decoupled document processing from server storage entirely. Your files remain where they belong: inside your sovereign machine terminal, deleted from volatile memory the microsecond you close the viewport.
                     </p>
-                    <p className="text-2xs text-slate-500 dark:text-indigo-400 mt-3 font-normal">
-                      Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-                    </p>
+
                     
                     <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-indigo-600 dark:text-indigo-400 text-xs">

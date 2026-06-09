@@ -1114,11 +1114,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                 {tool.shortDesc}
               </p>
-              {['compress-pdf', 'pdf-to-word', 'pdf-to-powerpoint', 'powerpoint-to-pdf'].includes(tool.id) && (
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-normal">
-                  Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-                </p>
-              )}
+
             </div>
 
             {renderRealTool() ? (
@@ -1441,11 +1437,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
               {tool.longDesc}
             </p>
-            {['compress-pdf', 'pdf-to-word', 'pdf-to-powerpoint', 'powerpoint-to-pdf'].includes(tool.id) && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 -mt-4">
-                Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-              </p>
-            )}
+
 
             <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-3">
               Benefits of our FoldPDF System:

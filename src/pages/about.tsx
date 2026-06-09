@@ -10,7 +10,7 @@ export default function AboutPage({ navigate }: AboutProps) {
     {
       icon: <Lucide.ShieldCheck className="h-6 w-6 text-indigo-500" />,
       title: "1. Security & Privacy First",
-      desc: "Most of our tools process files on your own computer. For the four tools that send files to our secure server for processing (Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF), files are deleted immediately."
+      desc: "Most of our tools process files directly inside your web browser on your own computer, so your files never upload to the internet."
     },
     {
       icon: <Lucide.Key className="h-6 w-6 text-indigo-500" />,
@@ -87,9 +87,7 @@ export default function AboutPage({ navigate }: AboutProps) {
             <p className="text-sm text-slate-600 dark:text-slate-355 leading-relaxed">
               We realized that modern browser technology is strong enough to process documents securely inside your own tab. FoldPDF exists to prove that safe, professional PDF utilities can run at lightspeed with zero file tracking.
             </p>
-            <p className="text-xs text-slate-500 dark:text-indigo-400 mt-4 leading-normal font-normal">
-              Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-            </p>
+
           </div>
         </div>
 
@@ -112,11 +110,7 @@ export default function AboutPage({ navigate }: AboutProps) {
                     <p className="text-xs text-slate-550 dark:text-slate-400 mt-1 leading-relaxed">
                       {val.desc}
                     </p>
-                    {id === 0 && (
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-normal font-normal">
-                        Four of our tools send files to our secure server for processing: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. Your file is deleted immediately after you download.
-                      </p>
-                    )}
+
                   </div>
                 </div>
               ))}
