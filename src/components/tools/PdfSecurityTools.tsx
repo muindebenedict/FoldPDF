@@ -825,7 +825,90 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
   const [sigPos, setSigPos] = useState({ x: 80, y: 80, w: 180, h: 70 });
   const [drag, setDrag] = useState(false);
   const [dOff, setDOff] = useState({ x: 0, y: 0 });
+  const [resizing, setResizing] = useState<string | null>(null);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0, w: 0, h: 0, sigX: 0, sigY: 0 });
   const [st, setSt] = useState<"idle" | "processing" | "done" | "error">("idle");
+
+  const handleResizeStart = (e: any, dir: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const touch = e.touches && e.touches[0];
+    const clientX = touch ? touch.clientX : e.clientX;
+    const clientY = touch ? touch.clientY : e.clientY;
+
+    setResizing(dir);
+    setStartPos({
+      x: clientX,
+      y: clientY,
+      w: sigPos.w,
+      h: sigPos.h,
+      sigX: sigPos.x,
+      sigY: sigPos.y
+    });
+  };
+
+  const handleMove = (e: any) => {
+    if (!drag && !resizing) return;
+    
+    const rect = preRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const touch = e.touches && e.touches[0];
+    const clientX = touch ? touch.clientX : e.clientX;
+    const clientY = touch ? touch.clientY : e.clientY;
+
+    if (drag) {
+      setSigPos((p) => ({
+        ...p,
+        x: Math.max(0, Math.min(rect.width - p.w, clientX - rect.left - dOff.x)),
+        y: Math.max(0, Math.min(rect.height - p.h, clientY - rect.top - dOff.y))
+      }));
+    } else if (resizing) {
+      const deltaX = clientX - startPos.x;
+      const deltaY = clientY - startPos.y;
+
+      if (resizing === "br") {
+        const newW = Math.max(30, Math.min(rect.width - startPos.sigX, startPos.w + deltaX));
+        const newH = Math.max(15, Math.min(rect.height - startPos.sigY, startPos.h + deltaY));
+        setSigPos((p) => ({ ...p, w: newW, h: newH }));
+      } else if (resizing === "bl") {
+        const maxDeltaX = startPos.w - 30;
+        const minDeltaX = -startPos.sigX;
+        const clampedDeltaX = Math.max(minDeltaX, Math.min(maxDeltaX, deltaX));
+        const newW = startPos.w - clampedDeltaX;
+        const newX = startPos.sigX + clampedDeltaX;
+        const newH = Math.max(15, Math.min(rect.height - startPos.sigY, startPos.h + deltaY));
+        setSigPos((p) => ({ ...p, x: newX, w: newW, h: newH }));
+      } else if (resizing === "tr") {
+        const maxDeltaY = startPos.h - 15;
+        const minDeltaY = -startPos.sigY;
+        const clampedDeltaY = Math.max(minDeltaY, Math.min(maxDeltaY, deltaY));
+        const newH = startPos.h - clampedDeltaY;
+        const newY = startPos.sigY + clampedDeltaY;
+        const newW = Math.max(30, Math.min(rect.width - startPos.sigX, startPos.w + deltaX));
+        setSigPos((p) => ({ ...p, y: newY, h: newH, w: newW }));
+      } else if (resizing === "tl") {
+        const maxDeltaX = startPos.w - 30;
+        const minDeltaX = -startPos.sigX;
+        const clampedDeltaX = Math.max(minDeltaX, Math.min(maxDeltaX, deltaX));
+        const newW = startPos.w - clampedDeltaX;
+        const newX = startPos.sigX + clampedDeltaX;
+
+        const maxDeltaY = startPos.h - 15;
+        const minDeltaY = -startPos.sigY;
+        const clampedDeltaY = Math.max(minDeltaY, Math.min(maxDeltaY, deltaY));
+        const newH = startPos.h - clampedDeltaY;
+        const newY = startPos.sigY + clampedDeltaY;
+
+        setSigPos((p) => ({ ...p, x: newX, y: newY, w: newW, h: newH }));
+      }
+    }
+  };
+
+  const handleEnd = () => {
+    setDrag(false);
+    setResizing(null);
+  };
   const [pct, setPct] = useState(0);
   const [res, setRes] = useState<{ blob: Blob; name: string; info: string } | null>(null);
   const [err, setErr] = useState("");
@@ -1159,37 +1242,74 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
 
           <div
             ref={preRef}
-            className="relative border rounded-xl overflow-hidden bg-slate-50 select-none shadow-premium-md max-w-sm mx-auto"
-            onMouseMove={(e) => {
-              if (!drag) return;
-              const rect = preRef.current?.getBoundingClientRect();
-              if (rect) {
-                setSigPos((p) => ({
-                  ...p,
-                  x: Math.max(0, Math.min(rect.width - p.w, e.clientX - rect.left - dOff.x)),
-                  y: Math.max(0, Math.min(rect.height - p.h, e.clientY - rect.top - dOff.y))
-                }));
-              }
-            }}
-            onMouseUp={() => setDrag(false)}
+            className="relative border rounded-xl overflow-hidden bg-slate-50 select-none shadow-premium-md max-w-sm mx-auto touch-none"
+            onMouseMove={handleMove}
+            onMouseUp={handleEnd}
+            onMouseLeave={handleEnd}
+            onTouchMove={handleMove}
+            onTouchEnd={handleEnd}
           >
             <img src={thumb} className="w-full h-auto block" alt="Document slide" />
-            <img
-              src={sigData}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setDrag(true);
-                setDOff({ x: e.clientX - preRef.current!.getBoundingClientRect().left - sigPos.x, y: e.clientY - preRef.current!.getBoundingClientRect().top - sigPos.y });
-              }}
+            <div
               style={{
+                position: "absolute",
                 left: sigPos.x,
                 top: sigPos.y,
                 width: sigPos.w,
                 height: sigPos.h
               }}
-              className="absolute border-2 border-dashed border-indigo-500 rounded cursor-move bg-white/20 hover:scale-105 active:scale-95 transition"
-              alt="Signature ink overlay"
-            />
+              className="absolute border-2 border-dashed border-indigo-500 rounded bg-white/20 cursor-move"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setDrag(true);
+                const rect = preRef.current!.getBoundingClientRect();
+                setDOff({
+                  x: e.clientX - rect.left - sigPos.x,
+                  y: e.clientY - rect.top - sigPos.y
+                });
+              }}
+              onTouchStart={(e) => {
+                if (e.touches && e.touches.length > 0) {
+                  setDrag(true);
+                  const rect = preRef.current!.getBoundingClientRect();
+                  setDOff({
+                    x: e.touches[0].clientX - rect.left - sigPos.x,
+                    y: e.touches[0].clientY - rect.top - sigPos.y
+                  });
+                }
+              }}
+            >
+              <img
+                src={sigData}
+                className="w-full h-full object-contain pointer-events-none"
+                alt="Signature ink overlay"
+              />
+              {/* Resize Handles */}
+              {/* Top-Left */}
+              <div
+                className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-indigo-600 border border-white rounded-full cursor-nwse-resize z-10 hover:scale-125 transition-transform"
+                onMouseDown={(e) => handleResizeStart(e, "tl")}
+                onTouchStart={(e) => handleResizeStart(e, "tl")}
+              />
+              {/* Top-Right */}
+              <div
+                className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-indigo-600 border border-white rounded-full cursor-nesw-resize z-10 hover:scale-125 transition-transform"
+                onMouseDown={(e) => handleResizeStart(e, "tr")}
+                onTouchStart={(e) => handleResizeStart(e, "tr")}
+              />
+              {/* Bottom-Left */}
+              <div
+                className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-indigo-600 border border-white rounded-full cursor-nesw-resize z-10 hover:scale-125 transition-transform"
+                onMouseDown={(e) => handleResizeStart(e, "bl")}
+                onTouchStart={(e) => handleResizeStart(e, "bl")}
+              />
+              {/* Bottom-Right */}
+              <div
+                className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-indigo-600 border border-white rounded-full cursor-nwse-resize z-10 hover:scale-125 transition-transform"
+                onMouseDown={(e) => handleResizeStart(e, "br")}
+                onTouchStart={(e) => handleResizeStart(e, "br")}
+              />
+            </div>
           </div>
 
           {npg > 1 && (
