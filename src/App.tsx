@@ -168,19 +168,24 @@ const getToolColors = (id: string): { bg: string; icon: string; isAi?: boolean }
   };
 };
 
-export default function App() {
-  const { currentPath, navigate } = useRouter();
+export default function App({ initialPath }: { initialPath?: string } = {}) {
+  const { currentPath, navigate } = useRouter(initialPath);
   
   // Theme Toggle State
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    // Default to light mode (false) if no theme preference is explicitly stored
-    return localStorage.getItem('theme') === 'dark';
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem('theme') === 'dark';
+    }
+    return false;
   });
 
   // Authentication State
   const [user, setUser] = useState<{ name: string; email: string } | null>(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -350,7 +355,10 @@ export default function App() {
 
   // Cookie Consent State for AdSense compliance
   const [cookieConsentAccepted, setCookieConsentAccepted] = useState<boolean>(() => {
-    return localStorage.getItem('cookie-consent') === 'true';
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem('cookie-consent') === 'true';
+    }
+    return false;
   });
 
   // Active Tools Categorization State
@@ -359,8 +367,11 @@ export default function App() {
 
   // Historical Processed Files list for returning users
   const [history, setHistory] = useState<RecentFile[]>(() => {
-    const saved = localStorage.getItem('foldpdf_history');
-    return saved ? JSON.parse(saved) : [];
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('foldpdf_history');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
 
   // Track last logged actions to strictly prevent duplicate entries caused by React StrictMode mounts or rendering updates
@@ -368,8 +379,11 @@ export default function App() {
 
   // Favorites Tools state
   const [favorites, setFavorites] = useState<string[]>(() => {
-    const saved = localStorage.getItem('foldpdf_favorites');
-    return saved ? JSON.parse(saved) : [];
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('foldpdf_favorites');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
 
   // Apply dark mode theme on html tags

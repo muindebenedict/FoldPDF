@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
 
-export function useRouter() {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+export function useRouter(initialPath?: string) {
+  const [currentPath, setCurrentPath] = useState(() => {
+    if (initialPath) return initialPath;
+    if (typeof window !== 'undefined' && window.location) {
+      return window.location.pathname;
+    }
+    return '/';
+  });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const handleLocationChange = () => {
       setCurrentPath(window.location.pathname);
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -24,7 +32,9 @@ export function useRouter() {
   }, []);
 
   const navigate = (path: string) => {
-    window.history.pushState(null, '', path);
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState(null, '', path);
+    }
   };
 
   return { currentPath, navigate };
