@@ -180,16 +180,20 @@ export function Header({
             <button 
               onClick={() => handleMenuClick('all')}
               className={`flex items-center space-x-1 cursor-pointer text-xs font-bold uppercase tracking-wider transition-colors outline-none ${
-                activeMenu === 'all' ? 'text-indigo-600' : 'text-slate-700 hover:text-indigo-650 dark:text-slate-350 dark:hover:text-indigo-400'
+                activeMenu === 'all' 
+                  ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' 
+                  : 'text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold'
               }`}
             >
               <span>All PDF Tools</span>
-              <Lucide.ChevronDown className={`h-3 w-3 mt-0.5 transition-transform ${activeMenu === 'all' ? 'rotate-180 text-indigo-500' : ''}`} />
+              <Lucide.ChevronDown className={`h-3 w-3 mt-0.5 transition-transform ${activeMenu === 'all' ? 'rotate-180 text-indigo-500' : 'text-indigo-500'}`} />
             </button>
             
             {/* FULL ALL PDF TOOLS MEGAMENU ROW */}
             {activeMenu === 'all' && (
-              <div className="absolute top-10 left-1/2 -translate-x-3/4 w-[840px] bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-3xl shadow-2xl z-50 p-8 grid grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="absolute top-10 left-1/2 -translate-x-[60%] w-[920px] bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-3xl shadow-2xl z-50 p-8 grid grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-2 duration-150">
+                
+                {/* COLUMN 1: Organize & Optimize PDF */}
                 <div className="space-y-4">
                   <div>
                     <div className="text-[10px] font-extrabold tracking-widest text-orange-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
@@ -237,6 +241,7 @@ export function Header({
                   </div>
                 </div>
 
+                {/* COLUMN 2: Convert to PDF */}
                 <div>
                   <div className="text-[10px] font-extrabold tracking-widest text-indigo-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
                     <Lucide.FileUp className="h-3 w-3" />
@@ -245,6 +250,9 @@ export function Header({
                   <div className="flex flex-col space-y-1.5">
                     {[
                       { name: 'JPG to PDF', path: '/jpg-to-pdf' },
+                      { name: 'PNG to PDF', path: '/png-to-pdf' },
+                      { name: 'HEIC to PDF', path: '/heic-to-pdf' },
+                      { name: 'WebP to PDF', path: '/webp-to-pdf' },
                       { name: 'Word to PDF', path: '/word-to-pdf' },
                       { name: 'PowerPoint to PDF', path: '/pptx-to-pdf' },
                       { name: 'Excel to PDF', path: '/xlsx-to-pdf' },
@@ -261,31 +269,57 @@ export function Header({
                   </div>
                 </div>
 
-                <div>
-                  <div className="text-[10px] font-extrabold tracking-widest text-indigo-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
-                    <Lucide.FileDown className="h-3 w-3" />
-                    Convert from PDF
+                {/* COLUMN 3: Convert from PDF & Image Tools */}
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-[10px] font-extrabold tracking-widest text-indigo-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
+                      <Lucide.FileDown className="h-3 w-3" />
+                      Convert from PDF
+                    </div>
+                    <div className="flex flex-col space-y-1.5">
+                      {[
+                        { name: 'PDF to JPG', path: '/pdf-to-jpg' },
+                        { name: 'PDF to PNG', path: '/pdf-to-png' },
+                        { name: 'PDF to WebP image', path: '/pdf-to-webp' },
+                        { name: 'PDF to Word (DOCX)', path: '/pdf-to-word' },
+                        { name: 'PDF to PowerPoint (PPTX)', path: '/pdf-to-pptx' },
+                        { name: 'PDF to Excel (XLSX)', path: '/pdf-to-xlsx' },
+                        { name: 'PDF to TXT log file', path: '/pdf-to-txt' }
+                      ].map((item) => (
+                        <button 
+                          key={item.path} 
+                          onClick={() => menuNavigate(item.path)}
+                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-col space-y-1.5">
-                    {[
-                      { name: 'PDF to JPG', path: '/pdf-to-jpg' },
-                      { name: 'PDF to Word (DOCX)', path: '/pdf-to-word' },
-                      { name: 'PDF to PowerPoint (PPTX)', path: '/pdf-to-pptx' },
-                      { name: 'PDF to Excel (XLSX)', path: '/pdf-to-xlsx' },
-                      { name: 'PDF to WebP image', path: '/pdf-to-webp' },
-                      { name: 'PDF to TXT log file', path: '/pdf-to-txt' }
-                    ].map((item) => (
-                      <button 
-                        key={item.path} 
-                        onClick={() => menuNavigate(item.path)}
-                        className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
-                      >
-                        {item.name}
-                      </button>
-                    ))}
+
+                  <div>
+                    <div className="text-[10px] font-extrabold tracking-widest text-cyan-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
+                      <Lucide.Image className="h-3 w-3" />
+                      Image Converters
+                    </div>
+                    <div className="flex flex-col space-y-1.5">
+                      {[
+                        { name: 'JPEG to PNG', path: '/jpeg-to-png' },
+                        { name: 'PNG to JPG', path: '/png-to-jpg' }
+                      ].map((item) => (
+                        <button 
+                          key={item.path} 
+                          onClick={() => menuNavigate(item.path)}
+                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
+                {/* COLUMN 4: Edit & Security PDF */}
                 <div className="space-y-4">
                   <div>
                     <div className="text-[10px] font-extrabold tracking-widest text-pink-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
@@ -294,6 +328,7 @@ export function Header({
                     </div>
                     <div className="flex flex-col space-y-1.5">
                       {[
+                        { name: 'Sign PDF', path: '/sign-pdf' },
                         { name: 'Rotate pages', path: '/rotate-pdf' },
                         { name: 'Add Watermark', path: '/add-watermark' },
                         { name: 'Add Page Numbers', path: '/add-page-numbers' }
@@ -308,7 +343,29 @@ export function Header({
                       ))}
                     </div>
                   </div>
+
+                  <div>
+                    <div className="text-[10px] font-extrabold tracking-widest text-purple-500 uppercase pb-1.5 border-b dark:border-slate-800 mb-2.5 flex items-center gap-1.5">
+                      <Lucide.ShieldCheck className="h-3 w-3" />
+                      PDF Security
+                    </div>
+                    <div className="flex flex-col space-y-1.5">
+                      {[
+                        { name: 'Protect PDF', path: '/protect-pdf' },
+                        { name: 'Unlock PDF', path: '/unlock-pdf' }
+                      ].map((item) => (
+                        <button 
+                          key={item.path} 
+                          onClick={() => menuNavigate(item.path)}
+                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
               </div>
             )}
           </div>
