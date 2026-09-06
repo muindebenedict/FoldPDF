@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: (import.meta.env.VITE_FIREBASE_API_KEY?.trim()) || "AIzaSyCDKYB1J6M3QUEuff1f7K14jkQLclsCVoE",
-  authDomain: (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN?.trim()) || "foldpdf.online",
+  authDomain: (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN?.trim()) || "www.foldpdf.online",
   projectId: (import.meta.env.VITE_FIREBASE_PROJECT_ID?.trim()) || "foldpdf",
   storageBucket: (import.meta.env.VITE_FIREBASE_STORAGE_BUCKET?.trim()) || "foldpdf.firebasestorage.app",
   messagingSenderId: (import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim()) || "796732208535",
