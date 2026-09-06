@@ -12,6 +12,15 @@ const firebaseConfig = {
   measurementId: (import.meta.env.VITE_FIREBASE_MEASUREMENT_ID?.trim()) || "G-SH2YD2BLKS"
 };
 
+// The apex domain 308-redirects to www. Firebase builds its auth popup and its
+// event-delivery iframe from authDomain, so on the apex both land on www while
+// the SDK still expects messages from foldpdf.online -- the origins stop
+// matching, the auth event is never delivered and sign-in hangs forever.
+// Normalise to www regardless of what the build environment supplies.
+if (firebaseConfig.authDomain === "foldpdf.online") {
+  firebaseConfig.authDomain = "www.foldpdf.online";
+}
+
 // Handle potential environment variable typo corrections automatically
 if (firebaseConfig.apiKey === "AIzaSyCDKYB1J6M3QUEufF1f7K14jkQLc1sCVOe") {
   firebaseConfig.apiKey = "AIzaSyCDKYB1J6M3QUEuff1f7K14jkQLclsCVoE";
