@@ -11,9 +11,9 @@ const rootDir = path.resolve(__dirname, '..');
 if (typeof globalThis.window === 'undefined') {
   const mockLocation = {
     pathname: '/',
-    href: 'https://foldpdf.online/',
-    host: 'foldpdf.online',
-    hostname: 'foldpdf.online',
+    href: 'https://www.foldpdf.online/',
+    host: 'www.foldpdf.online',
+    hostname: 'www.foldpdf.online',
     search: '',
     hash: ''
   };
@@ -94,7 +94,7 @@ async function buildPrerender() {
       // Update mock location for route context
       if (globalThis.window) {
         (globalThis.window as any).location.pathname = routePath;
-        (globalThis.window as any).location.href = `https://foldpdf.online${routePath}`;
+        (globalThis.window as any).location.href = `https://www.foldpdf.online${routePath}`;
       }
 
       // Render React component tree to static HTML string
@@ -123,7 +123,7 @@ async function buildPrerender() {
       }
 
       // Add Open Graph, Canonical URL, and Twitter Card tags
-      const canonicalUrl = `https://foldpdf.online${routePath === '/' ? '' : routePath}`;
+      const canonicalUrl = `https://www.foldpdf.online${routePath === '/' ? '' : routePath}`;
       const seoMetaBlock = `
     <link rel="canonical" href="${canonicalUrl}" />
     <meta property="og:title" content="${safeTitle}" />

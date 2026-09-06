@@ -307,7 +307,7 @@ Synthesize an expert critique in Markdown:
   // --- API ROUTE FOR SITEMAP.XML (SEO GOAL) ---
   app.get("/sitemap.xml", (req, res) => {
     res.header("Content-Type", "application/xml");
-    const domain = req.get('host') || 'foldpdf.com';
+    const domain = req.get('host') || 'www.foldpdf.online';
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const sitemap = generateSitemapXml(`${protocol}://${domain}`);
     res.send(sitemap);

@@ -23,7 +23,7 @@ export function generateMetaTags({
   description,
   path,
   type = "website",
-  image = "https://foldpdf.com/FOLDPDF_icon_crisp.png",
+  image = "https://www.foldpdf.online/FOLDPDF_icon_crisp.png",
   publishDate,
   modifyDate,
   authorName = "FoldPDF Team"
@@ -31,7 +31,7 @@ export function generateMetaTags({
   // Update browser document title
   document.title = title;
 
-  const siteUrl = "https://foldpdf.com";
+  const siteUrl = "https://www.foldpdf.online";
   const canonicalUrl = `${siteUrl}${path.startsWith("/") ? "" : "/"}${path}`;
 
   // Helper to set or create meta elements
@@ -106,7 +106,7 @@ export function generateStructuredData(type: "Article" | "FAQPage" | "WebSite" |
       ...schemaContext,
       "@type": "WebSite",
       "name": "FoldPDF",
-      "url": "https://foldpdf.com",
+      "url": "https://www.foldpdf.online",
       "description": "Private, secure browser-based PDF utilities.",
       ...data
     };
@@ -130,7 +130,7 @@ export function generateStructuredData(type: "Article" | "FAQPage" | "WebSite" |
       "@type": "NewsArticle",
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://foldpdf.com/blog/${data.slug}`
+        "@id": `https://www.foldpdf.online/blog/${data.slug}`
       },
       "headline": data.title,
       "description": data.excerpt,
@@ -139,14 +139,14 @@ export function generateStructuredData(type: "Article" | "FAQPage" | "WebSite" |
       "author": {
         "@type": "Organization",
         "name": "FoldPDF Team",
-        "url": "https://foldpdf.com"
+        "url": "https://www.foldpdf.online"
       },
       "publisher": {
         "@type": "Organization",
         "name": "FoldPDF",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://foldpdf.com/FOLDPDF_icon_crisp.png"
+          "url": "https://www.foldpdf.online/FOLDPDF_icon_crisp.png"
         }
       },
       ...data
