@@ -1,0 +1,38 @@
+name: Supabase keep-alive
+
+# Supabase pauses free-tier projects after 7 days without activity. FoldPDF only
+# calls Supabase when someone signs in or submits a form, so a quiet week would
+# take sign-in offline. This makes one successful database query a day, against
+# public.keepalive() from supabase/migrations/20260918000100_keepalive.sql.
+#
+# If this ever fails, GitHub emails you. Most likely the project was paused or
+# deleted, or the publishable key below was rotated.
+
+on:
+  schedule:
+    # Daily at 06:17 UTC. Off the hour: GitHub's scheduler is most congested at
+    # :00 and can drop runs then.
+    - cron: "17 6 * * *"
+  workflow_dispatch: # "Run workflow" button, for checking it by hand
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # Both are public by design: they already ship in the site's JavaScript.
+      SUPABASE_URL: https://gmnfqpyyfxoszaworumz.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_7bS-KWVwxMm9-uL4EJ51Fg_5VMMvqEY
+    steps:
+      - name: Query the database
+        run: |
+          body=$(curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 20 --retry-all-errors \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/keepalive" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "Response: $body"
+          test "$body" = '"ok"'
