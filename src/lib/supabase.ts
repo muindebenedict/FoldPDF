@@ -22,9 +22,13 @@ export function getSupabase(): SupabaseClient {
   if (!client) {
     client = createClient(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!, {
       auth: {
-        // PKCE keeps OAuth and recovery tokens out of the URL fragment; the
-        // one-time code in the query string is exchanged on page load.
-        flowType: "pkce",
+        // Implicit, not PKCE. A PKCE link can only be completed in the browser
+        // that asked for it, so a password reset requested on a laptop and
+        // opened on a phone would silently fail. Implicit links carry the
+        // session in the URL fragment and work on any device. Fragments are
+        // never sent to servers or in Referer headers, and the library clears
+        // them from the address bar as soon as it reads them.
+        flowType: "implicit",
         detectSessionInUrl: true,
         persistSession: true,
         autoRefreshToken: true,

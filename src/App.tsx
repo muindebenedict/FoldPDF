@@ -18,13 +18,26 @@ import type { EmailOtpType, User as SupabaseUser } from '@supabase/supabase-js';
 // user actually comes back from Google, not on every page load with a session.
 const OAUTH_PENDING_KEY = 'foldpdf_oauth_pending';
 
-// Query parameters Supabase adds when it redirects back from an auth email or
-// from Google. Stripped once handled so a refresh doesn't replay them.
-const AUTH_URL_PARAMS = ['code', 'token_hash', 'type', 'error', 'error_code', 'error_description'];
+// Parameters Supabase adds when it redirects back from an auth email or from
+// Google: in the query string (token_hash links) or in the fragment (sessions
+// and errors in the implicit flow). Stripped once handled so a refresh doesn't
+// replay them.
+const AUTH_URL_PARAMS = [
+  'code', 'token_hash', 'type', 'error', 'error_code', 'error_description',
+  'access_token', 'refresh_token', 'expires_at', 'expires_in', 'token_type',
+  'provider_token', 'provider_refresh_token',
+];
 
 // A token_hash can only be verified once, and StrictMode runs effects twice in
 // development: without this the second run reports a working link as expired.
 const handledAuthLinks = new Set<string>();
+
+// Same precedence as the Supabase client: the query string wins over the fragment.
+function readAuthParams(): URLSearchParams {
+  const merged = new URLSearchParams(window.location.hash.slice(1));
+  new URLSearchParams(window.location.search).forEach((value, key) => merged.set(key, value));
+  return merged;
+}
 
 function clearAuthParamsFromUrl() {
   const url = new URL(window.location.href);
@@ -34,6 +47,16 @@ function clearAuthParamsFromUrl() {
       url.searchParams.delete(key);
       changed = true;
     }
+  }
+  // Only touch the fragment if it holds auth parameters, so ordinary #anchors
+  // survive. Also drop the bare "#" the Supabase client leaves after clearing it.
+  const hash = new URLSearchParams(url.hash.slice(1));
+  if (AUTH_URL_PARAMS.some((key) => hash.has(key))) {
+    AUTH_URL_PARAMS.forEach((key) => hash.delete(key));
+    url.hash = hash.toString();
+    changed = true;
+  } else if (!url.hash && window.location.href.endsWith('#')) {
+    changed = true;
   }
   if (changed) window.history.replaceState(window.history.state, '', url.toString());
 }
@@ -324,10 +347,14 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     const supabase = getSupabase();
 
     // Read before subscribing: INITIAL_SESSION strips these from the URL.
-    const params = new URLSearchParams(window.location.search);
+    const params = readAuthParams();
     const tokenHash = params.get('token_hash');
     const linkType = params.get('type') as EmailOtpType | null;
     const linkError = params.get('error_description');
+    // A default "confirm your email" link lands here already signed in, with
+    // the session in the fragment; say so rather than silently signing them in.
+    let announceConfirmation =
+      !tokenHash && params.has('access_token') && (linkType === 'signup' || linkType === 'email');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
@@ -347,14 +374,17 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         if (sessionStorage.getItem(OAUTH_PENDING_KEY)) {
           sessionStorage.removeItem(OAUTH_PENDING_KEY);
           addToast(`Welcome back, ${u.name.split(' ')[0]}! 👋`, 'info');
+        } else if (announceConfirmation) {
+          announceConfirmation = false;
+          addToast('Email confirmed. Welcome to FoldPDF! 🎉', 'success');
         }
       } else {
         setUser(null);
         localStorage.removeItem('user');
       }
 
-      // By INITIAL_SESSION any ?code= from Google or an email link has been
-      // exchanged for a session, so the parameters are safe to drop.
+      // By INITIAL_SESSION the Supabase client has read any session out of the
+      // URL (from Google or an email link), so the parameters are safe to drop.
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
         clearAuthParamsFromUrl();
       }
@@ -374,8 +404,8 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       );
       clearAuthParamsFromUrl();
     } else if (tokenHash && linkType && firstVisit) {
-      // token_hash links (see supabase/README.md) work in any browser, unlike
-      // PKCE codes, which only work in the browser that requested the email.
+      // token_hash links come from the optional custom email templates in
+      // supabase/README.md; the default links are handled by the Supabase client.
       supabase.auth.verifyOtp({ token_hash: tokenHash, type: linkType }).then(({ error }) => {
         if (error) {
           addToast('That link has expired or was already used. Please request a new one.', 'error');

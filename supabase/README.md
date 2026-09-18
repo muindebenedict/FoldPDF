@@ -48,15 +48,18 @@ Without the localhost entry, sign-in can't be tested locally.
 Required before launch. The built-in sender only allows a few emails per hour,
 and templates can't be edited without custom SMTP.
 
-**Authentication → Emails → Templates → Reset password** (needs SMTP first)
+**Authentication → Emails → Templates** (optional, needs SMTP first)
 
-By default the reset link uses a one-time PKCE code, which only works in the
-browser that requested the reset. Request on a laptop, open the email on a
-phone, and the link fails silently. Linking straight to the app with the
-token hash works on any device. `App.tsx` already handles this link (it calls
-`verifyOtp` and opens the "choose a new password" screen).
+Password reset and email confirmation work with the default templates. The
+client uses the implicit flow (`src/lib/supabase.ts`), so the links work on any
+device.
 
-Replace the body with:
+One weakness of the default links: some email security scanners, mostly
+corporate ones, open every link in an email to check it, and that can use up
+the one-time token before the person clicks it. Linking to the app with the
+token hash avoids this, because the scanner only loads a static page. `App.tsx`
+already handles these links (it calls `verifyOtp`). To use them, replace the
+**Reset password** body with:
 
 ```html
 <h2>Reset your password</h2>
@@ -66,14 +69,8 @@ Replace the body with:
 ```
 
 `{{ .RedirectTo }}` is the `redirectTo` the app passed (its own origin), so the
-link works both in production and on localhost. A side benefit: email security
-scanners that pre-open links only load a static page and don't use up the
-token, which they can with the default link.
-
-The same change is optional for **Confirm sign up**, with `type=email` instead
-of `type=recovery`. Without it, confirmation still works on any device, but
-opening the link somewhere else confirms the address without signing the user
-in.
+link works both in production and on localhost. For **Confirm sign up**, use the
+same link with `type=email` instead of `type=recovery`.
 
 ## Keep-alive
 
