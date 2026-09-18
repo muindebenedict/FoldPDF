@@ -10,19 +10,37 @@ import { LegalPages } from './components/LegalPages';
 import { BlogSection } from './components/BlogSection';
 import { ToolWorkspace } from './components/ToolWorkspace';
 
-// Firebase imports
-import { auth } from './lib/firebase';
-import { 
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  signOut,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
+// Supabase auth
+import { getSupabase, isSupabaseConfigured } from './lib/supabase';
+import type { EmailOtpType, User as SupabaseUser } from '@supabase/supabase-js';
+
+// Set just before the Google redirect so the welcome toast fires only when the
+// user actually comes back from Google, not on every page load with a session.
+const OAUTH_PENDING_KEY = 'foldpdf_oauth_pending';
+
+// Query parameters Supabase adds when it redirects back from an auth email or
+// from Google. Stripped once handled so a refresh doesn't replay them.
+const AUTH_URL_PARAMS = ['code', 'token_hash', 'type', 'error', 'error_code', 'error_description'];
+
+function clearAuthParamsFromUrl() {
+  const url = new URL(window.location.href);
+  let changed = false;
+  for (const key of AUTH_URL_PARAMS) {
+    if (url.searchParams.has(key)) {
+      url.searchParams.delete(key);
+      changed = true;
+    }
+  }
+  if (changed) window.history.replaceState(window.history.state, '', url.toString());
+}
+
+function toAppUser(u: SupabaseUser): { name: string; email: string } {
+  const meta = u.user_metadata || {};
+  return {
+    name: meta.full_name || meta.name || u.email?.split('@')[0] || 'Member',
+    email: u.email || '',
+  };
+}
 
 // Custom designed high-performance pages
 import BlogIndex from './pages/blog/index';
@@ -196,6 +214,8 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetPasswordSentEmail, setResetPasswordSentEmail] = useState<string | null>(null);
+  // True after following a password-reset link, while the user picks a new password.
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   // loading and Toast states represent the refined experience
   const [emailLoading, setEmailLoading] = useState(false);
@@ -223,64 +243,37 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     return { level: 'weak', color: 'bg-amber-500', label: 'Weak', textColor: 'text-amber-500' };
   }, []);
 
-  const mapSignInError = useCallback((err: any): string | null => {
-    const code = err?.code || '';
-    const message = err?.message || '';
+  // Supabase AuthError codes: https://supabase.com/docs/guides/auth/debugging/error-codes
+  const mapAuthError = useCallback((err: any): string => {
+    const code: string = err?.code || '';
+    const message: string = (err?.message || '').toLowerCase();
 
-    if (code === 'auth/cancelled-popup-request' || message.includes('cancelled-popup-request')) {
-      return null;
+    if (!isSupabaseConfigured) {
+      return "Sign-in is temporarily unavailable. Please try again later.";
     }
-    if (code === 'auth/popup-closed-by-user' || message.includes('popup-closed-by-user')) {
-      return null;
+    if (err?.name === 'AuthRetryableFetchError' || message.includes('failed to fetch') || message.includes('network')) {
+      return "Connection lost. Check your internet and try again.";
     }
-    if (code === 'auth/popup-blocked' || message.includes('popup-blocked')) {
-      return "Please allow popups for this site to use Google Sign In.";
-    }
-    if (code === 'auth/unauthorized-domain' || message.includes('unauthorized-domain')) {
-      return `This domain is not authorized in your Firebase Console. Please add "${window.location.host}" under Authentication > Settings > Authorized Domains.`;
-    }
-    if (code === 'auth/invalid-credential' || message.includes('invalid-credential')) {
+    if (code === 'invalid_credentials') {
       return "Incorrect email or password. Please try again.";
     }
-    if (code === 'auth/user-not-found' || message.includes('user-not-found')) {
-      return "No account found with this email. Want to sign up?";
-    }
-    if (code === 'auth/wrong-password' || message.includes('wrong-password')) {
-      return "Incorrect password. Please try again.";
-    }
-    if (code === 'auth/too-many-requests' || message.includes('too-many-requests')) {
-      return "Too many attempts. Please wait a few minutes and try again.";
-    }
-    if (code === 'auth/network-request-failed' || message.includes('network-request-failed')) {
-      return "Connection lost. Check your internet and try again.";
-    }
-    if (code === 'auth/invalid-email' || message.includes('invalid-email')) {
-      return "Please enter a valid email address.";
-    }
-    return "Something went wrong. Please try again.";
-  }, []);
-
-  const mapSignUpError = useCallback((err: any): string | null => {
-    const code = err?.code || '';
-    const message = err?.message || '';
-
-    if (code === 'auth/cancelled-popup-request' || message.includes('cancelled-popup-request')) {
-      return null;
-    }
-    if (code === 'auth/popup-closed-by-user' || message.includes('popup-closed-by-user')) {
-      return null;
-    }
-    if (code === 'auth/email-already-in-use' || message.includes('email-already-in-use') || message.includes('already-exists')) {
+    if (code === 'user_already_exists' || code === 'email_exists') {
       return "An account with this email already exists. Try signing in instead.";
     }
-    if (code === 'auth/weak-password' || message.includes('weak-password')) {
-      return "Password is too weak. Use at least 6 characters.";
+    if (code === 'weak_password') {
+      return "Password is too weak. Use at least 6 characters, mixing letters and numbers.";
     }
-    if (code === 'auth/invalid-email' || message.includes('invalid-email')) {
+    if (code === 'same_password') {
+      return "Your new password must be different from the old one.";
+    }
+    if (code === 'email_address_invalid' || code === 'validation_failed') {
       return "Please enter a valid email address.";
     }
-    if (code === 'auth/network-request-failed' || message.includes('network-request-failed')) {
-      return "Connection lost. Check your internet and try again.";
+    if (code === 'over_request_rate_limit' || code === 'over_email_send_rate_limit' || err?.status === 429) {
+      return "Too many attempts. Please wait a few minutes and try again.";
+    }
+    if (code === 'signup_disabled') {
+      return "New sign-ups are currently closed.";
     }
     return "Something went wrong. Please try again.";
   }, []);
@@ -315,32 +308,81 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     return Object.keys(errors).length === 0;
   }, [authForm]);
 
-  // Observe active session from Firebase Auth SDK
+  // Observe the Supabase session, and finish whichever auth flow the URL is
+  // carrying: a Google redirect, an email confirmation, or a password reset.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        // Require email verification for password authentication
-        const isPasswordProvider = firebaseUser.providerData.some(p => p.providerId === 'password');
-        if (isPasswordProvider && !firebaseUser.emailVerified) {
-          setUser(null);
-          localStorage.removeItem('user');
-          return;
-        }
+    if (!isSupabaseConfigured) {
+      console.error('Supabase is not configured; sign-in is disabled.');
+      setUser(null);
+      localStorage.removeItem('user');
+      return;
+    }
+    const supabase = getSupabase();
 
-        const u = {
-          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Member',
-          email: firebaseUser.email || '',
-        };
+    // Read before subscribing: INITIAL_SESSION strips these from the URL.
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+    const linkType = params.get('type') as EmailOtpType | null;
+    const linkError = params.get('error_description');
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
+        setAuthModalOpen(true);
+      }
+
+      const sessionUser = session?.user;
+      // Kept from the Firebase version: an unconfirmed email/password account is
+      // not signed in, even if "Confirm email" is ever switched off in Supabase.
+      const unconfirmed = sessionUser?.app_metadata?.provider === 'email' && !sessionUser.email_confirmed_at;
+      if (sessionUser && !unconfirmed) {
+        const u = toAppUser(sessionUser);
         setUser(u);
         localStorage.setItem('user', JSON.stringify(u));
+
+        if (sessionStorage.getItem(OAUTH_PENDING_KEY)) {
+          sessionStorage.removeItem(OAUTH_PENDING_KEY);
+          addToast(`Welcome back, ${u.name.split(' ')[0]}! 👋`, 'info');
+        }
       } else {
         setUser(null);
         localStorage.removeItem('user');
       }
+
+      // By INITIAL_SESSION any ?code= from Google or an email link has been
+      // exchanged for a session, so the parameters are safe to drop.
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
+        clearAuthParamsFromUrl();
+      }
     });
 
-    return () => unsubscribe();
-  }, []);
+    if (linkError) {
+      sessionStorage.removeItem(OAUTH_PENDING_KEY);
+      addToast(
+        params.get('error_code') === 'otp_expired'
+          ? 'That link has expired. Please request a new one.'
+          : 'Sign-in could not be completed. Please try again.',
+        'error'
+      );
+      clearAuthParamsFromUrl();
+    } else if (tokenHash && linkType) {
+      // token_hash links (see supabase/README.md) work in any browser, unlike
+      // PKCE codes, which only work in the browser that requested the email.
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: linkType }).then(({ error }) => {
+        if (error) {
+          addToast('That link has expired or was already used. Please request a new one.', 'error');
+        } else if (linkType === 'recovery') {
+          setPasswordRecovery(true);
+          setAuthModalOpen(true);
+        } else {
+          addToast('Email confirmed. Welcome to FoldPDF! 🎉', 'success');
+        }
+        clearAuthParamsFromUrl();
+      });
+    }
+
+    return () => subscription.unsubscribe();
+  }, [addToast]);
 
   // Reset stuck Google sign-in loading state if user returns focus to this parent window (e.g. cancelled/closed popup)
   useEffect(() => {
@@ -477,49 +519,74 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     }
     setForgotLoading(true);
     try {
-      await sendPasswordResetEmail(auth, authForm.email);
+      // Supabase reports success for unknown addresses too, so nobody can use
+      // this form to find out who has an account.
+      const { error } = await getSupabase().auth.resetPasswordForEmail(authForm.email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+      if (error) throw error;
       setResetPasswordSentEmail(authForm.email);
       addToast("Password reset email sent! Check your inbox.", "success");
     } catch (err: any) {
-      console.error("Firebase password reset failure:", err);
-      setAuthError('No account found with this email address.');
+      console.error("Password reset failure:", err);
+      setAuthError(mapAuthError(err));
     } finally {
       setForgotLoading(false);
+    }
+  };
+
+  // Second half of a password reset: the user arrived from the emailed link
+  // with a recovery session and now chooses the new password.
+  const handleNewPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    const errors: { password?: string; repeatPassword?: string } = {};
+    if (authForm.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters.';
+    }
+    if (authForm.password !== authForm.repeatPassword) {
+      errors.repeatPassword = 'Passwords do not match.';
+    }
+    setInlineErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setEmailLoading(true);
+    try {
+      const { error } = await getSupabase().auth.updateUser({ password: authForm.password });
+      if (error) throw error;
+      addToast("Password updated. You're signed in.", "success");
+      setPasswordRecovery(false);
+      setAuthModalOpen(false);
+      setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
+    } catch (err: any) {
+      console.error("Password update failure:", err);
+      setAuthError(mapAuthError(err));
+    } finally {
+      setEmailLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     setAuthError('');
     setGoogleLoading(true);
-    
-    // Safety timeout: auto-reset loading state if it takes longer than 30 seconds (e.g. if authentication is abandoned)
-    const safetyTimeout = setTimeout(() => {
-      setGoogleLoading(false);
-    }, 30000);
-
     try {
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      
-      const firebaseUser = userCredential.user;
-      const fullName = firebaseUser.displayName || '';
-      const firstName = fullName.split(' ')[0] || firebaseUser.email?.split('@')[0] || 'Member';
-      addToast(`Welcome back, ${firstName}! 👋`, 'info');
-
-      setAuthModalOpen(false);
+      sessionStorage.setItem(OAUTH_PENDING_KEY, '1');
+      // Full-page redirect to Google and back; the session is picked up by the
+      // onAuthStateChange listener when this page loads again.
+      const { error } = await getSupabase().auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}${window.location.pathname}` },
+      });
+      if (error) throw error;
+      // Leave the button in its loading state while the browser navigates away.
     } catch (err: any) {
-      console.error("Firebase Google sign in failure:", err);
-      const mappedError = mapSignInError(err);
-      if (mappedError) {
-        setAuthError(mappedError);
-      }
-    } finally {
-      clearTimeout(safetyTimeout);
+      console.error("Google sign in failure:", err);
+      sessionStorage.removeItem(OAUTH_PENDING_KEY);
+      setAuthError(mapAuthError(err));
       setGoogleLoading(false);
     }
   };
 
-  // Sign in and Register with Firebase Auth SDK
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -529,77 +596,92 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       return;
     }
 
+    const supabase = (() => {
+      try {
+        return getSupabase();
+      } catch (err) {
+        setAuthError(mapAuthError(err));
+        return null;
+      }
+    })();
+    if (!supabase) return;
+
     if (authForm.isRegister) {
       try {
         setEmailLoading(true);
-        const userCredential = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
-        await updateProfile(userCredential.user, { displayName: authForm.name });
-        
-        // Send email verification
-        try {
-          await sendEmailVerification(userCredential.user);
-        } catch (verificationErr) {
-          console.warn("Verification email skip or fail:", verificationErr);
+        const { data, error } = await supabase.auth.signUp({
+          email: authForm.email,
+          password: authForm.password,
+          options: {
+            data: { full_name: authForm.name.trim() },
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+        if (error) throw error;
+
+        // For an address that is already registered, Supabase returns a user
+        // with no identities instead of an error, so it can't be used to probe
+        // which emails have accounts.
+        if (data.user && data.user.identities?.length === 0) {
+          setAuthError("An account with this email already exists. Try signing in instead.");
+          return;
         }
-        
+
+        // A session only comes back if "Confirm email" is off in Supabase.
+        if (data.session) {
+          addToast("Account created! Welcome to FoldPDF 🎉", "success");
+          setAuthModalOpen(false);
+          setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
+          return;
+        }
+
         addToast("Account created! Welcome to FoldPDF 🎉", "success");
-        
-        // Set verification email to toggle to verification message screen
         setVerificationEmail(authForm.email);
-        
+
         // Auto-close modal after 2 seconds
         setTimeout(() => {
           setAuthModalOpen(false);
           setVerificationEmail(null);
         }, 2000);
-        
-        // Immediately sign out to NOT sign them in automatically
-        await signOut(auth);
-        setUser(null);
-        localStorage.removeItem('user');
-        
-        // Reset the input form
+
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
       } catch (err: any) {
-        console.error("Firebase registration failure:", err);
-        const mappedError = mapSignUpError(err);
-        if (mappedError) {
-          setAuthError(mappedError);
-        }
+        console.error("Registration failure:", err);
+        setAuthError(mapAuthError(err));
       } finally {
         setEmailLoading(false);
       }
     } else {
       try {
         setEmailLoading(true);
-        const userCredential = await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
-        
-        // Check if email is verified
-        if (!userCredential.user.emailVerified) {
-          try {
-            await sendEmailVerification(userCredential.user);
-          } catch (sendErr) {
-            console.warn("Could not resend email verification:", sendErr);
+        sessionStorage.removeItem(OAUTH_PENDING_KEY);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: authForm.email,
+          password: authForm.password,
+        });
+
+        if (error?.code === 'email_not_confirmed') {
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: authForm.email,
+            options: { emailRedirectTo: `${window.location.origin}/` },
+          });
+          if (resendError) {
+            console.warn("Could not resend email verification:", resendError);
           }
           setVerificationEmail(authForm.email);
-          await signOut(auth);
-          setUser(null);
-          localStorage.removeItem('user');
           return;
         }
+        if (error) throw error;
 
-        const fullName = userCredential.user.displayName || '';
-        const firstName = fullName.split(' ')[0] || userCredential.user.email?.split('@')[0] || 'Member';
+        const firstName = toAppUser(data.user).name.split(' ')[0];
         addToast(`Welcome back, ${firstName}! 👋`, 'info');
 
         setAuthModalOpen(false);
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
       } catch (err: any) {
-        console.error("Firebase login failure:", err);
-        const mappedError = mapSignInError(err);
-        if (mappedError) {
-          setAuthError(mappedError);
-        }
+        console.error("Login failure:", err);
+        setAuthError(mapAuthError(err));
       } finally {
         setEmailLoading(false);
       }
@@ -608,11 +690,12 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      const { error } = await getSupabase().auth.signOut();
+      if (error) throw error;
       setUser(null);
       localStorage.removeItem('user');
     } catch (err) {
-      console.error('Firebase sign out failure:', err);
+      console.error('Sign out failure:', err);
     }
   };
 
@@ -1219,6 +1302,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                 setVerificationEmail(null);
                 setIsForgotPassword(false);
                 setResetPasswordSentEmail(null);
+                setPasswordRecovery(false);
                 setInlineErrors({});
                 setGoogleLoading(false);
                 setEmailLoading(false);
@@ -1229,7 +1313,67 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
               <Lucide.X className="h-5 w-5" />
             </button>
 
-            {resetPasswordSentEmail ? (
+            {passwordRecovery ? (
+              <>
+                <h2 className="text-2xl font-extrabold tracking-tight text-neutral-950 dark:text-white font-sans">
+                  Choose a New Password
+                </h2>
+                <p className="text-xs text-neutral-500 mt-1 mb-5">
+                  Your reset link worked. Pick a new password for your FoldPDF account.
+                </p>
+
+                {authError && (
+                  <p className="text-xs font-semibold text-rose-500 bg-rose-50/50 dark:bg-rose-950/20 p-2.5 rounded-xl mb-4 border border-rose-100 dark:border-rose-900/30">
+                    {authError}
+                  </p>
+                )}
+
+                <form onSubmit={handleNewPasswordSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">New Password</label>
+                    <input
+                      type="password"
+                      required
+                      autoComplete="new-password"
+                      value={authForm.password}
+                      onChange={(e) => {
+                        setAuthForm({ ...authForm, password: e.target.value });
+                        setInlineErrors(prev => ({ ...prev, password: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
+                    />
+                    {inlineErrors.password && (
+                      <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.password}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Repeat New Password</label>
+                    <input
+                      type="password"
+                      required
+                      autoComplete="new-password"
+                      value={authForm.repeatPassword}
+                      onChange={(e) => {
+                        setAuthForm({ ...authForm, repeatPassword: e.target.value });
+                        setInlineErrors(prev => ({ ...prev, repeatPassword: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-sm text-neutral-900 placeholder-neutral-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-900 transition-all cursor-text"
+                    />
+                    {inlineErrors.repeatPassword && (
+                      <p className="text-rose-500 text-[11px] mt-1 font-semibold">{inlineErrors.repeatPassword}</p>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={emailLoading}
+                    className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-2.5 text-sm hover:bg-indigo-700 active:bg-indigo-800 transition mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {emailLoading ? 'Saving...' : 'Save New Password'}
+                  </button>
+                </form>
+              </>
+            ) : resetPasswordSentEmail ? (
               <div className="py-2 text-center">
                 <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/25 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Lucide.KeyRound className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />

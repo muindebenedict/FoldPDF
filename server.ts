@@ -313,51 +313,6 @@ Synthesize an expert critique in Markdown:
     res.send(sitemap);
   });
 
-  // --- PROXY FOR FIREBASE AUTH CUSTOM DOMAIN ---
-  app.all("/__/auth/*", async (req, res) => {
-    const targetUrl = `https://foldpdf.firebaseapp.com${req.originalUrl}`;
-    try {
-      const headers = new Headers();
-      for (const [key, val] of Object.entries(req.headers)) {
-        if (key.toLowerCase() !== "host" && val !== undefined) {
-          if (Array.isArray(val)) {
-            val.forEach(v => headers.append(key, v));
-          } else {
-            headers.set(key, String(val));
-          }
-        }
-      }
-
-      const options: RequestInit = {
-        method: req.method,
-        headers: headers,
-      };
-
-      if (req.method !== "GET" && req.method !== "HEAD") {
-        if (req.headers["content-type"]?.includes("application/json") && req.body) {
-          options.body = JSON.stringify(req.body);
-        } else if (req.headers["content-type"]?.includes("application/x-www-form-urlencoded") && req.body) {
-          options.body = new URLSearchParams(req.body).toString();
-        }
-      }
-
-      const response = await fetch(targetUrl, options);
-      res.status(response.status);
-
-      response.headers.forEach((value, name) => {
-        if (name.toLowerCase() !== "transfer-encoding" && name.toLowerCase() !== "content-encoding") {
-          res.setHeader(name, value);
-        }
-      });
-
-      const buffer = await response.arrayBuffer();
-      res.send(Buffer.from(buffer));
-    } catch (err) {
-      console.error("Firebase auth proxy error:", err);
-      res.status(500).send("Authentication proxy error");
-    }
-  });
-
   // Serve Vite or Static files depending on ENV mode
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

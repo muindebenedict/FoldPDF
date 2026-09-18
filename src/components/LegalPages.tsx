@@ -1,55 +1,6 @@
 import React, { useState } from 'react';
 import * as Lucide from 'lucide-react';
-import { db, auth } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid || null,
-      email: auth.currentUser?.email || null,
-      emailVerified: auth.currentUser?.emailVerified || null,
-      isAnonymous: auth.currentUser?.isAnonymous || null,
-      tenantId: auth.currentUser?.tenantId || null,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
-    },
-    operationType,
-    path
-  };
-  const jsonStr = JSON.stringify(errInfo);
-  console.error('Firestore Error: ', jsonStr);
-  throw new Error(jsonStr);
-}
+import { getSupabase } from '../lib/supabase';
 
 interface LegalPagesProps {
   page: 'about' | 'contact' | 'privacy' | 'terms' | 'dmca';
@@ -83,15 +34,25 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
       return;
     }
 
+    // 3. Same limits the support_tickets table enforces
+    if (nameVal.length > 120) {
+      setFormError('Please keep your name under 120 characters.');
+      return;
+    }
+    if (messageVal.length > 5000) {
+      setFormError(`Please keep your message under 5,000 characters (currently ${messageVal.length.toLocaleString()}).`);
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // id, status and submitted_at are set by the database; the client is not
+      // permitted to supply them.
       const ticketData = {
-        fullName: nameVal,
+        full_name: nameVal,
         email: emailVal,
         category: contactForm.subject,
         message: messageVal,
-        submittedAt: serverTimestamp(),
-        status: 'open'
       };
 
       let deliverySuccessful = false;
@@ -118,9 +79,10 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         console.warn("Background API submission failed, fallback chosen:", submitErr);
       }
 
-      // 2. Also log inside Firestore database
+      // 2. Also log inside the database
       try {
-        await addDoc(collection(db, 'support_tickets'), ticketData);
+        const { error } = await getSupabase().from('support_tickets').insert(ticketData);
+        if (error) throw error;
         deliverySuccessful = true;
       } catch (dbErr) {
         console.error('Database logging status: ', dbErr);

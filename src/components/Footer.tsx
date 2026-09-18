@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import * as Lucide from "lucide-react";
 import { FoldPdfLogo } from "./FoldPdfLogo";
-import { db, auth } from "../lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { getSupabase, isSupabaseConfigured } from "../lib/supabase";
 
 interface FooterProps {
   navigate: (path: string) => void;
@@ -31,38 +30,43 @@ export function Footer({ navigate }: FooterProps) {
       return;
     }
 
-    if (!auth.currentUser) {
-      setErrorMsg("Please sign in to subscribe to policy updates.");
+    if (!isSupabaseConfigured) {
+      setErrorMsg("Subscriptions are temporarily unavailable.");
       return;
     }
-    
+
     setSubscribing(true);
 
     try {
-      const normalizedEmail = trimmedEmail.toLowerCase();
-      
-      // Query Firestore to verify if the email already exists in subscribers collection
-      const subscribersRef = collection(db, "subscribers");
-      const q = query(subscribersRef, where("email", "==", normalizedEmail));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        setErrorMsg("You're already subscribed!");
-        setSubscribing(false);
+      const supabase = getSupabase();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setErrorMsg("Please sign in to subscribe to policy updates.");
         return;
       }
 
-      // Add subscriber document
-      await addDoc(subscribersRef, {
-        email: normalizedEmail,
-        subscribedAt: serverTimestamp()
-      });
+      // No read-before-write: the list is not readable from the browser at all.
+      // The unique constraint says whether this address is already subscribed.
+      const { error } = await supabase
+        .from("subscribers")
+        .insert({ email: trimmedEmail.toLowerCase() });
+
+      if (error?.code === "23505") {
+        setErrorMsg("You're already subscribed!");
+        return;
+      }
+      if (error?.code === "42501") {
+        // Row-level security only allows the signed-in account's own address.
+        setErrorMsg(`Please subscribe with the address you signed in with (${session.user.email}).`);
+        return;
+      }
+      if (error) throw error;
 
       setSuccessMsg("Subscribed successfully!");
       setSubscribed(true);
       setEmail("");
     } catch (err: any) {
-      console.error("Firestore subscription error:", err);
+      console.error("Subscription error:", err);
       setErrorMsg("Something went wrong. Please try again.");
     } finally {
       setSubscribing(false);
