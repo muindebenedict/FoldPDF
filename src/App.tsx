@@ -22,6 +22,10 @@ const OAUTH_PENDING_KEY = 'foldpdf_oauth_pending';
 // from Google. Stripped once handled so a refresh doesn't replay them.
 const AUTH_URL_PARAMS = ['code', 'token_hash', 'type', 'error', 'error_code', 'error_description'];
 
+// A token_hash can only be verified once, and StrictMode runs effects twice in
+// development: without this the second run reports a working link as expired.
+const handledAuthLinks = new Set<string>();
+
 function clearAuthParamsFromUrl() {
   const url = new URL(window.location.href);
   let changed = false;
@@ -356,7 +360,11 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       }
     });
 
-    if (linkError) {
+    const linkKey = tokenHash ?? (linkError ? `error:${linkError}` : null);
+    const firstVisit = linkKey !== null && !handledAuthLinks.has(linkKey);
+    if (linkKey) handledAuthLinks.add(linkKey);
+
+    if (linkError && firstVisit) {
       sessionStorage.removeItem(OAUTH_PENDING_KEY);
       addToast(
         params.get('error_code') === 'otp_expired'
@@ -365,7 +373,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         'error'
       );
       clearAuthParamsFromUrl();
-    } else if (tokenHash && linkType) {
+    } else if (tokenHash && linkType && firstVisit) {
       // token_hash links (see supabase/README.md) work in any browser, unlike
       // PKCE codes, which only work in the browser that requested the email.
       supabase.auth.verifyOtp({ token_hash: tokenHash, type: linkType }).then(({ error }) => {
