@@ -18,6 +18,13 @@ import type { EmailOtpType, User as SupabaseUser } from '@supabase/supabase-js';
 // user actually comes back from Google, not on every page load with a session.
 const OAUTH_PENDING_KEY = 'foldpdf_oauth_pending';
 
+// Set while a password-reset link's temporary session is active and no new
+// password has been saved. Supabase signs the browser in so the password can be
+// changed, but that must not count as signing in: as with Firebase, the user
+// signs in with the new password afterwards. Kept in localStorage (like the
+// session itself) so a refresh or a second tab can't turn the link into a login.
+const RECOVERY_PENDING_KEY = 'foldpdf_recovery_pending';
+
 // Parameters Supabase adds when it redirects back from an auth email or from
 // Google: in the query string (token_hash links) or in the fragment (sessions
 // and errors in the implicit flow). Stripped once handled so a refresh doesn't
@@ -355,14 +362,25 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     // the session in the fragment; say so rather than silently signing them in.
     let announceConfirmation =
       !tokenHash && params.has('access_token') && (linkType === 'signup' || linkType === 'email');
+    // Compared with the session's token so that only the session that actually
+    // came from this reset link is treated as one. A link that failed leaves any
+    // earlier session in place, and that one must not be mistaken for a reset.
+    const recoveryAccessToken = linkType === 'recovery' ? params.get('access_token') : null;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (session && (event === 'PASSWORD_RECOVERY' || (recoveryAccessToken && session.access_token === recoveryAccessToken))) {
+        localStorage.setItem(RECOVERY_PENDING_KEY, '1');
+      }
+      if (!session) localStorage.removeItem(RECOVERY_PENDING_KEY);
+      const recovering = !!session && localStorage.getItem(RECOVERY_PENDING_KEY) === '1';
+      if (recovering) {
         setPasswordRecovery(true);
         setAuthModalOpen(true);
       }
 
-      const sessionUser = session?.user;
+      // During a reset the temporary session exists, but the app shows the
+      // user as signed out until they sign in with the new password.
+      const sessionUser = recovering ? undefined : session?.user;
       // Kept from the Firebase version: an unconfirmed email/password account is
       // not signed in, even if "Confirm email" is ever switched off in Supabase.
       const unconfirmed = sessionUser?.app_metadata?.provider === 'email' && !sessionUser.email_confirmed_at;
@@ -410,6 +428,9 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         if (error) {
           addToast('That link has expired or was already used. Please request a new one.', 'error');
         } else if (linkType === 'recovery') {
+          localStorage.setItem(RECOVERY_PENDING_KEY, '1');
+          setUser(null);
+          localStorage.removeItem('user');
           setPasswordRecovery(true);
           setAuthModalOpen(true);
         } else {
@@ -590,12 +611,24 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
     setEmailLoading(true);
     try {
-      const { error } = await getSupabase().auth.updateUser({ password: authForm.password });
+      const supabase = getSupabase();
+      const { data, error } = await supabase.auth.updateUser({ password: authForm.password });
       if (error) throw error;
-      addToast("Password updated. You're signed in.", "success");
+
+      // Sign out everywhere. The reset link's session was never a real sign-in,
+      // and anyone else signed in to this account should now need the new
+      // password too.
+      localStorage.removeItem(RECOVERY_PENDING_KEY);
+      const { error: signOutError } = await supabase.auth.signOut({ scope: 'global' });
+      if (signOutError) await supabase.auth.signOut({ scope: 'local' });
+      setUser(null);
+      localStorage.removeItem('user');
+
+      // Leave the modal open on the sign-in form, with the email filled in.
       setPasswordRecovery(false);
-      setAuthModalOpen(false);
-      setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
+      setInlineErrors({});
+      setAuthForm({ name: '', email: data.user?.email ?? '', password: '', repeatPassword: '', isRegister: false });
+      addToast("Password updated. Please sign in with your new password.", "success");
     } catch (err: any) {
       console.error("Password update failure:", err);
       setAuthError(mapAuthError(err));
@@ -1332,10 +1365,16 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
       {/* AUTHENTICATION POPUP DIALOG TRIGGER */}
       {authModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative w-full max-w-md rounded-3xl border bg-white p-6 shadow-2xl dark:bg-neutral-900 animate-in zoom-in-95 duration-200 text-left">
             <button
               onClick={() => {
+                if (passwordRecovery) {
+                  // Abandoning a reset: drop its temporary session so the link
+                  // can't be used to sign in.
+                  localStorage.removeItem(RECOVERY_PENDING_KEY);
+                  getSupabase().auth.signOut({ scope: 'local' }).catch(() => {});
+                }
                 setAuthError('');
                 setVerificationEmail(null);
                 setIsForgotPassword(false);
@@ -1734,7 +1773,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
       {/* FRIENDLY SIGN OUT CONFIRMATION MODAL */}
       {logoutConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm rounded-3xl border border-slate-100 dark:border-neutral-800 bg-white p-6 shadow-2xl dark:bg-neutral-900 animate-in zoom-in-95 duration-200 text-center">
             
             <button
