@@ -33,6 +33,8 @@ const AUTH_URL_PARAMS = [
   'code', 'token_hash', 'type', 'error', 'error_code', 'error_description',
   'access_token', 'refresh_token', 'expires_at', 'expires_in', 'token_type',
   'provider_token', 'provider_refresh_token',
+  // Marker the Supabase auth server appends to its redirects; unused by the client.
+  'sb',
 ];
 
 // A token_hash can only be verified once, and StrictMode runs effects twice in
