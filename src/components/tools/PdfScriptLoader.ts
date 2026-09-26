@@ -101,7 +101,9 @@ export async function renderPage(pdfDoc: any, n: number, scale: number = 1.5): P
   cv.height = vp.height;
   const ctx = cv.getContext("2d");
   if (!ctx) throw new Error("Could not construct 2D context");
-  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  // "print" rendering doesn't wait for animation frames, which browsers pause
+  // in background tabs, so conversions keep going if the user switches tabs.
+  await page.render({ canvasContext: ctx, viewport: vp, intent: "print" }).promise;
   return cv;
 }
 
@@ -156,7 +158,7 @@ export async function extractText(ab: ArrayBuffer): Promise<{
           cv.height = vp.height;
           const ctx = cv.getContext("2d");
           if (ctx) {
-            await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+            await pg.render({ canvasContext: ctx, viewport: vp, intent: "print" }).promise;
             image = cv.toDataURL("image/png");
           }
         }

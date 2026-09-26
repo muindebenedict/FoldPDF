@@ -111,7 +111,8 @@ export async function ocrPdf(bytes: ArrayBuffer, onProgress: Progress): Promise<
       const ctx = canvas.getContext("2d")!;
       ctx.fillStyle = "#fff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      // "print" rendering keeps going in a background tab (no animation frames).
+      await page.render({ canvasContext: ctx, viewport, intent: "print" }).promise;
 
       const { data } = await worker.recognize(canvas, {}, { text: true, blocks: true });
       fullText += `\n--- Page ${i} ---\n${(data.text || "").trim()}\n`;

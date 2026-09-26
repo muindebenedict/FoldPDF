@@ -223,7 +223,9 @@ async function renderPair(page: any, viewport: any): Promise<{ full: HTMLCanvasE
     return c;
   };
   const full = make();
-  await page.render({ canvasContext: full.getContext("2d"), viewport }).promise;
+  // "print" rendering doesn't wait for animation frames, which browsers pause
+  // in background tabs; the conversion keeps going if the user switches tabs.
+  await page.render({ canvasContext: full.getContext("2d"), viewport, intent: "print" }).promise;
 
   const bg = make();
   const proto = CanvasRenderingContext2D.prototype;
@@ -246,7 +248,7 @@ async function renderPair(page: any, viewport: any): Promise<{ full: HTMLCanvasE
     if (!retyped(this, args[1], args[2])) return (origStroke as any).apply(this, args);
   } as any;
   try {
-    await page.render({ canvasContext: bg.getContext("2d"), viewport }).promise;
+    await page.render({ canvasContext: bg.getContext("2d"), viewport, intent: "print" }).promise;
   } finally {
     proto.fillText = origFill;
     proto.strokeText = origStroke;
