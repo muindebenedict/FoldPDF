@@ -17,18 +17,12 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
   const [err, setErr] = useState("");
   const [res, setRes] = useState<{ blob: Blob; name: string; info?: string } | null>(null);
   const [drag, setDrag] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [retryCountdown, setRetryCountdown] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
-  const elapsedTimerRef = useRef<any>(null);
-  const retryTimerRef = useRef<any>(null);
 
   useEffect(() => {
     return () => {
-      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
-      if (retryTimerRef.current) clearInterval(retryTimerRef.current);
       if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
@@ -39,26 +33,14 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     setRes(null);
     setErr("");
     setStatusMsg("");
-    setRetryCount(0);
-    setRetryCountdown(0);
   };
 
   const cancelAndReset = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    if (retryTimerRef.current) {
-      clearInterval(retryTimerRef.current);
-      retryTimerRef.current = null;
-    }
-    if (elapsedTimerRef.current) {
-      clearInterval(elapsedTimerRef.current);
-      elapsedTimerRef.current = null;
-    }
     setSt("idle");
     setStatusMsg("");
-    setRetryCount(0);
-    setRetryCountdown(0);
   };
 
   const pick = (fl: FileList | null) => {
@@ -82,146 +64,53 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     setErr("");
   };
 
-  const startCompression = async (retryAttempt = 0) => {
+  const startCompression = async () => {
     if (!files.length) return;
     setErr("");
     setSt("processing");
-    setStatusMsg("Processing your PDF...");
+    setStatusMsg("Reading your PDF...");
 
+    // Compression runs in this tab; "Cancel" just discards the result.
     const controller = new AbortController();
     abortControllerRef.current = controller;
-
-    let secondsElapsed = 0;
-    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
-
-    elapsedTimerRef.current = setInterval(() => {
-      secondsElapsed += 1;
-      if (secondsElapsed >= 30) {
-        setStatusMsg("Processing your PDF...");
-      } else if (secondsElapsed >= 15) {
-        setStatusMsg("Processing your PDF...");
-      } else if (secondsElapsed >= 2) {
-        setStatusMsg("Processing your PDF...");
-      }
-    }, 1000);
-
     const file = files[0];
-    const mode = lvl === "strong" ? "ultra" : lvl === "medium" ? "smart" : "quality";
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("mode", mode);
-
-    const fetchTimeoutId = setTimeout(() => {
-      controller.abort();
-    }, 60000);
 
     try {
-      const response = await fetch("https://foldpdf-api-1.onrender.com/api/compress", {
-        method: "POST",
-        body: formData,
-        signal: controller.signal,
-      });
+      const { compressPdf } = await import("../../lib/pdf/compress");
+      const r = await compressPdf(await file.arrayBuffer(), lvl, (_p, m) => setStatusMsg(m));
+      if (controller.signal.aborted) return;
 
-      clearTimeout(fetchTimeoutId);
-      if (elapsedTimerRef.current) {
-        clearInterval(elapsedTimerRef.current);
-        elapsedTimerRef.current = null;
-      }
-
-      if (response.status === 429) {
-        if (retryAttempt < 3) {
-          setRetryCount(retryAttempt + 1);
-          let count = 15;
-          setRetryCountdown(count);
-          setStatusMsg(
-            `High demand right now. Your file will be processed shortly — please wait... Retrying in ${count} seconds...`
-          );
-
-          if (retryTimerRef.current) clearInterval(retryTimerRef.current);
-          retryTimerRef.current = setInterval(() => {
-            count -= 1;
-            setRetryCountdown(count);
-            if (count > 0) {
-              setStatusMsg(
-                `High demand right now. Your file will be processed shortly — please wait... Retrying in ${count} seconds...`
-              );
-            } else {
-              clearInterval(retryTimerRef.current);
-              retryTimerRef.current = null;
-              startCompression(retryAttempt + 1);
-            }
-          }, 1000);
-
-          return;
-        } else {
-          throw new Error("PROX_MORE_429");
-        }
-      }
-
-      if (response.status === 500) {
-        throw new Error("SERVER_500");
-      }
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || `Server error during compression (HTTP ${response.status})`);
-      }
-
-      const blobData = await response.blob();
-      const pdfBlob = new Blob([blobData], { type: "application/pdf" });
-
-      const xOriginalSize = response.headers.get("X-Original-Size") || response.headers.get("x-original-size");
-      const xNewSize = response.headers.get("X-New-Size") || response.headers.get("x-new-size");
-
-      const finalOriginalSize = xOriginalSize ? parseInt(xOriginalSize, 10) : file.size;
-      const finalNewSize = xNewSize ? parseInt(xNewSize, 10) : pdfBlob.size;
-
-      const savedPercent = (((finalOriginalSize - finalNewSize) / finalOriginalSize) * 100).toFixed(1);
       const finalFilename = getOutputFile(file.name, "compressed", ".pdf");
+      let blob: Blob;
+      let info: string;
+      if (r.bytes.length < file.size) {
+        blob = new Blob([r.bytes], { type: "application/pdf" });
+        const savedPercent = (((file.size - r.bytes.length) / file.size) * 100).toFixed(1);
+        info = `Compressed by ${savedPercent}% (${fmt(file.size)} → ${fmt(r.bytes.length)}).`;
+      } else {
+        // Never hand back a bigger file: keep the original bytes.
+        blob = new Blob([file], { type: "application/pdf" });
+        info =
+          lvl === "strong"
+            ? "This PDF is already optimized, so we kept your original file unchanged."
+            : "This PDF is already optimized at this level, so we kept your original file unchanged. Try Ultra Compression for a smaller file.";
+      }
 
-      dl(pdfBlob, finalFilename);
-
-      setRes({
-        blob: pdfBlob,
-        name: finalFilename,
-        info: `Successfully compressed your PDF by ${savedPercent}% (${fmt(finalOriginalSize)} → ${fmt(finalNewSize)})`,
-      });
+      dl(blob, finalFilename);
+      setRes({ blob, name: finalFilename, info });
       setSt("done");
-
-      if (onSuccess) {
-        onSuccess(finalFilename, toolName);
-      }
+      if (onSuccess) onSuccess(finalFilename, toolName);
     } catch (e: any) {
-      clearTimeout(fetchTimeoutId);
-      if (elapsedTimerRef.current) {
-        clearInterval(elapsedTimerRef.current);
-        elapsedTimerRef.current = null;
+      if (controller.signal.aborted) return;
+      const errMsg = String(e?.message || e || "");
+      let friendly = "Compression failed. Please try again.";
+      if (errMsg === "PASSWORD_PROTECTED") {
+        friendly = "This PDF is password-protected. Remove the password with Unlock PDF first, then compress it.";
+      } else if (/memory|allocation/i.test(errMsg)) {
+        friendly = "This file is too large to compress in your browser. Try closing other tabs and try again.";
+      } else if (/parse|invalid|damaged|corrupt/i.test(errMsg)) {
+        friendly = "This PDF appears to be damaged. Try Repair PDF first.";
       }
-      if (retryTimerRef.current) {
-        clearInterval(retryTimerRef.current);
-        retryTimerRef.current = null;
-      }
-
-      if (e.name === "AbortError" || controller.signal.aborted) {
-        setSt("idle");
-        setStatusMsg("");
-        return;
-      }
-
-      const errMsg = e.message || String(e);
-      let friendly = "Compression failed. Please check your network and try again.";
-
-      if (errMsg === "SERVER_500") {
-        friendly = "Compression failed. Please try a smaller file or try again.";
-      } else if (errMsg === "PROX_MORE_429") {
-        friendly = "Please try again in a few minutes.";
-      } else if (errMsg.includes("504") || errMsg.includes("timeout") || errMsg.includes("TIMEOUT")) {
-        friendly = "Processing took too long. Please try a smaller file.";
-      } else if (errMsg.includes("limit") || errMsg.includes("429")) {
-        friendly = "High demand right now. Please try again in a few minutes.";
-      }
-
       setErr(friendly);
       setSt("idle");
     } finally {
@@ -324,17 +213,17 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
             {
               v: "strong",
               l: "Ultra Compression",
-              d: "Maximum size reduction for smaller PDFs",
+              d: "Smallest file. Images become noticeably softer; text stays sharp.",
             },
             {
               v: "medium",
               l: "Smart Compression",
-              d: "Optimized quality and compression balance",
+              d: "Recommended. Good image quality with a big size reduction.",
             },
             {
               v: "light",
               l: "Quality Compression",
-              d: "Preserves more detail with lighter compression",
+              d: "Keeps images crisper, with a smaller size reduction.",
             },
           ].map(({ v, l, d }) => {
             const active = lvl === v;

@@ -90,8 +90,6 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
 
   // ─── ENCRYPTION FUNCTION ───
   const encryptPdf = async () => {
-    console.log("DEBUG: password value is:", JSON.stringify(password), "length:", password.length);
-
     if (!file) {
       setErrorMsg("Please upload a PDF first.");
       return;
@@ -134,7 +132,6 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
 
       // SANITY CHECK: VERIFY WE CAN LOAD IT BACK WITH THE SAME PASSWORD
       await PDFDocument.load(encryptedBytes, { password: password });
-      console.log("VERIFICATION PASSED: File is encrypted with password:", password);
 
       // BLOB MUST USE encryptedBytes, NOT original arrayBuffer
       const blob = new Blob([encryptedBytes], { type: "application/pdf" });
@@ -627,7 +624,7 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
   const [st, setSt] = useState<"idle" | "processing" | "done" | "error">("idle");
   const [pct, setPct] = useState(0);
   const [pmsg, setPmsg] = useState("");
-  const [res, setRes] = useState<{ blob: Blob; name: string; info: string } | null>(null);
+  const [res, setRes] = useState<{ blob: Blob; name: string; text: Blob; textName: string; info: string } | null>(null);
   const [err, setErr] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -639,67 +636,34 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
     }
 
     setSt("processing");
-    setPct(10);
-    setPmsg("Converting your PDF to Text...");
+    setPct(5);
+    setPmsg("Opening your PDF...");
     setErr("");
 
-    let doc: any = null;
-    let worker: any = null;
-    let timeoutId: any = null;
-
     try {
-      // 30 seconds timeout race
-      const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error("TIMEOUT_ERROR"));
-        }, 30000);
+      const { ocrPdf } = await import("../../lib/pdf/ocr");
+      const r = await ocrPdf(await readAB(f), (p, m) => {
+        setPct(p);
+        setPmsg(m);
       });
 
-      const executePromise = (async () => {
-        const lib = await getPdfJs();
-        const ab = await readAB(f);
-        doc = await lib.getDocument({ data: new Uint8Array(ab) }).promise;
-        const tot = doc.numPages;
-        
-        const { loadScript: lSc } = require("./PdfScriptLoader");
-        await lSc("https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js", "Tesseract");
-        const T = (window as any).Tesseract;
-        
-        worker = await T.createWorker();
-        
-        let extTxt = "";
-        for (let i = 1; i <= tot; i++) {
-          setPct(15 + Math.round((i / tot) * 80));
-          setPmsg("Converting your PDF to Text...");
-          const cv = await renderPage(doc, i, 1.5);
-          const { data: { text } } = await worker.recognize(cv);
-          extTxt += `\n--- Page ${i} ---\n${text}\n`;
-        }
-        
-        setPct(100);
-        const blob = new Blob([extTxt], { type: "text/plain" });
-        return {
-          blob,
-          name: getOutputFile(f.name, "ocr", ".txt"),
-          info: `Scanned ${tot} pages & compiled text`
-        };
-      })();
-
-      const scanResult = await Promise.race([executePromise, timeoutPromise]) as { blob: Blob; name: string; info: string };
-      clearTimeout(timeoutId);
-      
-      setRes(scanResult);
+      let info = `Recognised ${r.words} words on ${r.pagesScanned} scanned page${r.pagesScanned === 1 ? "" : "s"}.`;
+      if (r.pagesWithText) {
+        info += ` ${r.pagesWithText} page${r.pagesWithText === 1 ? " already had" : "s already had"} selectable text and ${r.pagesWithText === 1 ? "was" : "were"} left as is.`;
+      }
+      setRes({
+        blob: new Blob([r.pdf], { type: "application/pdf" }),
+        name: getOutputFile(f.name, "searchable", ".pdf"),
+        text: new Blob([r.text], { type: "text/plain;charset=utf-8" }),
+        textName: getOutputFile(f.name, "ocr", ".txt"),
+        info,
+      });
       setSt("done");
     } catch (e: any) {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
       const errMsg = String(e?.message || e || "");
       let friendlyError = "OCR Scan failed.";
-      
-      if (errMsg === "TIMEOUT_ERROR") {
-        friendlyError = "Processing took too long. Please try a smaller file.";
-      } else if (
+
+      if (
         errMsg.includes("damaged") || 
         errMsg.includes("password") || 
         errMsg.includes("decrypt") || 
@@ -722,21 +686,6 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
       
       setErr(friendlyError);
       setSt("idle"); // Auto-reset OCR state back to upload/idle state!
-    } finally {
-      if (worker && typeof worker.terminate === "function") {
-        try {
-          await worker.terminate();
-        } catch (errWorker) {
-          console.warn("Could not terminate OCR worker cleanly:", errWorker);
-        }
-      }
-      if (doc && typeof doc.destroy === "function") {
-        try {
-          await doc.destroy();
-        } catch (errDoc) {
-          console.warn("Could not destroy PDF.js doc cleanly:", errDoc);
-        }
-      }
     }
   };
 
@@ -745,7 +694,17 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
       <Done
         blob={res.blob}
         name={res.name}
-        info={res.info}
+        info={
+          <>
+            <p className="mb-2">{res.info}</p>
+            <button
+              onClick={() => dl(res.text, res.textName)}
+              className="underline font-semibold text-indigo-600 dark:text-indigo-400 cursor-pointer"
+            >
+              Also download the text only ({res.textName})
+            </button>
+          </>
+        }
         onReset={() => {
           setSt("idle");
           setRes(null);
@@ -803,7 +762,7 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
         </p>
       </div>
 
-      {st === "processing" && <Spin msg={pmsg} />}
+      {st === "processing" && <Bar v={pct} msg={pmsg} />}
       <Err msg={err} onClose={() => setErr("")} />
     </div>
   );

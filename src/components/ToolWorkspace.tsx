@@ -471,7 +471,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
       case 'webp-to-pdf':
         return <ImgToPdfTool accept=".webp" toolName={tool.name} onSuccess={onActionLogged} />;
       case 'heic-to-pdf':
-        return <ImgToPdfTool accept=".heic" toolName={tool.name} onSuccess={onActionLogged} />;
+        return <ImgToPdfTool accept=".heic,.heif" toolName={tool.name} onSuccess={onActionLogged} />;
       case 'compress-pdf':
         return <CompressTool toolName={tool.name} onSuccess={onActionLogged} />;
       case 'merge-pdf':

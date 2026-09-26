@@ -685,29 +685,17 @@ export const TxtToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→WORD */
 export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Converting your PDF to Word...");
-
-    const formData = new FormData();
-    formData.append("file", files[0]);
-
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-word", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Conversion failed. Please try again.");
-    }
-
-    prog(80, "Converting your PDF to Word...");
-    const blob = await response.blob();
-    const docxBlob = new Blob([blob], {
-      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    });
+    prog(3, "Opening your PDF...");
+    const { pdfToDocx } = await import("../../lib/convert/pdfToDocx");
+    const title = (files[0]?.name || "Document").replace(/\.pdf$/i, "");
+    const { blob, pages } = await pdfToDocx(await readAB(files[0]), title, prog);
 
     return {
-      blob: docxBlob,
-      name: getOutputFile(files[0]?.name, "converted", ".docx")
+      blob: new Blob([blob], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      }),
+      name: getOutputFile(files[0]?.name, "converted", ".docx"),
+      info: `${pages} page${pages === 1 ? "" : "s"} converted in your browser. Layout, fonts and spacing match the PDF.`
     };
   }, []);
 
@@ -1044,30 +1032,17 @@ export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→PPT */
 export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Converting your PDF to PowerPoint...");
-
-    const formData = new FormData();
-    formData.append("file", files[0]);
-
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-ppt", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Conversion failed. Please try again.");
-    }
-
-    prog(80, "Converting your PDF to PowerPoint...");
-    const blob = await response.blob();
-    const pptxBlob = new Blob([blob], {
-      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    });
+    prog(3, "Opening your PDF...");
+    const { pdfToPptx } = await import("../../lib/convert/pdfToPptx");
+    const title = (files[0]?.name || "Presentation").replace(/\.pdf$/i, "");
+    const { blob, slides } = await pdfToPptx(await readAB(files[0]), title, prog);
 
     return {
-      blob: pptxBlob,
+      blob: new Blob([blob], {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      }),
       name: getOutputFile(files[0]?.name, "converted", ".pptx"),
-      info: "Converted using Adobe PDF Services — structure preserved"
+      info: `${slides} slide${slides === 1 ? "" : "s"} created in your browser, with editable text in the original positions.`
     };
   }, []);
 
@@ -1077,27 +1052,27 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PPT→PDF */
 export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait...");
-
-    const formData = new FormData();
-    formData.append("file", files[0]);
-
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-pdf", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Conversion failed. Please try again.");
+    prog(3, "Opening your presentation...");
+    const { pptxToPdf } = await import("../../lib/convert/pptxToPdf");
+    let r;
+    try {
+      r = await pptxToPdf(await readAB(files[0]), prog);
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      if (msg === "NOT_PPTX" || /zip|central directory|signature/i.test(msg)) {
+        throw new Error("Could not open this presentation. If it's an old .ppt file, open it in PowerPoint and save it as .pptx first.");
+      }
+      if (msg === "NO_SLIDES") throw new Error("This presentation has no visible slides to convert.");
+      throw e;
     }
 
-    prog(80, "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait...");
-    const blob = await response.blob();
-    const pdfBlob = new Blob([blob], { type: "application/pdf" });
-
+    const notes: string[] = [`${r.slides} slide${r.slides === 1 ? "" : "s"} converted in your browser.`];
+    if (r.hidden) notes.push(`${r.hidden} hidden slide${r.hidden === 1 ? " was" : "s were"} left out, as PowerPoint does.`);
+    if (r.skipped.length) notes.push(`Not included: ${r.skipped.join(", ")}.`);
     return {
-      blob: pdfBlob,
-      name: getOutputFile(files[0]?.name, "converted", ".pdf")
+      blob: new Blob([r.pdf], { type: "application/pdf" }),
+      name: getOutputFile(files[0]?.name, "converted", ".pdf"),
+      info: notes.join(" ")
     };
   }, []);
 
@@ -1105,7 +1080,7 @@ export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
     <Proc
       id="ppt-to-pdf"
       label="Convert PowerPoint to PDF"
-      accept=".pptx,.ppt"
+      accept=".pptx"
       run={run}
       onSuccess={onSuccess}
       toolName={toolName}
