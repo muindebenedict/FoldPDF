@@ -270,6 +270,11 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
       
       if (errMsg === "TIMEOUT_ERROR") {
         friendlyError = "Processing took too long. Please try a smaller file.";
+      } else if (/dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(errMsg)) {
+        // Part of the tool is downloaded when first used; that download failed.
+        friendlyError = "Part of this tool didn't load. Please refresh the page and try again.";
+      } else if (!accept.includes(".pdf") && /damaged|corrupt|structure|decode|unsupported/i.test(errMsg)) {
+        friendlyError = "This file appears to be damaged or in a format this tool can't read.";
       } else if (errMsg.includes("unsupported characters") || errMsg.includes("WinAnsi cannot encode") || errMsg.includes("WinAnsi")) {
         friendlyError = "This document contains unsupported characters. Try saving it as a plain .txt file first.";
       } else if (
