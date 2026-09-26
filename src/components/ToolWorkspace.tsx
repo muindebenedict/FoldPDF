@@ -1520,21 +1520,10 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3">
               <Lucide.ShieldCheck className="h-5 w-5" />
             </div>
-            {tool.id === 'compress-pdf' ? (
-              <>
-                <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">Secure Processing</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
-                  Your file is sent to our server, compressed, and deleted immediately after download. Nothing is stored.
-                </p>
-              </>
-            ) : (
-              <>
-                <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">RAM-Only Processing</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
-                  All files process strictly in memory and are deleted automatically off our servers instantly.
-                </p>
-              </>
-            )}
+            <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">Never Uploaded</span>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
+              Your file is processed inside your browser and never leaves your device. Nothing is stored.
+            </p>
             <div className="text-[10px] font-semibold text-slate-400">100% Free & Secure</div>
           </div>
 

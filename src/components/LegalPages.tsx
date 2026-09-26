@@ -287,7 +287,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             1. We Do Not Store Your Files
           </h2>
           <p>
-            We do not save or hold onto any of your uploaded files. Most of our tools process your documents directly inside your web browser on your own computer, so your files never upload to the internet. Four of our tools do require server processing to function properly: Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF. These tools send files to our secure server for processing, and your files are permanently deleted immediately after you download your result. All other tools run entirely in your browser and your file never leaves your device.
+            We do not save or hold onto any of your files. Every FoldPDF tool processes your documents directly inside your web browser on your own computer, so your files are never uploaded to the internet. Your results are created on your device and saved straight to your downloads.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -359,7 +359,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
             3. No Liability for Data Loss
           </h2>
           <p>
-            Four of our tools — Compress PDF, PDF to Word, PDF to PowerPoint, and PowerPoint to PDF — send files to our secure server for processing. This is necessary to deliver high quality results. Your file is uploaded, processed, and permanently deleted immediately after you download your result. All other tools run entirely in your browser and your file never leaves your device. Because we never store or keep copies of any of your documents, we cannot be held responsible for files that go missing, get corrupted, or have errors during processing. Please make sure you always keep a backup of your original files safely saved on your own computer.
+            Every FoldPDF tool runs entirely in your browser, so your files never leave your device and we never receive a copy of them. Because we never store or keep copies of any of your documents, we cannot be held responsible for files that go missing, get corrupted, or have errors during processing. Please make sure you always keep a backup of your original files safely saved on your own computer.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -391,9 +391,9 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
       <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
         DMCA Takedown Procedures
       </h1>
-      <p className="mb-8 text-sm text-neutral-500">Last Revised: May 21, 2026</p>
+      <p className="mb-8 text-sm text-neutral-500">Last Revised: September 26, 2026</p>
       <p className="mb-4">
-        Because of how FoldPDF works, we do not store, host, or archive any documents on our servers. Your files are processed instantly and deleted right after. Because we do not keep any files, there is nothing stored on our website that could infringe on your copyrights.
+        Because of how FoldPDF works, we do not receive, store, host, or archive any documents. Your files are processed inside your own browser and never reach our servers. Because we do not keep any files, there is nothing stored on our website that could infringe on your copyrights.
       </p>
       <p className="mb-4">
         If you are a copyright owner and have any questions or concern about intellectual property or trademarks on our site, please send a message directly using our simple and quick <span onClick={() => navigate('/contact')} className="text-indigo-600 font-semibold cursor-pointer underline">Contact Form</span>. We read every message and will get back to you within 12 hours.

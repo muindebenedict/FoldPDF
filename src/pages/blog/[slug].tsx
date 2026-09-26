@@ -273,9 +273,9 @@ export default function BlogPostPage({ slug, navigate }: BlogPostPageProps) {
             {/* Private File Optimizer in Sidebar */}
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-3xl p-5 text-center shadow-premium-sm">
               <Lucide.Cpu className="h-10 w-10 text-indigo-650 dark:text-indigo-400 mx-auto mb-3" />
-              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Secure Server Optimizer</h4>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Private PDF Compressor</h4>
               <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
-                Try our secure, fast PDF shrinker. Files are processed and permanently deleted immediately after downloading.
+                Shrink PDFs right in your browser. Your file is never uploaded, and you never get a bigger file back.
               </p>
               <button
                 onClick={() => navigate("/compress-pdf")}

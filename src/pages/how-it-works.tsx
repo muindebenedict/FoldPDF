@@ -90,7 +90,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
               Unlike typical SaaS utilities that force uploads onto remote hosts, FoldPDF turns your web browser into an isolated, hyper-secure document workstation. By shifting execution loads to your local hardware, we prevent data leakage and bypass server wait queues.
             </p>
             <div className="border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-955/20 p-4 rounded-r-2xl text-xs text-slate-600 dark:text-slate-350">
-              💡 <strong>Developer audit note:</strong> For our browser-only tools, all file operations run in-memory inside your browser tab. For server-required tools like Compress PDF or PDF to Word, files upload securely, process instantly, and delete permanently from our servers immediately.
+              💡 <strong>Developer audit note:</strong> Every FoldPDF tool, including Compress PDF, PDF to Word, PDF to PowerPoint and PowerPoint to PDF, runs in memory inside your browser tab. Open your browser's Network tab while converting and you'll see no request carrying your file.
             </div>
           </div>
 

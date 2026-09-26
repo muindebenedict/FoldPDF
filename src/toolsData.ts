@@ -226,7 +226,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'PDF to Word (DOCX)',
     category: 'document-conversions',
     shortDesc: 'Turn secure PDF files back into editable Microsoft Word documents.',
-    longDesc: 'Stop copying and pasting by hand. This tool analyzes your PDF sheets and turns them back into a normal Microsoft Word (.docx) file that you can type in, adjust columns, and style freely. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.',
+    longDesc: 'Stop copying and pasting by hand. This tool analyzes your PDF sheets and turns them back into a normal Microsoft Word (.docx) file that you can type in, adjust columns, and style freely. It runs entirely in your browser, so your file is never uploaded, and the Word file keeps the PDF\'s layout, fonts and spacing.',
     iconName: 'FileText',
     isPopular: true,
     stepInstructions: [
@@ -235,7 +235,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your editable Word document.'
     ],
     faqs: [
-      { question: 'Is it safe to convert my private files here?', answer: 'Yes. While this tool sends your file to our secure server for conversion, we delete it instantly after you download the Word file.' },
+      { question: 'Is it safe to convert my private files here?', answer: 'Yes. The conversion runs entirely in your browser, so your file never leaves your device and nothing is stored.' },
       { question: 'Will my layout look messy after converting?', answer: 'We try our best to keep your paragraphs, columns, and lists exactly where they belong in the Word document.' },
       { question: 'What happens to the graphics inside my PDF?', answer: 'They get extracted and placed inside the Word document as images that you can easily resize or move.' },
       { question: 'Do I need to register or create an account?', answer: 'No. You don\'t need to sign up or input any contact details.' },
@@ -416,7 +416,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'Compress PDF',
     category: 'pdf-editing',
     shortDesc: 'Reduce file size without losing premium visual quality.',
-    longDesc: 'Struggling to email a PDF that is just too big? This compressor shrinks your file size so text and graphics looking extremely clear and legible. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.',
+    longDesc: 'Struggling to email a PDF that is just too big? This compressor shrinks the pictures inside your file so text and graphics stay clear and legible. It runs entirely in your browser, so your file is never uploaded, and if it can\'t get smaller without losing quality you get your original back.',
     iconName: 'FileDown',
     isPopular: true,
     stepInstructions: [
@@ -426,7 +426,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     ],
     faqs: [
       { question: 'Will compressing my PDF make the pictures look blurry?', answer: 'We use smart scaling to make files much smaller, but we keep text and details sharp enough to read easily.' },
-      { question: 'Is my private document stored on your system?', answer: 'No. Your file is processed on our secure server and deleted immediately. We don\'t save or log anything.' },
+      { question: 'Is my private document stored on your system?', answer: 'No. Your file is compressed inside your browser and never reaches our system. We don\'t save or log anything.' },
       { question: 'Is there a maximum file size I can upload?', answer: 'Yes, you can upload documents up to 50MB. This is plenty for almost all PDFs.' },
       { question: 'Can I compress a password-protected PDF?', answer: 'No. If your document is locked, you must unlock it before uploading it for compression.' },
       { question: 'Can I compress a scanned PDF?', answer: 'Yes, it works well. However, because scans are made of flat images, they might lose a tiny bit of sharpness to save space.' },
@@ -752,19 +752,19 @@ Stitch documents securely in a click. No trace is saved, keeping your business d
   {
     slug: 'how-to-convert-pdf-to-word',
     title: 'Convert Document layout from PDF to Editable DOCX: Top Tips',
-    excerpt: 'Avoid annoying formatting errors and overlapping text boxes when changing read-only sheets back to Microsoft Word documents.',
+    excerpt: 'Keep your PDF\'s exact layout, fonts and spacing when you turn it back into an editable Word document.',
     date: 'May 05, 2026',
     readTime: '4 min read',
     category: 'Formatting Tutorials',
     content: `
 ### Restoring PDFs back into Edit-ready Word Files
-When you decompile a PDF into .docx, standard cheap tools usually dump words inside floating text boxes. Editing those files subsequently is a complete nightmare.
+A PDF records where every letter sits on the page, not how its paragraphs flow. Turning one back into Word is a choice between keeping the exact look and getting long paragraphs that reflow.
 
-#### Why Floating Boxes Occur
-Most converters output words with absolute positioning parameters, placing text box rectangles over the page. This locks typing flow completely.
+#### Keeping the Exact Look
+FoldPDF rebuilds each page so the Word file looks like the PDF: every line stays editable text in the same font, size and position, and pictures, table borders and shapes stay where they were. Blocks of text keep their line breaks, so nothing shifts when you open the file.
 
-#### The Formatting and Flow Solution
-Our PDF to Word engine parses text flow patterns carefully. It reads margins, tabulations, list bullets, and paragraph flows. This maps your text back into real, flowing Word paragraphs for smooth styling and editing. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.
+#### Editing Tips
+Small changes, like fixing a name, a date or a figure, are easiest: click into the text and type. For heavy rewriting, copy a block's text into a new paragraph. The conversion runs entirely in your browser: your file is never uploaded, and nothing is stored or logged.
     `
   }
 ];

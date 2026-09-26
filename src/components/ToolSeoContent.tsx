@@ -12,16 +12,16 @@ interface ToolSeoData {
 const SEO_CONTENT_MAP: Record<string, ToolSeoData> = {
   "compress-pdf": {
     title: "Helpful Guide on PDF Compression",
-    description: "Trying to email a giant file but it keeps getting rejected? We can help with that. This compression tool shrinks your file size so modern layouts and charts stay readable. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged. Your data is kept safe while we decrease the space your files take up.",
+    description: "Trying to email a giant file but it keeps getting rejected? We can help with that. This compression tool shrinks your file size so modern layouts and charts stay readable. It runs entirely in your browser, so your file is never uploaded. If your PDF is already as small as it can get without losing quality, you get your original back instead of a bigger file.",
     features: [
-      { icon: "Shield", title: "Immediate Deletion", desc: "Your file is sent to our secure server, processed, and deleted immediately after you download. Nothing is saved." },
-      { icon: "Gauge", title: "Super Fast Scale", desc: "No queue waits. The compression runs on our secure backend and completes within a few seconds." },
+      { icon: "Shield", title: "Never Uploaded", desc: "Compression runs inside your browser. Your file never leaves your device and nothing is saved." },
+      { icon: "Gauge", title: "Fast on Your Device", desc: "No uploads and no queues: the pictures in your PDF are recompressed on your own computer in seconds." },
       { icon: "Lock", title: "Clean Visual Quality", desc: "We scale bulky pictures inside your PDF while keeping standard text boundaries crisp." }
     ],
     faqs: [
-      { q: "Are there file size limits?", a: "You can compress files up to a few hundred megabytes securely. The server will handle it and erase it right after." },
+      { q: "Are there file size limits?", a: "Nothing is uploaded, so there is no upload limit. Very large files depend on your device's memory; PDFs up to a few hundred megabytes usually work fine." },
       { q: "Will it flatten form inputs?", a: "No! Interactive checkboxes, forms, and signatures remain fully clickable in your smaller PDF draft." },
-      { q: "How is security handled?", a: "Files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged." }
+      { q: "How is security handled?", a: "Your file never leaves your browser. It is compressed on your own device and nothing is sent to us or stored." }
     ]
   },
   "protect-pdf": {
@@ -77,19 +77,11 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
   
   // Use fallback values if selected tool is not mapped to prevent black screens
   const normalizedId = toolId.toLowerCase();
-  const SERVER_TOOLS = ["compress-pdf", "pdf-to-word", "pdf-to-powerpoint", "powerpoint-to-pdf"];
-  const isServerTool = SERVER_TOOLS.includes(normalizedId);
   
   const selectedData = SEO_CONTENT_MAP[normalizedId] || {
     title: `${toolId.split('-').map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' ')} - Secure Workspace Options`,
-    description: isServerTool
-      ? `Need to convert your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. For this tool, files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.`
-      : `Need to adjust your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. Since everything runs inside your browser, your file never leaves your device at any point. We never use remote servers or keep records of your documents. Closing your active browser tab will instantly erase your file from memory, ensuring you can process documents cleanly without forced registrations or tracking cookies.`,
-    features: isServerTool ? [
-      { icon: "Shield" as const, title: "Immediate Deletion", desc: "Your file is sent to our secure server, processed, and deleted immediately after you download." },
-      { icon: "Gauge" as const, title: "Super Fast Scale", desc: "No queue waits. The conversion runs on our secure backend and completes within a few seconds." },
-      { icon: "Lock" as const, title: "Clean Visual Quality", desc: "We convert layout files while keeping standard text boundaries crisp." }
-    ] : [
+    description: `Need to adjust your files securely? Conduct your ${toolId.replace('-', ' ')} changes with ease. Since everything runs inside your browser, your file never leaves your device at any point. We never use remote servers or keep records of your documents. Closing your active browser tab will instantly erase your file from memory, ensuring you can process documents cleanly without forced registrations or tracking cookies.`,
+    features: [
       { icon: "Shield" as const, title: "No Server Uploads", desc: "Your files never leave your device at any point and are never saved on a remote disk." },
       { icon: "Cpu" as const, title: "On-device Processing", desc: "Heavy formatting tasks are processed directly using user's computer processing power." },
       { icon: "Lock" as const, title: "Standard Security", desc: "Works beautifully to satisfy corporate standards by omitting external database storage." }

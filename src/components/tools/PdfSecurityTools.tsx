@@ -1029,7 +1029,7 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
         return {
           blob: new Blob([bytes], { type: "application/pdf" }),
           name: getOutputFile(theFile?.name, "signed", ".pdf"),
-          info: "Prp certified visual stamp applied to document layers."
+          info: "Your signature was placed on the page in your browser. It is a visual signature, not a certified digital one."
         };
       })();
 

@@ -928,7 +928,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                 {filteredToolsForGrid.map((tool) => {
                   const isFav = favorites.includes(tool.id);
                   const DESC_OVERWRITE_MAP: Record<string, string> = {
-                    'compress-pdf': 'Deep server-side optimization to aggressively drop file payloads and storage weights while protecting visual text crispness.',
+                    'compress-pdf': 'Shrinks the pictures inside your PDF right in your browser, keeps text sharp, and never hands you back a bigger file.',
                     'merge-pdf': 'Snap scattered pages or document chapters together into one seamless continuous file.',
                     'split-pdf': 'Divide a single document into customized page ranges or separate individual sheets.',
                     'pdf-to-word': 'Decompile document layout records back into fully editable text-flowing structures.',
