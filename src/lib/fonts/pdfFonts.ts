@@ -12,25 +12,13 @@
 import { PDFDocument, PDFFont, StandardFonts } from "@cantoo/pdf-lib";
 import { getFontkit } from "../../components/tools/PdfScriptLoader";
 import { isInstalled, metricFontBytes } from "./metricFonts";
+import { WORD_METRICS } from "./wordMetrics";
 
 export interface VMetrics {
   single: number; // "single" line height, × font size
   ascent: number; // line top to baseline at single spacing, × font size
   descent: number;
 }
-
-// Vertical metrics of common Windows fonts (hhea ascender, descender and line
-// gap over units per em). Word's single spacing is ascent + descent + gap.
-const KNOWN: Record<string, VMetrics> = {
-  cambria: { single: 1.1719, ascent: 0.9502, descent: 0.2217 },
-  "cambria math": { single: 1.1719, ascent: 0.9502, descent: 0.2217 },
-  georgia: { single: 1.1362, ascent: 0.917, descent: 0.2192 },
-  verdana: { single: 1.2153, ascent: 1.0054, descent: 0.2099 },
-  tahoma: { single: 1.207, ascent: 1.0005, descent: 0.2065 },
-  "segoe ui": { single: 1.3301, ascent: 1.0791, descent: 0.251 },
-  "trebuchet ms": { single: 1.1611, ascent: 0.939, descent: 0.2222 },
-  "calibri light": { single: 1.2207, ascent: 0.9521, descent: 0.2686 },
-};
 
 const SERIF = /times|serif|garamond|georgia|cambria|book|palatino|century schoolbook|constantia|baskerville|caslon|didot|bodoni|rockwell|maiandra/i;
 const MONO = /courier|consolas|mono|lucida console|menlo/i;
@@ -90,8 +78,8 @@ export class PdfFontSet {
   }
 
   private metrics(family: string, twin: string): Promise<VMetrics> {
-    const known = KNOWN[family.trim().toLowerCase()];
-    if (known) return Promise.resolve(known);
+    const known = WORD_METRICS[family.trim().toLowerCase()];
+    if (known) return Promise.resolve({ single: known[0] + known[1], ascent: known[0], descent: known[1] });
     if (!this.metricsCache.has(twin)) {
       this.metricsCache.set(
         twin,

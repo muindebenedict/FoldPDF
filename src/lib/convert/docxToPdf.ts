@@ -411,7 +411,8 @@ interface Line {
   width: number;
   left: number; // x of the line's start, relative to the content box
   justify: boolean;
-  label?: { text: string; rpr: RPr; rf: ResolvedFont; x: number };
+  breakBefore?: boolean; // a page break precedes this line
+  label?: { text: string; rpr: RPr; rf: ResolvedFont; x: number; ascent: number; suff: string | null };
 }
 
 interface ParaBlock {
@@ -422,6 +423,9 @@ interface ParaBlock {
   after: number;
   hardBreakAfter: boolean; // paragraph ends with a page break
   anchored: { img: PDFImage | null; x: number; y: number; w: number; h: number; relV: string; relH: string }[];
+  // Borders this paragraph draws, once grouped with its neighbours.
+  bTop?: Border;
+  bBottom?: Border; // the group's bottom border, or the "between" border
 }
 
 interface Cell {
@@ -432,6 +436,7 @@ interface Cell {
   shade: string | null;
   borders: Partial<Record<"top" | "bottom" | "left" | "right", Border>>;
   mar: { l: number; r: number; t: number; b: number };
+  inset: number; // text offset from the cell's left edge beyond the margin
   vAlign: string;
   height: number; // content height, filled in by layout
 }
@@ -442,6 +447,7 @@ interface Row {
   exactHeight: boolean;
   header: boolean;
   cantSplit: boolean;
+  borderTop: number; // width of the border above the row, part of its height
   height: number;
 }
 
@@ -450,6 +456,7 @@ interface TableBlock {
   rows: Row[];
   x: number;
   width: number;
+  borderBottom: number; // width of the border below the last row
 }
 
 type Block = ParaBlock | TableBlock;
@@ -760,38 +767,42 @@ class Engine {
   // ── Line breaking ──
 
   // Height of one line of text at this paragraph's spacing.
-  private lineBox(ppr: PPr, atoms: Atom[], fallback: RPr, fallbackRf: ResolvedFont): { height: number; ascent: number } {
-    let single = 0;
-    let asc = 0;
+  // Height of a line and where its baseline sits (measured against Word):
+  // - text lines are the tallest ascent plus the deepest descent;
+  // - a list label or picture can raise the line, and adds no depth below
+  //   the baseline (a line holding only pictures has none);
+  // - "multiple" spacing adds (multiple - 1) text lines of room below.
+  private lineBox(ppr: PPr, atoms: Atom[], fallback: RPr, fallbackRf: ResolvedFont, labelAscent = 0): { height: number; ascent: number } {
+    let fontAsc = 0;
+    let fontDesc = 0;
     let imgH = 0;
+    let hasText = false;
     const consider = (size: number, rf: ResolvedFont) => {
-      single = Math.max(single, rf.metrics.single * size);
-      asc = Math.max(asc, rf.metrics.ascent * size);
+      fontAsc = Math.max(fontAsc, rf.metrics.ascent * size);
+      fontDesc = Math.max(fontDesc, rf.metrics.descent * size);
     };
     for (const a of atoms) {
       if (a.kind === "image" && a.image && !a.field) imgH = Math.max(imgH, a.image.h);
-      else if (a.rf) consider(a.rpr.size, a.rf);
+      else if (a.rf) {
+        consider(a.rpr.size, a.rf);
+        if (a.kind === "text" && a.text.trim()) hasText = true;
+      }
     }
-    if (!single) consider(fallback.size, fallbackRf);
-    const descent = single - asc;
+    if (!fontAsc) consider(fallback.size, fallbackRf);
     if (ppr.lineRule === "exact") {
       const L = twip(ppr.line);
       return { height: L, ascent: L * 0.8 };
     }
-    // A picture taller than the text sits on the baseline; Word doesn't
-    // apply the line-spacing multiple to it.
-    if (imgH > asc) {
-      const h = imgH + descent;
-      if (ppr.lineRule === "atLeast") return { height: Math.max(h, twip(ppr.line)), ascent: Math.max(h, twip(ppr.line)) - descent };
-      return { height: h, ascent: imgH };
-    }
+    const asc = Math.max(fontAsc, imgH, labelAscent);
+    const desc = !hasText && imgH > fontAsc ? 0 : fontDesc;
+    const natural = asc + desc;
     if (ppr.lineRule === "atLeast") {
       const L = twip(ppr.line);
-      return L > single ? { height: L, ascent: L - descent } : { height: single, ascent: asc };
+      return L > natural ? { height: L, ascent: L - desc } : { height: natural, ascent: asc };
     }
+    // The extra of "multiple" spacing goes below the text.
     const mult = ppr.line / 240;
-    const height = single * mult;
-    return { height, ascent: asc + (height - single) };
+    return { height: natural + (mult - 1) * (fontAsc + fontDesc), ascent: asc };
   }
 
   async layoutParagraph(p: El, width: number, ctx: Ctx, tableStyle: string | null): Promise<ParaBlock> {
@@ -809,10 +820,12 @@ class Engine {
         let lrpr = applyRPr(numLevel.rPr, { ...markRpr, underline: false, strike: false, highlight: null, shade: null }, this.theme);
         const symbolFont = /^(symbol|wingdings|webdings)/i.test(lrpr.font);
         const shown = Array.from(text).map((ch) => (symbolFont || ch.charCodeAt(0) >= 0xf000 ? symbolChar(ch, lrpr.font) : ch)).join("");
+        // The line makes room for the label's own font, even when it's drawn
+        // with another one.
+        const ascent = (await this.fonts.get(lrpr.font, lrpr.bold, lrpr.italic)).metrics.ascent * lrpr.size;
         if (symbolFont) lrpr = { ...lrpr, font: paraRpr.font };
         const lrf = await this.fonts.get(lrpr.font, lrpr.bold, lrpr.italic);
-        label = { text: shown, rpr: lrpr, rf: lrf, x: ppr.left + ppr.firstLine };
-        (label as any).suff = numLevel.suff;
+        label = { text: shown, rpr: lrpr, rf: lrf, x: ppr.left + ppr.firstLine, ascent, suff: numLevel.suff ?? null };
       }
     }
 
@@ -829,15 +842,19 @@ class Engine {
     if (label) {
       const lw = this.fonts.width(label.rf, label.text, label.rpr.size);
       const end = label.x + lw;
-      if ((label as any).suff === "space") startX = end + this.fonts.width(label.rf, " ", label.rpr.size);
-      else if ((label as any).suff === "nothing") startX = end;
+      if (label.suff === "space") startX = end + this.fonts.width(label.rf, " ", label.rpr.size);
+      else if (label.suff === "nothing") startX = end;
       else startX = end <= ppr.left - 0.5 && ppr.firstLine < 0 ? ppr.left : this.nextTab(end, ppr, width).pos;
     }
 
+    let pendingBreak = false;
     const flush = (justifyAllowed: boolean) => {
       while (cur.length && cur[cur.length - 1].kind === "space") cur.pop();
-      const box = this.lineBox(ppr, cur, markRpr, markRf);
-      lines.push({ atoms: cur, height: box.height, ascent: box.ascent, width: curW, left: first ? startX : ppr.left, justify: justifyAllowed && ppr.jc === "both", label: first ? label : undefined });
+      const content = cur.some((x) => x.kind !== "space");
+      const breakBefore = pendingBreak && content;
+      if (breakBefore) pendingBreak = false;
+      const box = this.lineBox(ppr, cur, markRpr, markRf, first && label ? label.ascent : 0);
+      lines.push({ atoms: cur, height: box.height, ascent: box.ascent, width: curW, left: first ? startX : ppr.left, justify: justifyAllowed && ppr.jc === "both", label: first ? label : undefined, breakBefore });
       cur = [];
       curW = 0;
       first = false;
@@ -853,9 +870,11 @@ class Engine {
         flush(false);
         continue;
       }
+      // A page break moves the rest of the paragraph to the next page.
       if (a.kind === "page") {
-        flush(false);
-        hardBreakAfter = true;
+        if (cur.some((x) => x.kind !== "space")) flush(false);
+        else cur = [];
+        pendingBreak = true;
         continue;
       }
       const lineStart = first ? startX : ppr.left;
@@ -876,9 +895,14 @@ class Engine {
         curW += w;
         continue;
       }
-      // In justified paragraphs Word squeezes the spaces a little to fit one
-      // more word (measured: ~8% on a 12 pt Times line); allow up to 20%.
-      const squeeze = ppr.jc === "both" || ppr.jc === "distribute" ? cur.reduce((s, x) => s + (x.kind === "space" ? x.width : 0), 0) * 0.2 : 0;
+      // In justified paragraphs Word 2013 and later squeeze the spaces to fit
+      // one more word: by at most a quarter of their width, and less for a
+      // short word (measured against Word). Older layouts never squeeze.
+      const justified = ppr.jc === "both" || ppr.jc === "distribute";
+      const squeeze =
+        justified && this.compatMode >= 15 && a.kind === "text"
+          ? Math.min(0.25 * cur.reduce((s, x) => s + (x.kind === "space" ? x.width : 0), 0), 0.34 * a.width + 0.10875 * a.size)
+          : 0;
       if (a.kind !== "space" && curW + a.width - squeeze > width - ppr.right - lineStart + 0.01 && cur.some((x) => x.kind === "text" || x.kind === "image")) {
         flush(true);
       }
@@ -887,6 +911,8 @@ class Engine {
       curW += a.width;
     }
     if (cur.length || !lines.length) flush(false);
+    // A break at the very end (the mark stays with it) ends the page.
+    if (pendingBreak) hardBreakAfter = true;
 
     return { kind: "para", ppr, lines, before: ppr.before, after: ppr.after, hardBreakAfter, anchored };
   }
@@ -987,6 +1013,8 @@ class Engine {
           left: kid(cb, "left") || kid(cb, "start") ? readBorder(kid(cb, "left") || kid(cb, "start")) : col === 0 ? tb.left : tb.insideV,
           right: kid(cb, "right") || kid(cb, "end") ? readBorder(kid(cb, "right") || kid(cb, "end")) : isLastCol ? tb.right : tb.insideV,
         };
+        // Since Word 2013 the text also clears half of the left border.
+        const inset = this.compatMode >= 15 ? (borders.left?.width || 0) / 2 : 0;
         const cellMarEl = cmar;
         const cm = {
           l: kid(cellMarEl, "left") || kid(cellMarEl, "start") ? twip(num(kid(cellMarEl, "left") || kid(cellMarEl, "start"), "w:w", 0)) : mar.l,
@@ -999,7 +1027,7 @@ class Engine {
         if (vMerge !== "continue") {
           for (const child of Array.from(tc.children)) {
             if (child.localName === "p") {
-              const pb = await this.layoutParagraph(child, cw - cm.l - cm.r, ctx, styleId);
+              const pb = await this.layoutParagraph(child, cw - cm.l - cm.r - inset, ctx, styleId);
               const condR = kid(condEl, "rPr");
               if (condR) for (const l of pb.lines) for (const a of l.atoms) if (a.kind === "text" || a.kind === "space") {
                 const merged = applyRPr(condR, a.rpr, this.theme);
@@ -1011,10 +1039,11 @@ class Engine {
                 }
               }
               blocks.push(pb);
-            } else if (child.localName === "tbl") blocks.push(await this.layoutTable(child, cw - cm.l - cm.r, ctx));
+            } else if (child.localName === "tbl") blocks.push(await this.layoutTable(child, cw - cm.l - cm.r - inset, ctx));
           }
         }
-        cells.push({ blocks, width: cw, span, vMerge, shade, borders, mar: cm, vAlign: attr(kid(tcPr, "vAlign"), "w:val") || "top", height: 0 });
+        groupBorders(blocks);
+        cells.push({ blocks, width: cw, span, vMerge, shade, borders, mar: cm, inset, vAlign: attr(kid(tcPr, "vAlign"), "w:val") || "top", height: 0 });
         col += span;
       }
       const hRule = attr(trH, "w:hRule");
@@ -1024,6 +1053,7 @@ class Engine {
         exactHeight: hRule === "exact",
         header: isHeader,
         cantSplit: !!kid(trPr, "cantSplit") && on(kid(trPr, "cantSplit")) !== false,
+        borderTop: Math.max(0, ...cells.map((c) => c.borders.top?.width || 0)),
         height: 0,
       });
     }
@@ -1034,11 +1064,16 @@ class Engine {
         c.height = blocksHeight(c.blocks) + c.mar.t + c.mar.b;
         if (c.vMerge !== "continue") h = Math.max(h, c.height);
       }
-      row.height = row.exactHeight ? row.minHeight : Math.max(row.minHeight, h);
+      // The border above a row is part of the row's height.
+      row.height = row.exactHeight ? row.minHeight : Math.max(row.minHeight, row.borderTop + h);
     }
-    // Word lines up the text in the first column with the page margin, so the
-    // table's left edge sits one cell margin to the left.
-    return { kind: "table", rows, x: x - (jc || this.compatMode >= 15 ? 0 : mar.l), width: tableWidth };
+    const lastRow = rows[rows.length - 1];
+    const borderBottom = lastRow ? Math.max(0, ...lastRow.cells.map((c) => c.borders.bottom?.width || 0)) : 0;
+    // Before Word 2013, the text in the first column lines up with the page
+    // margin, so the table's left edge sits one (table-wide) cell margin to
+    // the left.
+    const outdent = jc || this.compatMode >= 15 || !cellMar ? 0 : mar.l;
+    return { kind: "table", rows, x: x - outdent, width: tableWidth, borderBottom };
   }
 }
 
@@ -1055,8 +1090,39 @@ function parseCssPt(style: string, prop: string): number {
   }
 }
 
+// A top border sits above the text, a bottom one below it; each adds its
+// width and distance from the text to the paragraph's height.
+const padTop = (b: ParaBlock) => (b.bTop ? b.bTop.space + b.bTop.width : 0);
+const padBottom = (b: ParaBlock) => (b.bBottom ? b.bBottom.space + b.bBottom.width : 0);
+
 function paraHeight(b: ParaBlock): number {
-  return b.lines.reduce((s, l) => s + l.height, 0);
+  return padTop(b) + b.lines.reduce((s, l) => s + l.height, 0) + padBottom(b);
+}
+
+// Word joins neighbouring paragraphs with the same borders and indents into
+// one bordered box: the top border above the first, the bottom border below
+// the last, and the "between" border between them.
+function groupBorders(blocks: Block[]) {
+  const same = (x?: Border, y?: Border) => (!x && !y) || (!!x && !!y && x.width === y.width && x.color === y.color && x.space === y.space);
+  const joined = (a: Block | undefined, b: Block | undefined) =>
+    a?.kind === "para" &&
+    b?.kind === "para" &&
+    a.ppr.left === b.ppr.left &&
+    a.ppr.right === b.ppr.right &&
+    (["top", "bottom", "left", "right", "between"] as const).every((s) => same(a.ppr.borders[s], b.ppr.borders[s]));
+  blocks.forEach((b, i) => {
+    if (b.kind !== "para") return;
+    const bd = b.ppr.borders;
+    const first = !joined(blocks[i - 1], b);
+    const last = !joined(b, blocks[i + 1]);
+    b.bTop = first ? bd.top : undefined;
+    b.bBottom = last ? bd.bottom : bd.between;
+  });
+}
+
+// How far a paragraph's top and bottom borders reach past its indents.
+function borderReach(side?: Border): number {
+  return (side ? side.space + side.width : 0) + 1.44;
 }
 
 // Splits cell content so the first part is at most `room` tall.
@@ -1069,20 +1135,27 @@ function splitBlocks(blocks: Block[], room: number): [Block[], Block[]] {
   blocks.forEach((blk, i) => {
     if (overflow) return void b.push(blk);
     if (blk.kind === "para") {
-      let h = y + (i === 0 ? blk.before : Math.max(prevAfter, blk.before));
+      let h = y + (i === 0 ? blk.before : Math.max(prevAfter, blk.before)) + padTop(blk);
       let fit = 0;
       while (fit < blk.lines.length && h + blk.lines[fit].height <= room + 0.01) h += blk.lines[fit++].height;
+      // In a cell the paragraph's space after must fit on the page too.
+      if (fit === blk.lines.length && h + padBottom(blk) + blk.after > room + 0.01) fit--;
+      // Widow/orphan control applies inside cells too.
+      if (fit < blk.lines.length && blk.ppr.widow && blk.lines.length >= 2) {
+        if (blk.lines.length - fit === 1) fit--;
+        if (fit === 1) fit = 0;
+      }
       if (fit === blk.lines.length) {
         a.push(blk);
-        y = h;
+        y = h + padBottom(blk);
         prevAfter = blk.after;
         return;
       }
-      if (fit > 0) a.push({ ...blk, lines: blk.lines.slice(0, fit), after: 0 });
-      b.push({ ...blk, lines: blk.lines.slice(fit), before: 0 });
+      if (fit > 0) a.push({ ...blk, lines: blk.lines.slice(0, fit), after: 0, bBottom: undefined });
+      b.push({ ...blk, lines: blk.lines.slice(fit), before: 0, bTop: fit > 0 ? undefined : blk.bTop });
       overflow = true;
     } else {
-      const h = blk.rows.reduce((sum, r) => sum + r.height, 0);
+      const h = blk.rows.reduce((sum, r) => sum + r.height, 0) + blk.borderBottom;
       if (y + prevAfter + h <= room) {
         a.push(blk);
         y += prevAfter + h;
@@ -1109,7 +1182,9 @@ function splitRow(row: Row, avail: number): [Row, Row] | null {
       rest.push({ ...c });
       continue;
     }
-    const [a, b] = splitBlocks(c.blocks, avail - c.mar.t - c.mar.b);
+    const [a, b] = splitBlocks(c.blocks, avail - row.borderTop - c.mar.t - c.mar.b);
+    // Word moves the whole row rather than start a cell on the next page.
+    if (!a.length && b.length) return null;
     if (a.length) any = true;
     const fa = { ...c, blocks: a, height: blocksHeight(a) + c.mar.t + c.mar.b };
     const fb = { ...c, blocks: b, height: blocksHeight(b) + c.mar.t + c.mar.b };
@@ -1120,8 +1195,8 @@ function splitRow(row: Row, avail: number): [Row, Row] | null {
   }
   if (!any) return null;
   return [
-    { ...row, cells: first, height: Math.min(avail, firstH), header: false },
-    { ...row, cells: rest, height: restH, header: false, minHeight: 0 },
+    { ...row, cells: first, height: Math.min(avail, row.borderTop + firstH), header: false },
+    { ...row, cells: rest, height: row.borderTop + restH, header: false, minHeight: 0 },
   ];
 }
 
@@ -1133,11 +1208,12 @@ function blocksHeight(blocks: Block[]): number {
       h += (i === 0 ? b.before : Math.max(prevAfter, b.before)) + paraHeight(b);
       prevAfter = b.after;
     } else {
-      h += prevAfter + b.rows.reduce((s, r) => s + r.height, 0);
+      h += prevAfter + b.rows.reduce((s, r) => s + r.height, 0) + b.borderBottom;
       prevAfter = 0;
     }
   });
-  return h;
+  // The last paragraph's space after counts too (Word keeps it in cells).
+  return h + prevAfter;
 }
 
 // ─── Painting ───────────────────────────────────────────────────────────────
@@ -1190,6 +1266,7 @@ class Painter {
         if (a.rpr.underline) this.hline(x, x + w, baseline + a.size * 0.12, { width: Math.max(0.5, a.size / 18), color: a.rpr.color || "000000", space: 0 });
         if (a.rpr.strike) this.hline(x, x + w, baseline - a.size * 0.28, { width: Math.max(0.5, a.size / 18), color: a.rpr.color || "000000", space: 0 });
       } else if (a.kind === "space") {
+        if (a.rpr.highlight || a.rpr.shade) this.rect(x, baseline - a.size * 0.95, w, a.size * 1.2, (a.rpr.highlight || a.rpr.shade)!);
         if (a.rpr.underline) this.hline(x, x + w, baseline + a.size * 0.12, { width: Math.max(0.5, a.size / 18), color: a.rpr.color || "000000", space: 0 });
       } else if (a.kind === "tab" && a.leader && a.leader !== "none" && w > 6) {
         const ch = a.leader === "dot" ? "." : a.leader === "hyphen" ? "-" : a.leader === "underscore" ? "_" : ".";
@@ -1280,17 +1357,38 @@ class Paginator {
     return Math.max(prevAfter, before);
   }
 
-  placePara(b: ParaBlock, next: Block | undefined, forced = false) {
+  // Height that must fit on this page for a paragraph kept with the next
+  // one: the whole chain of "keep with next" paragraphs, plus the start of
+  // the block that ends it.
+  private keepChain(b: ParaBlock, following: Block[]): number {
+    const opening = (x: Block) =>
+      x.kind === "table" ? (x.rows[0]?.height ?? 0) : x.ppr.keepLines || x.lines.length <= 1 ? paraHeight(x) : padTop(x) + x.lines[0].height + (x.ppr.widow ? x.lines[1].height : 0);
+    let need = paraHeight(b);
+    let prev = b;
+    for (const nb of following) {
+      if (nb.kind === "table") return need + prev.after + opening(nb);
+      const same = !!nb.ppr.styleId && nb.ppr.styleId === prev.ppr.styleId;
+      need += Math.max(same && prev.ppr.contextual ? 0 : prev.after, same && nb.ppr.contextual ? 0 : nb.before);
+      if (!nb.ppr.keepNext) return need + opening(nb);
+      need += paraHeight(nb);
+      prev = nb;
+    }
+    return need;
+  }
+
+  placePara(b: ParaBlock, following: Block[], forced = false) {
+    // Word 2013 and later drop the space before at the top of a page even
+    // with "page break before"; older layouts keep it.
     if (b.ppr.pageBreakBefore && !this.atTop) {
       this.newPage();
-      forced = true;
+      forced = this.engine.compatMode < 15;
     }
+    if (b.lines[0]?.breakBefore && !this.atTop) this.newPage();
     let gap = this.gapBefore(b, forced);
     const total = paraHeight(b);
-    // Keep with next: this paragraph and the first line of the next block
-    // must share a page.
-    const nextFirst = next ? (next.kind === "para" ? next.lines[0]?.height ?? 0 : next.rows[0]?.height ?? 0) : 0;
-    const needed = (b.ppr.keepLines || b.lines.length <= 1 ? total : Math.min(total, b.lines[0].height * 2)) + (b.ppr.keepNext ? nextFirst : 0);
+    // Keep with next: this paragraph goes to the next page unless it fits
+    // here together with what it's kept with.
+    const needed = b.ppr.keepNext && following.length ? this.keepChain(b, following) : b.ppr.keepLines || b.lines.length <= 1 ? total : Math.min(total, padTop(b) + b.lines[0].height * 2);
     if (!this.atTop && this.y + gap + needed > this.bottom && needed <= this.bottom - this.sec.top) {
       this.newPage();
       gap = this.gapBefore(b, false);
@@ -1304,17 +1402,21 @@ class Paginator {
     let i = 0;
     while (i < lines.length) {
       // How many lines fit on this page?
+      // Lines up to the next page break in the paragraph.
+      let end = i + 1;
+      while (end < lines.length && !lines[end].breakBefore) end++;
       let fit = 0;
-      let h = 0;
-      while (i + fit < lines.length && this.y + h + lines[i + fit].height <= this.bottom + 0.01) {
+      const pre = i === 0 ? padTop(b) : 0;
+      let h = pre;
+      while (i + fit < end && this.y + h + lines[i + fit].height <= this.bottom + 0.01) {
         h += lines[i + fit].height;
         fit++;
       }
-      if (fit < lines.length - i) {
+      if (fit < end - i) {
         // Widow/orphan control: never leave one line alone.
-        if (b.ppr.widow && lines.length - i >= 2) {
+        if (b.ppr.widow && end - i >= 2) {
+          if (end - i - fit === 1 && fit > 1) fit--;
           if (fit === 1 && i === 0) fit = 0;
-          else if (lines.length - i - fit === 1 && fit > 1) fit--;
         }
         if (fit === 0 && this.atTop) fit = 1; // a line taller than the page
       }
@@ -1322,29 +1424,9 @@ class Paginator {
         this.newPage();
         continue;
       }
-      const top = this.y;
       const chunk = lines.slice(i, i + fit);
-      const chunkH = chunk.reduce((s, l) => s + l.height, 0);
-      const ppr = b.ppr;
-      if (ppr.shade) {
-        const shade = ppr.shade;
-        this.page.ops.push((p) => p.rect(ox + ppr.left, top, width - ppr.left - ppr.right, chunkH, shade));
-      }
-      if (ppr.borders.bottom && i + fit === lines.length) {
-        const bd = ppr.borders.bottom;
-        this.page.ops.push((p) => p.hline(ox + ppr.left, ox + width - ppr.right, top + chunkH + bd.space + bd.width / 2, bd));
-      }
-      if (ppr.borders.top && i === 0) {
-        const bd = ppr.borders.top;
-        this.page.ops.push((p) => p.hline(ox + ppr.left, ox + width - ppr.right, top - bd.space - bd.width / 2, bd));
-      }
-      let ly = top;
-      for (const line of chunk) {
-        const lt = ly;
-        this.page.ops.push((p) => p.line(line, ox, lt, width, ppr));
-        ly += line.height;
-      }
-      this.y += chunkH;
+      const last = i + fit === lines.length;
+      this.y = this.decorate(b, ox, width, this.y, chunk, i === 0, last);
       this.atTop = false;
       i += fit;
       if (i < lines.length) this.newPage();
@@ -1363,7 +1445,7 @@ class Paginator {
     this.prevAfter = b.after;
     this.prevStyle = b.ppr.styleId;
     this.prevContextual = b.ppr.contextual;
-    if (b.hardBreakAfter) this.newPage(true);
+    if (b.hardBreakAfter) this.newPage();
   }
 
   placeTable(t: TableBlock) {
@@ -1395,6 +1477,7 @@ class Paginator {
       this.drawRow(t, row, x0);
       ri++;
     }
+    this.y += t.borderBottom;
     this.prevAfter = 0;
     this.prevStyle = null;
     this.atTop = false;
@@ -1421,16 +1504,18 @@ class Paginator {
         this.page.ops.push((p) => p.rect(cx, top, cell.width, h, shade));
       }
       const bd = cell.borders;
-      if (bd.top && cell.vMerge !== "continue") this.page.ops.push((p) => p.hline(cx, cx + cell.width, top, bd.top!));
-      if (bd.bottom) this.page.ops.push((p) => p.hline(cx, cx + cell.width, top + row.height, bd.bottom!));
+      if (bd.top && cell.vMerge !== "continue") this.page.ops.push((p) => p.hline(cx, cx + cell.width, top + bd.top!.width / 2, bd.top!));
+      if (bd.bottom) this.page.ops.push((p) => p.hline(cx, cx + cell.width, top + row.height + bd.bottom!.width / 2, bd.bottom!));
       if (bd.left) this.page.ops.push((p) => p.vline(cx, top, top + row.height, bd.left!));
       if (bd.right) this.page.ops.push((p) => p.vline(cx + cell.width, top, top + row.height, bd.right!));
       if (cell.vMerge !== "continue") {
         const contentH = blocksHeight(cell.blocks);
-        let cy = top + cell.mar.t;
-        if (cell.vAlign === "center") cy = top + (h - contentH) / 2;
-        else if (cell.vAlign === "bottom") cy = top + h - cell.mar.b - contentH;
-        this.drawBlocksAt(cell.blocks, cx + cell.mar.l, cy, cell.width - cell.mar.l - cell.mar.r);
+        const inner = top + row.borderTop + cell.mar.t;
+        const room = h - row.borderTop - cell.mar.t - cell.mar.b;
+        let cy = inner;
+        if (cell.vAlign === "center") cy = inner + (room - contentH) / 2;
+        else if (cell.vAlign === "bottom") cy = inner + room - contentH;
+        this.drawBlocksAt(cell.blocks, cx + cell.mar.l + cell.inset, cy, cell.width - cell.mar.l - cell.mar.r - cell.inset);
       }
       x += cell.width;
     }
@@ -1452,6 +1537,45 @@ class Paginator {
     return ops;
   }
 
+  // Draws some lines of a paragraph with its shading and borders, starting at
+  // `top`; returns where the next content starts.
+  private decorate(b: ParaBlock, ox: number, width: number, top: number, lines: Line[], first: boolean, last: boolean): number {
+    const ppr = b.ppr;
+    const bd = ppr.borders;
+    const x1 = ox + ppr.left;
+    const x2 = ox + width - ppr.right;
+    const bTop = first ? b.bTop : undefined;
+    const bBottom = last ? b.bBottom : undefined;
+    const textTop = top + (bTop ? bTop.space + bTop.width : 0);
+    const textBottom = textTop + lines.reduce((s, l) => s + l.height, 0);
+    const ops = this.page.ops;
+    if (ppr.shade) {
+      const shade = ppr.shade;
+      ops.push((p) => p.rect(x1, textTop, x2 - x1, textBottom - textTop, shade));
+    }
+    const left = x1 - borderReach(bd.left);
+    const right = x2 + borderReach(bd.right);
+    if (bTop) ops.push((p) => p.hline(left, right, top + bTop.width / 2, bTop));
+    const boxBottom = bBottom ? textBottom + bBottom.space : textBottom;
+    if (bBottom) ops.push((p) => p.hline(left, right, boxBottom + bBottom.width / 2, bBottom));
+    const vTop = bTop ? top + bTop.width : textTop;
+    if (bd.left) {
+      const s = bd.left;
+      ops.push((p) => p.vline(left + s.width / 2, vTop, boxBottom, s));
+    }
+    if (bd.right) {
+      const s = bd.right;
+      ops.push((p) => p.vline(right - s.width / 2, vTop, boxBottom, s));
+    }
+    let y = textTop;
+    for (const line of lines) {
+      const lt = y;
+      ops.push((p) => p.line(line, ox, lt, width, ppr));
+      y += line.height;
+    }
+    return bBottom ? boxBottom + bBottom.width : textBottom;
+  }
+
   // Draws blocks inside a table cell (no pagination inside cells).
   private drawBlocksAt(blocks: Block[], ox: number, oy: number, width: number) {
     let y = oy;
@@ -1459,18 +1583,7 @@ class Paginator {
     blocks.forEach((b, i) => {
       if (b.kind === "para") {
         y += i === 0 ? b.before : Math.max(prevAfter, b.before);
-        const ppr = b.ppr;
-        if (ppr.shade) {
-          const shade = ppr.shade;
-          const top = y;
-          const h = paraHeight(b);
-          this.page.ops.push((p) => p.rect(ox + ppr.left, top, width - ppr.left - ppr.right, h, shade));
-        }
-        for (const line of b.lines) {
-          const lt = y;
-          this.page.ops.push((p) => p.line(line, ox, lt, width, ppr));
-          y += line.height;
-        }
+        y = this.decorate(b, ox, width, y, b.lines, true, true);
         prevAfter = b.after;
       } else {
         const saveY = this.y;
@@ -1594,9 +1707,10 @@ export async function docxToPdf(bytes: ArrayBuffer, onProgress: Progress): Promi
       done++;
       if (done % 20 === 0) onProgress(10 + Math.round((done / totalBlocks) * 60), "Laying out your document...");
     }
+    groupBorders(laid);
     for (let i = 0; i < laid.length; i++) {
       const b = laid[i];
-      if (b.kind === "para") pager.placePara(b, laid[i + 1]);
+      if (b.kind === "para") pager.placePara(b, laid.slice(i + 1, i + 30));
       else pager.placeTable(b);
     }
   }
@@ -1628,6 +1742,7 @@ export async function docxToPdf(bytes: ArrayBuffer, onProgress: Progress): Promi
         if (el.localName === "p") blocks.push(await engine.layoutParagraph(el, width, hctx, null));
         else if (el.localName === "tbl") blocks.push(await engine.layoutTable(el, width, hctx));
       }
+      groupBorders(blocks);
       const h = blocksHeight(blocks);
       const top = isHeader ? sec.headerDist : sec.height - sec.footerDist - h;
       for (const op of pager.staticOps(sec, blocks, sec.left, top, width)) op(painter);

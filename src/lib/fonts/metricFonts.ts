@@ -4,6 +4,8 @@
 // and spacing land where Office puts them. Served from /fonts, loaded only
 // when a converter needs a given style.
 
+import { padGlyphs } from "./padGlyphs";
+
 type Style = "Regular" | "Bold" | "Italic" | "BoldItalic";
 
 const FILES: Record<string, { css: string; file: string; styles: Style[] }> = {
@@ -44,10 +46,12 @@ export function metricFontBytes(family: string, bold: boolean, italic: boolean):
   if (!bytesCache.has(e.url)) {
     bytesCache.set(
       e.url,
-      fetch(e.url).then((r) => {
-        if (!r.ok) throw new Error(`font ${e.url} ${r.status}`);
-        return r.arrayBuffer();
-      })
+      fetch(e.url)
+        .then((r) => {
+          if (!r.ok) throw new Error(`font ${e.url} ${r.status}`);
+          return r.arrayBuffer();
+        })
+        .then(padGlyphs)
     );
   }
   return bytesCache.get(e.url)!;
