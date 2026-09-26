@@ -777,153 +777,34 @@ export const PdfToExcelTool = ({ onSuccess, toolName }: ToolProps) => {
 /* EXCEL→PDF */
 export const ExcelToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Converting your Excel spreadsheet to PDF...");
-    const X = await getXLSX();
-    const ab = await readAB(files[0]);
-    const wb = X.read(ab, { type: "array" });
-    
-    prog(25, "Converting your Excel spreadsheet to PDF...");
-    const { PDFDocument, rgb, StandardFonts } = await getPdfLib();
-    const fontkit = await getFontkit();
-    const doc = await PDFDocument.create();
-    doc.registerFontkit(fontkit);
-
-    const fontBytesReg = await fetchFont(REGULAR_FONT_URLS, "Roboto-Regular", () => prog(35, "Converting your Excel spreadsheet to PDF..."));
-    const fontBytesBold = await fetchFont(BOLD_FONT_URLS, "Roboto-Bold", () => prog(45, "Converting your Excel spreadsheet to PDF..."));
-
-    prog(60, "Converting your Excel spreadsheet to PDF...");
-    const hasEmbedded = !!fontBytesReg && !!fontBytesBold;
-    const fontReg = hasEmbedded ? await doc.embedFont(fontBytesReg!) : await doc.embedStandardFont(StandardFonts.Helvetica);
-    const fontBold = hasEmbedded ? await doc.embedFont(fontBytesBold!) : await doc.embedStandardFont(StandardFonts.HelveticaBold);
-
-    prog(75, "Converting your Excel spreadsheet to PDF...");
-    for (const sn of wb.SheetNames) {
-      const ws = wb.Sheets[sn];
-      const data: any[][] = X.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      if (data.length === 0) continue;
-
-      const pW = 842; // Landscape paper bounds
-      const pH = 595;
-      const mg = 35;
-      const availWidth = pW - mg * 2;
-
-      const numCols = Math.max(...data.map(r => r.length));
-      if (numCols === 0) continue;
-
-      // Compute optimal cell column layouts based on content lengths
-      const colWidths = new Array(numCols).fill(0);
-      for (const row of data) {
-        for (let cIdx = 0; cIdx < numCols; cIdx++) {
-          const val = String(row[cIdx] || "");
-          const textToMeasure = hasEmbedded ? val : sanitizeWinAnsiText(val);
-          const valLen = fontReg.widthOfTextAtSize(textToMeasure, 9);
-          if (valLen > colWidths[cIdx]) {
-            colWidths[cIdx] = valLen;
-          }
-        }
-      }
-
-      for (let i = 0; i < numCols; i++) {
-        colWidths[i] = Math.max(45, colWidths[i] + 16);
-      }
-
-      const totalColWidth = colWidths.reduce((acc, w) => acc + w, 0);
-      if (totalColWidth > availWidth) {
-        const factor = availWidth / totalColWidth;
-        for (let i = 0; i < numCols; i++) {
-          colWidths[i] = colWidths[i] * factor;
-        }
-      }
-
-      let pg = doc.addPage([pW, pH]);
-      let y = pH - mg;
-
-      pg.drawText(`Sheet Grid Layer: ${sn}`, {
-        x: mg,
-        y: y - 12,
-        size: 14,
-        font: fontBold,
-        color: rgb(0.12, 0.2, 0.45),
-      });
-      y -= 25;
-
-      const rH = 22;
-
-      const drawRowTextAndBorders = (row: any[], isHeader = false) => {
-        if (y < mg + rH) {
-          pg = doc.addPage([pW, pH]);
-          y = pH - mg;
-        }
-
-        if (isHeader) {
-          pg.drawRectangle({
-            x: mg,
-            y: y - rH,
-            width: availWidth,
-            height: rH,
-            color: rgb(0.94, 0.96, 0.98),
-          });
-        }
-
-        let xCurrent = mg;
-        row.forEach((cell, idx) => {
-          if (idx >= numCols) return;
-          const colW = colWidths[idx];
-
-          pg.drawRectangle({
-            x: xCurrent,
-            y: y - rH,
-            width: colW,
-            height: rH,
-            borderColor: rgb(0.85, 0.85, 0.85),
-            borderWidth: 0.5,
-          });
-
-          const text = String(cell || "");
-          const fontSize = 9;
-          const font = isHeader ? fontBold : fontReg;
-
-          const textToMeasure = hasEmbedded ? text : sanitizeWinAnsiText(text);
-          let printableText = textToMeasure;
-          let textW = font.widthOfTextAtSize(printableText, fontSize);
-          const maxTextW = colW - 8;
-
-          if (textW > maxTextW) {
-            while (printableText.length > 1 && textW > maxTextW) {
-              printableText = printableText.slice(0, printableText.length - 2) + "…";
-              textW = font.widthOfTextAtSize(printableText, fontSize);
-            }
-          }
-
-          pg.drawText(printableText, {
-            x: xCurrent + 4,
-            y: y - rH / 2 - fontSize / 2 + 1,
-            size: fontSize,
-            font,
-            color: isHeader ? rgb(0.1, 0.15, 0.3) : rgb(0.15, 0.15, 0.15),
-          });
-
-          xCurrent += colW;
-        });
-
-        y -= rH;
-      };
-
-      if (data.length > 0) {
-        const headerRow = data[0];
-        drawRowTextAndBorders(headerRow, true);
-
-        for (let i = 1; i < data.length; i++) {
-          drawRowTextAndBorders(data[i], false);
-        }
-      }
+    prog(3, "Opening your spreadsheet...");
+    const file = files[0];
+    let bytes = await readAB(file);
+    const notes: string[] = [];
+    // Old .xls and .csv files are converted to .xlsx first (their cell
+    // formatting isn't carried over).
+    if (!/.xlsx$/i.test(file?.name || "")) {
+      const X = await getXLSX();
+      const wb = X.read(bytes, { type: "array", cellDates: false });
+      bytes = X.write(wb, { bookType: "xlsx", type: "array" });
+      if (/.xls$/i.test(file?.name || "")) notes.push("Formatting from the old .xls format isn't included.");
     }
-
-    prog(90, "Converting your Excel spreadsheet to PDF...");
-    const bytes = await doc.save({ useObjectStreams: true });
+    const { xlsxToPdf } = await import("../../lib/convert/xlsxToPdf");
+    let r;
+    try {
+      r = await xlsxToPdf(bytes, prog, { fileName: file?.name || "" });
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      if (msg === "NOT_XLSX") throw new Error("Could not open this spreadsheet. If it's password-protected, remove the password in Excel first.");
+      if (msg === "EMPTY") throw new Error("This spreadsheet has nothing to print.");
+      throw e;
+    }
+    notes.unshift(`${r.pages} page${r.pages === 1 ? "" : "s"} from ${r.sheets} sheet${r.sheets === 1 ? "" : "s"}, converted in your browser.`);
+    if (r.notes.length) notes.push(`Not included: ${r.notes.join(", ")}.`);
     return {
-      blob: new Blob([bytes], { type: "application/pdf" }),
-      name: getOutputFile(files[0]?.name, "spreadsheet", ".pdf")
+      blob: new Blob([r.pdf], { type: "application/pdf" }),
+      name: getOutputFile(file?.name, "spreadsheet", ".pdf"),
+      info: notes.join(" ")
     };
   }, []);
 

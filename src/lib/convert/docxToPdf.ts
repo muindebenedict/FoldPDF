@@ -6,12 +6,14 @@
 // breaks, table rows that split across pages) and draws real, selectable
 // text with pdf-lib.
 //
-// Line model, measured against Word 16 (compatibility mode 15):
+// Line model, measured against Word 16 (compatibility modes 14 and 15):
 //   - single spacing = the font's ascent + descent + line gap; the baseline
 //     sits `ascent` below the line top; "multiple" spacing adds the extra
-//     height above the text; exact spacing puts the baseline at 0.8 × height;
+//     height below the text; exact spacing puts the baseline at 0.8 × height;
 //   - the gap between paragraphs is the larger of the first one's space after
 //     and the second one's space before.
+// Page, border, table, list and justification rules are noted where they are
+// applied; each was measured on test documents exported by Word.
 //
 // Not covered: text boxes and shapes, footnote text, multiple columns,
 // equations, charts and text wrapping around floating pictures. They are
