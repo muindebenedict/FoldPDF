@@ -750,24 +750,16 @@ export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
 /* PDF→EXCEL */
 export const PdfToExcelTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(15, "Converting your PDF to Excel...");
-    const ab = await readAB(files[0]);
-    prog(40, "Converting your PDF to Excel...");
-    const { text } = await extractText(ab);
-    
-    prog(65, "Converting your PDF to Excel...");
-    const X = await getXLSX();
-    const rows = text.split("\n").map((l) => l.split(/\s{2,}|\t/).map((c) => c.trim()).filter(Boolean));
-    const ws = X.utils.aoa_to_sheet(rows);
-    const wb = X.utils.book_new();
-    X.utils.book_append_sheet(wb, ws, "PDF Text Blocks");
-
-    prog(90, "Converting your PDF to Excel...");
-    const buf = X.write(wb, { bookType: "xlsx", type: "array" });
+    const { pdfToXlsx } = await import("../../lib/convert/pdfToXlsx");
+    const r = await pdfToXlsx(await readAB(files[0]), prog);
+    if (r.empty === r.pages) throw new Error("This PDF has no text to put in a spreadsheet. If it's a scan, run it through OCR first.");
+    const notes = [`${r.pages} page${r.pages === 1 ? "" : "s"} converted in your browser, one sheet per page.`];
+    if (r.tables) notes.push(`${r.tables} ruled table${r.tables === 1 ? "" : "s"} rebuilt cell by cell; numbers are real numbers you can sum.`);
+    if (r.empty) notes.push(`${r.empty} page${r.empty === 1 ? " has" : "s have"} no text (scanned?) and ${r.empty === 1 ? "is" : "are"} left empty.`);
     return {
-      blob: new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
-      name: getOutputFile(files[0]?.name, "dataset", ".xlsx"),
-      info: "Table detection works best with simple, clean PDF tables."
+      blob: r.blob,
+      name: getOutputFile(files[0]?.name, "converted", ".xlsx"),
+      info: notes.join(" ")
     };
   }, []);
 
