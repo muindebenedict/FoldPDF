@@ -86,7 +86,7 @@ export function Footer({ navigate }: FooterProps) {
               <FoldPdfLogo className="h-6.5 w-6.5" showText={true} showTagline={false} />
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
-              <strong>Our Mission:</strong> FoldPDF delivers high-speed, secure, and 100% on-device document conversions directly inside your browser. Editing PDFs locally protects your privacy, ensuring your files never leave your device.
+              <strong>Our Mission:</strong> FoldPDF delivers high-speed, secure document conversions. Most tools run directly inside your browser, so your files never leave your device; the few that need our server delete your file right after processing.
             </p>
             {/* Security Verification Link */}
             <div className="pt-2">

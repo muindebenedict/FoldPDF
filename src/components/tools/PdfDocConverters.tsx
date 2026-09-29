@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { readAB, readTxt, getPdfJs, getPdfLib, getFontkit, getMammoth, getXLSX, getPptxGen, extractText, fmt, getOutputFile, loadScript } from "./PdfScriptLoader";
 import { Proc } from "./SharedComponents";
+import { postToServer, convertedByNote, ServerToolError } from "./serverApi";
 
 interface ToolProps {
   onSuccess?: (fileName: string, toolName: string) => void;
@@ -687,17 +688,7 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
     prog(10, "Converting your PDF to Word...");
 
-    const formData = new FormData();
-    formData.append("file", files[0]);
-
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-word", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Conversion failed. Please try again.");
-    }
+    const response = await postToServer("/api/convert-to-word", files[0]);
 
     prog(80, "Converting your PDF to Word...");
     const blob = await response.blob();
@@ -707,7 +698,8 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
 
     return {
       blob: docxBlob,
-      name: getOutputFile(files[0]?.name, "converted", ".docx")
+      name: getOutputFile(files[0]?.name, "converted", ".docx"),
+      info: convertedByNote(response)
     };
   }, []);
 
@@ -723,134 +715,157 @@ export const PdfToWordTool = ({ onSuccess, toolName }: ToolProps) => {
   );
 };
 /* WORD→PDF */
-export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
-  const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
-    prog(10, "Converting your Word document to PDF...");
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "JSZip");
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
-    const docxLib = await loadScript("https://cdn.jsdelivr.net/npm/docx-preview@0.1.15/dist/docx-preview.min.js", "docx");
+// Browser fallback for when the server can't convert. Pages become images, so the PDF's text isn't selectable.
+async function renderDocxInBrowser(file: File, prog: (p: number, m?: string) => void): Promise<Blob> {
+  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "JSZip");
+  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
+  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
+  const docxLib = await loadScript("https://cdn.jsdelivr.net/npm/docx-preview@0.1.15/dist/docx-preview.min.js", "docx");
 
-    const ab = await readAB(files[0]);
-    
-    prog(35, "Rendering layout structure...");
+  const ab = await readAB(file);
+  
+  prog(35, "Rendering layout structure...");
 
-    // Create host structures.
-    // Parent wrapper: positioned off-screen so user doesn't see it flicker.
-    const wrapper = document.createElement("div");
-    wrapper.style.position = "absolute";
-    wrapper.style.left = "-9999px";
-    wrapper.style.top = "-9999px";
-    wrapper.style.width = "820px";
-    wrapper.style.overflow = "hidden";
-    wrapper.style.background = "#ffffff";
+  // Create host structures.
+  // Parent wrapper: positioned off-screen so user doesn't see it flicker.
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "absolute";
+  wrapper.style.left = "-9999px";
+  wrapper.style.top = "-9999px";
+  wrapper.style.width = "820px";
+  wrapper.style.overflow = "hidden";
+  wrapper.style.background = "#ffffff";
 
-    // Target container: this element is cloned by jsPDF's html module.
-    // It should have CLEAN style and NO off-screen absolute positioning itself!
-    const container = document.createElement("div");
-    container.style.width = "794px"; // Standard A4 width in px at 96 DPI
-    container.style.background = "#ffffff";
-    container.style.padding = "0px";
-    container.style.margin = "0px";
-    container.style.boxSizing = "border-box";
+  // Target container: this element is cloned by jsPDF's html module.
+  // It should have CLEAN style and NO off-screen absolute positioning itself!
+  const container = document.createElement("div");
+  container.style.width = "794px"; // Standard A4 width in px at 96 DPI
+  container.style.background = "#ffffff";
+  container.style.padding = "0px";
+  container.style.margin = "0px";
+  container.style.boxSizing = "border-box";
 
-    // Custom CSS to strip preview outer padding and match exact page bounds
-    const styles = document.createElement("style");
-    styles.innerHTML = `
-      .docx-wrapper { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
-      .docx-wrapper > section.docx { box-shadow: none !important; margin: 0 0 10px 0 !important; border: none !important; }
-    `;
-    container.appendChild(styles);
+  // Custom CSS to strip preview outer padding and match exact page bounds
+  const styles = document.createElement("style");
+  styles.innerHTML = `
+    .docx-wrapper { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+    .docx-wrapper > section.docx { box-shadow: none !important; margin: 0 0 10px 0 !important; border: none !important; }
+  `;
+  container.appendChild(styles);
 
-    wrapper.appendChild(container);
-    document.body.appendChild(wrapper);
+  wrapper.appendChild(container);
+  document.body.appendChild(wrapper);
 
-    prog(55, "Generating high-fidelity document pages...");
+  prog(55, "Generating high-fidelity document pages...");
 
-    try {
-      await docxLib.renderAsync(ab, container, null, {
-        ignoreWidth: false,
-        ignoreHeight: false,
-        ignoreFonts: false,
-        breakPages: true,
-        debug: false,
-        experimental: false,
-        className: "docx"
-      });
-    } catch (err) {
-      console.error("docx-preview failed:", err);
-      document.body.removeChild(wrapper);
-      throw new Error("Could not parse DOCX package. File may be password protected or invalid.");
-    }
+  try {
+    await docxLib.renderAsync(ab, container, null, {
+      ignoreWidth: false,
+      ignoreHeight: false,
+      ignoreFonts: false,
+      breakPages: true,
+      debug: false,
+      experimental: false,
+      className: "docx"
+    });
+  } catch (err) {
+    console.error("docx-preview failed:", err);
+    document.body.removeChild(wrapper);
+    throw new Error("Could not parse DOCX package. File may be password protected or invalid.");
+  }
 
-    // Give time for custom styles, fonts, and inline images to render
-    await new Promise((r) => setTimeout(r, 600));
+  // Give time for custom styles, fonts, and inline images to render
+  await new Promise((r) => setTimeout(r, 600));
 
-    prog(75, "Compiling high-resolution PDF pages...");
+  prog(75, "Compiling high-resolution PDF pages...");
 
-    const jspdfLib = (window as any).jspdf;
-    const html2canvas = (window as any).html2canvas;
+  const jspdfLib = (window as any).jspdf;
+  const html2canvas = (window as any).html2canvas;
 
-    if (!jspdfLib || !html2canvas) {
-      document.body.removeChild(wrapper);
-      throw new Error("Failed to load layout rendering libraries. Please check your network and try again.");
-    }
+  if (!jspdfLib || !html2canvas) {
+    document.body.removeChild(wrapper);
+    throw new Error("Failed to load layout rendering libraries. Please check your network and try again.");
+  }
 
-    let pdfBytes: ArrayBuffer;
-    try {
-      const pdf = new jspdfLib.jsPDF({
-        orientation: "p",
-        unit: "pt",
-        format: "a4",
-        compress: true
-      });
+  let pdfBytes: ArrayBuffer;
+  try {
+    const pdf = new jspdfLib.jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      compress: true
+    });
 
-      // Query page sections generated by docx-preview
-      const sections = container.querySelectorAll("section.docx");
+    // Query page sections generated by docx-preview
+    const sections = container.querySelectorAll("section.docx");
 
-      if (sections.length > 0) {
-        for (let i = 0; i < sections.length; i++) {
-          const section = sections[i] as HTMLElement;
-          if (i > 0) {
-            pdf.addPage("a4", "p");
-          }
-
-          prog(75 + Math.floor(((i + 1) / sections.length) * 18), `Rendering page ${i + 1} of ${sections.length}...`);
-
-          const canvas = await html2canvas(section, {
-            scale: 2, // High resolution crisp rendering
-            useCORS: true,
-            logging: false,
-            backgroundColor: "#ffffff"
-          });
-
-          const imgData = canvas.toDataURL("image/jpeg", 0.95);
-          pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89, undefined, "FAST");
+    if (sections.length > 0) {
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i] as HTMLElement;
+        if (i > 0) {
+          pdf.addPage("a4", "p");
         }
-      } else {
-        // Fallback if sections were not structured
-        const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+
+        prog(75 + Math.floor(((i + 1) / sections.length) * 18), `Rendering page ${i + 1} of ${sections.length}...`);
+
+        const canvas = await html2canvas(section, {
+          scale: 2, // High resolution crisp rendering
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff"
+        });
+
         const imgData = canvas.toDataURL("image/jpeg", 0.95);
         pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89, undefined, "FAST");
       }
-
-      pdfBytes = pdf.output("arraybuffer");
-    } finally {
-      document.body.removeChild(wrapper);
+    } else {
+      // Fallback if sections were not structured
+      const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89, undefined, "FAST");
     }
 
-    prog(95, "Converting your Word document to PDF...");
-    return {
-      blob: new Blob([pdfBytes!], { type: "application/pdf" }),
-      name: getOutputFile(files[0]?.name, "docx-to-pdf", ".pdf")
-    };
+    pdfBytes = pdf.output("arraybuffer");
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+
+  return new Blob([pdfBytes!], { type: "application/pdf" });
+}
+
+export const WordToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
+  const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
+    const file = files[0];
+    const name = getOutputFile(file?.name, "docx-to-pdf", ".pdf");
+    prog(10, "Converting your Word document to PDF...");
+
+    try {
+      const response = await postToServer("/api/convert-word-to-pdf", file);
+      prog(80, "Converting your Word document to PDF...");
+      const blob = new Blob([await response.blob()], { type: "application/pdf" });
+      return { blob, name, info: convertedByNote(response) };
+    } catch (e) {
+      const serverUnavailable = e instanceof ServerToolError && ["QUOTA_EXCEEDED", "RATE_LIMITED", "UNREACHABLE"].includes(e.code);
+      if (!serverUnavailable) throw e;
+      if (!file.name.toLowerCase().endsWith(".docx")) {
+        throw new Error(`${e.message} In the meantime, save the file as .docx in Word to convert it in your browser.`);
+      }
+
+      const blob = await renderDocxInBrowser(file, prog);
+      prog(95, "Converting your Word document to PDF...");
+      return {
+        blob,
+        name,
+        info: "Made in your browser because our Word converter isn't available right now. Pages are saved as images, so text in this PDF can't be selected."
+      };
+    }
   }, []);
 
   return (
     <Proc
       id="word-to-pdf"
       label="Compile Word to PDF"
-      accept=".docx"
+      accept=".docx,.doc"
       run={run}
       onSuccess={onSuccess}
       toolName={toolName}
@@ -1046,17 +1061,7 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
     prog(10, "Converting your PDF to PowerPoint...");
 
-    const formData = new FormData();
-    formData.append("file", files[0]);
-
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-ppt", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Conversion failed. Please try again.");
-    }
+    const response = await postToServer("/api/convert-to-ppt", files[0]);
 
     prog(80, "Converting your PDF to PowerPoint...");
     const blob = await response.blob();
@@ -1067,7 +1072,7 @@ export const PdfToPptTool = ({ onSuccess, toolName }: ToolProps) => {
     return {
       blob: pptxBlob,
       name: getOutputFile(files[0]?.name, "converted", ".pptx"),
-      info: "Converted using Adobe PDF Services — structure preserved"
+      info: convertedByNote(response)
     };
   }, []);
 
@@ -1079,17 +1084,7 @@ export const PptToPdfTool = ({ onSuccess, toolName }: ToolProps) => {
   const run = useCallback(async (files: File[], prog: (p: number, m?: string) => void) => {
     prog(10, "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait...");
 
-    const formData = new FormData();
-    formData.append("file", files[0]);
-
-    const response = await fetch("https://foldpdf-api-1.onrender.com/api/convert-to-pdf", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Conversion failed. Please try again.");
-    }
+    const response = await postToServer("/api/convert-to-pdf", files[0]);
 
     prog(80, "Converting your PowerPoint — this usually takes 30 to 60 seconds. Please wait...");
     const blob = await response.blob();
