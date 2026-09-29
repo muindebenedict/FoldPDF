@@ -1,5 +1,6 @@
 import { TOOLS_DATA } from './toolsData';
 import { DETAILED_BLOG_POSTS } from './pages/blog/blogPostsData';
+import { getToolMeta } from './toolMeta';
 
 export interface RouteMetadata {
   path: string;
@@ -71,13 +72,7 @@ export function getAllRoutes(): RouteMetadata[] {
   // Add all PDF tool pages
   TOOLS_DATA.forEach((tool) => {
     const routePath = `/${tool.urlPath}`;
-    const title = tool.metaTitle 
-      ? tool.metaTitle 
-      : `${tool.name} Online Free - 100% Private & Secure PDF Tool | FoldPDF`;
-    
-    const description = tool.metaDesc 
-      ? tool.metaDesc 
-      : `${tool.shortDesc} Process PDF files 100% locally in your browser with complete privacy on FoldPDF.`;
+    const { title, description } = getToolMeta(tool);
 
     routes.push({
       path: routePath,
