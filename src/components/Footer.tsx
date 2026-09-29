@@ -92,7 +92,7 @@ export function Footer({ navigate }: FooterProps) {
             <div className="pt-2">
               <a href="/security" onClick={(e) => { e.preventDefault(); handleLinkClick("/security"); }} className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition" aria-label="Security Framework Details">
                 <Lucide.ShieldCheck className="h-4.5 w-4.5" />
-                <span>On-Device Verified</span>
+                <span>How We Protect Your Files</span>
               </a>
             </div>
           </div>
@@ -240,7 +240,7 @@ export function Footer({ navigate }: FooterProps) {
               <Lucide.FileCheck2 className="h-5 w-5 text-indigo-505 shrink-0" />
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-white leading-none">HIPAA Compliant</p>
-                <p className="text-[9px] text-slate-400 leading-none mt-1">100% Client-Side Safe</p>
+                <p className="text-[9px] text-slate-400 leading-none mt-1">Client-Side by Default</p>
               </div>
             </div>
 
@@ -264,7 +264,7 @@ export function Footer({ navigate }: FooterProps) {
               Active Zero-Knowledge Browser Processing Policy Enabled
             </p>
             <p className="text-[11px] text-slate-450 leading-relaxed max-w-2xl">
-              All tools execute directly within your local client memory frame. Under no circumstances are files received, parsed, stored or kept on physical cloud directories. Enjoy total server-free operations.
+              Most tools execute directly within your local client memory frame, so those files are never uploaded. Five tools (Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF) use our secure processing server, which deletes every file immediately after processing. No file is ever stored or kept in cloud directories.
             </p>
           </div>
           <div className="mt-4 sm:mt-0 flex flex-col items-start sm:items-end gap-1 font-semibold text-slate-500 dark:text-slate-450 shrink-0">

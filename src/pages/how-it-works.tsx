@@ -10,7 +10,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
     {
       num: "01",
       title: "File Loading & Allocation",
-      desc: "When you drag a file into the tool, FoldPDF parses its raw binary stream into a localized volatile JavaScript ArrayBuffer. Under no condition are these raw bytes transmitted to external disks."
+      desc: "When you drag a file into the tool, FoldPDF parses its raw binary stream into a localized volatile JavaScript ArrayBuffer. For our browser-based tools, these raw bytes are never transmitted to external servers or disks."
     },
     {
       num: "02",
@@ -38,7 +38,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
     },
     {
       feature: "Risk of Data Breach",
-      local: "0% (No servers, databases, or cloud storage)",
+      local: "Minimal (No databases or cloud file storage)",
       cloud: "High (Server databases store and cache copies)",
       icon: <Lucide.ShieldAlert className="h-4.5 w-4.5 text-indigo-505" />
     },
@@ -50,7 +50,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
     },
     {
       feature: "HIPAA & GDPR Compliance",
-      local: "Guaranteed (Stateless architecture, zero cookies)",
+      local: "Simplified (Browser tools keep files on-device)",
       cloud: "Complex (Demands detailed BAAs and storage logs)",
       icon: <Lucide.FileCheck className="h-4.5 w-4.5 text-teal-500" />
     },
@@ -90,7 +90,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
               Unlike typical SaaS utilities that force uploads onto remote hosts, FoldPDF turns your web browser into an isolated, hyper-secure document workstation. By shifting execution loads to your local hardware, we prevent data leakage and bypass server wait queues.
             </p>
             <div className="border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-955/20 p-4 rounded-r-2xl text-xs text-slate-600 dark:text-slate-350">
-              💡 <strong>Developer audit note:</strong> For our browser-only tools, all file operations run in-memory inside your browser tab. For server-required tools like Compress PDF or PDF to Word, files upload securely, process instantly, and delete permanently from our servers immediately.
+              💡 <strong>Developer audit note:</strong> For our browser-only tools, all file operations run in-memory inside your browser tab. Five tools use our secure processing server: Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF. Their files upload securely, are processed instantly (the Word and PowerPoint conversions by Adobe PDF Services), and are deleted permanently immediately afterwards.
             </div>
           </div>
 
@@ -172,6 +172,9 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
             </tbody>
           </table>
         </div>
+        <p className="text-[11px] text-slate-450 dark:text-slate-500 mt-4 leading-relaxed">
+          The Local-First column describes our browser-based tools. The five server-assisted tools (Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF) upload your file to our processing server, which deletes it immediately after processing.
+        </p>
       </div>
 
     </div>

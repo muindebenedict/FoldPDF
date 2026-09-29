@@ -22,7 +22,11 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
     },
     {
       q: "Do you retain any record of file metadata or user names?",
-      a: "No! We do not log filenames, text queries, page numbers, IP addresses, or conversion timestamps. Your interactions with FoldPDF remain totally anonymous."
+      a: "No! We do not log filenames, text queries, page numbers, IP addresses, or conversion timestamps. To keep the free service fair, our processing server keeps a visitor's IP address in memory for up to one day to apply hourly limits; it is never written to disk or shared."
+    },
+    {
+      q: "Which tools send my file to a server?",
+      a: "Only five: Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF. They use our secure processing server (and Adobe PDF Services for the Word and PowerPoint conversions), and your file is deleted immediately after processing. Every other tool runs entirely in your browser."
     },
     {
       q: "Does FoldPDF require any subscription for enterprise operations?",
@@ -39,7 +43,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
           Security Hub & <span className="text-indigo-650 dark:text-indigo-400">Zero-Knowledge Architecture</span>
         </h1>
         <p className="mt-4 text-slate-500 dark:text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
-          Learn how our client-side sandbox completely transforms standard PDF handling. Absolute security by engineering design—files never touch our databases.
+          Learn how our client-side sandbox completely transforms standard PDF handling. Absolute security by engineering design—files never touch our databases, and only five tools use our server at all.
         </p>
       </div>
 
@@ -58,7 +62,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-450 leading-relaxed space-y-3">
               Most competitive portals act as a proxy: they require you to transmit documents over standard networks onto their servers. That means those documents reside on third-party physical servers.
               <br /><br />
-              <strong>FoldPDF is the exact opposite.</strong> We compile PDF parsing and rendering engines directly into high-fidelity WebAssembly packages. When you load a tool page, WebAssembly mounts a private sandbox execution area inside your computer's local RAM. Your files are decrypted, edited, and recomposed right inside your browser window. No data travels over physical wires.
+              <strong>FoldPDF is the exact opposite.</strong> We compile PDF parsing and rendering engines directly into high-fidelity WebAssembly packages. When you load a tool page, WebAssembly mounts a private sandbox execution area inside your computer's local RAM. Your files are decrypted, edited, and recomposed right inside your browser window. No data travels over physical wires. This is how every FoldPDF tool works, except the five server-assisted tools described below.
             </p>
           </div>
           <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-850">
@@ -76,10 +80,10 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
               <Lucide.Network className="h-5.5 w-5.5" />
             </div>
             <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-805 dark:text-white mb-3">
-              Zero Network Transfers
+              Zero Network Transfers for Browser Tools
             </h2>
             <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-450 leading-relaxed">
-              Because all calculations happen locally in temporary RAM, FoldPDF completely eliminates the risk of interception. Closing your browser tab immediately garbage-collects all memory buffers, erasing any trace of your activity automatically.
+              Because browser-tool calculations happen locally in temporary RAM, FoldPDF completely eliminates the risk of interception. Closing your browser tab immediately garbage-collects all memory buffers, erasing any trace of your activity automatically.
               <br /><br />
               This approach protects students, clinical physicians, corporate legal counsel, and banking executives from security exposure. No backend database handles client documents, establishing an unbreakable privacy shield.
             </p>
@@ -97,6 +101,29 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
 
       </div>
 
+      {/* The five server-assisted tools */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-premium-sm mb-16" id="server-assisted-tools">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-11 w-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+            <Lucide.Server className="h-5.5 w-5.5" />
+          </div>
+          <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-805 dark:text-white">
+            The Five Server-Assisted Tools
+          </h2>
+        </div>
+        <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-450 leading-relaxed">
+          Five tools need professional-grade engines that cannot run inside a browser: <strong>Compress PDF</strong>, <strong>PDF to Word</strong>, <strong>Word to PDF</strong>, <strong>PDF to PowerPoint</strong> and <strong>PowerPoint to PDF</strong>. When you use one of them, this is exactly what happens:
+        </p>
+        <ul className="mt-4 space-y-2 text-xs sm:text-sm text-slate-555 dark:text-slate-450 leading-relaxed list-disc pl-5">
+          <li>Your file is sent over an encrypted HTTPS connection to our own processing server.</li>
+          <li>Compress PDF and PowerPoint to PDF are processed on that server. PDF to Word, Word to PDF and PDF to PowerPoint are converted by Adobe PDF Services, with ComPDF as a standby backup.</li>
+          <li>Your file and the result are deleted immediately after processing, including from Adobe's storage. Nothing is stored, logged, or used for training.</li>
+          <li>Uploads are limited to 50MB, and only the FoldPDF website can use the server.</li>
+        </ul>
+        <p className="mt-4 text-xs text-slate-450 leading-relaxed">
+          Every other FoldPDF tool runs entirely inside your browser, and your file never leaves your device.
+        </p>
+      </div>
       {/* Feature grid: Zero-Knowledge Privacy Architecture */}
       <div className="mb-16">
         <h3 className="font-display text-xl sm:text-2.5xl font-extrabold text-slate-800 dark:text-white mb-8 text-center">
@@ -146,7 +173,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             Industry Regulatory Standards
           </h3>
           <p className="text-xs text-slate-555 dark:text-slate-400 mt-2 leading-relaxed">
-            By avoiding data intake or external file uploads, FoldPDF satisfies strict global compliance mandates.
+            By keeping most processing on your device and never storing files, FoldPDF supports strict global compliance mandates.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
@@ -163,7 +190,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             <div className="inline-flex px-2.5 py-1 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-655 text-[10px] uppercase font-bold tracking-wider mb-2">HIPAA Standards</div>
             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Protected Health Information</h4>
             <p className="text-xs text-slate-450 mt-1.5 leading-relaxed">
-              Clinical employees can process records securely. PHI remains strictly isolated to their specific physical computer RAM, obeying the HIPAA Security Rule.
+              With our browser-based tools, PHI remains strictly isolated to the clinician's own computer RAM. The five server-assisted tools send files to our processing server (and Adobe for Word and PowerPoint conversions) and delete them immediately; check your organization's policy before using them for PHI.
             </p>
           </div>
 
@@ -171,7 +198,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             <div className="inline-flex px-2.5 py-1 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-605 text-[10px] uppercase font-bold tracking-wider mb-2">GDPR Regulations</div>
             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Right to Personal Deletion</h4>
             <p className="text-xs text-slate-450 mt-1.5 leading-relaxed">
-              Standard GDPR demands that users retain complete authority to delete metrics. By immediately purving all records, compliance is maintained.
+              Standard GDPR demands that users retain complete authority to delete metrics. By immediately purging all records, compliance is maintained.
             </p>
           </div>
 
@@ -252,9 +279,9 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             Data Retention Policy
           </h3>
           <p className="text-xs text-slate-555 dark:text-slate-400 leading-relaxed">
-            Our storage threshold is mathematically <strong>Zero Seconds</strong>. 
+            Our storage threshold is <strong>zero</strong>: no file is kept after processing. 
             <br /><br />
-            Since the FoldPDF layout avoids hard disk writes entirely, we never compile document backup bundles. If your computer power fails mid-conversion, that state is permanently lost—the cleanest storage guarantee possible.
+            Browser tools never write your file to any disk, and the five server-assisted tools hold it only in a temporary folder for the few seconds processing takes, deleting it as soon as your result is sent. We never compile document backup bundles. If your computer power fails mid-conversion, that state is permanently lost—the cleanest storage guarantee possible.
           </p>
         </div>
 

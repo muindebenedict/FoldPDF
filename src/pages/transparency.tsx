@@ -29,16 +29,28 @@ export default function TransparencyPage({ navigate }: TransparencyProps) {
 
   const subProcessors = [
     {
-      name: "Google Cloud Platform / Cloud Run",
-      role: "Static Asset Hosting & Server Proxy",
-      dataStored: "Absolutely None (No caches or file storage configured)",
-      location: "Germany / EU West"
+      name: "Vercel",
+      role: "Website hosting (serves the FoldPDF pages; never receives your files)",
+      dataStored: "None",
+      location: "United States (Vercel Inc.)"
     },
     {
-      name: "Google Gemini API Gateway",
-      role: "Local AI Text Parsing Proxy",
-      dataStored: "Zero (Ephemeral text token analysis only; strict zero-training policies)",
-      location: "United States (Encrypted API Gateway)"
+      name: "Render",
+      role: "FoldPDF processing server for Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF",
+      dataStored: "None (files are deleted immediately after processing)",
+      location: "United States (Render Services, Inc.)"
+    },
+    {
+      name: "Adobe PDF Services",
+      role: "Conversion engine for PDF to Word, Word to PDF and PDF to PowerPoint",
+      dataStored: "None (we delete each file from Adobe's storage right after conversion)",
+      location: "United States (Adobe Inc.)"
+    },
+    {
+      name: "ComPDF",
+      role: "Standby backup for the Adobe conversions, used only if Adobe's monthly capacity is reached",
+      dataStored: "None (deleted when the request finishes)",
+      location: "Singapore (PDF Technologies Pte. Ltd.)"
     }
   ];
 
@@ -114,7 +126,7 @@ export default function TransparencyPage({ navigate }: TransparencyProps) {
             <div className="flex gap-3">
               <div className="h-6 w-6 rounded-full bg-indigo-55 text-indigo-550 dark:bg-indigo-955/35 dark:text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0">3</div>
               <p className="text-xs text-slate-505 dark:text-slate-400 mt-0.5">
-                Select one of our browser-based tools and execute an action like <strong>Merge</strong> or <strong>Watermark</strong>. You can observe that zero document assets are sent to the cloud. All math executes 100% locally.
+                Select one of our browser-based tools and execute an action like <strong>Merge</strong> or <strong>Watermark</strong>. You can observe that zero document assets are sent to the cloud. All math executes 100% locally. The five server-assisted tools (Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF) will show a single upload to our processing server, which deletes the file immediately.
               </p>
             </div>
           </div>
@@ -131,7 +143,7 @@ export default function TransparencyPage({ navigate }: TransparencyProps) {
             </div>
             <div className="flex justify-between text-xs border-b border-slate-100 dark:border-slate-850 pb-2">
               <span className="text-slate-450">Document Buffer Caching:</span>
-              <span className="font-bold text-slate-800 dark:text-white">Volatile Heap Only (No disk sync)</span>
+              <span className="font-bold text-slate-800 dark:text-white">Browser Memory Only (server tools: temporary, deleted immediately)</span>
             </div>
             <div className="flex justify-between text-xs border-b border-slate-100 dark:border-slate-850 pb-2">
               <span className="text-slate-450">Average Storage Caches:</span>

@@ -10,7 +10,7 @@ export default function AboutPage({ navigate }: AboutProps) {
     {
       icon: <Lucide.ShieldCheck className="h-6 w-6 text-indigo-500" />,
       title: "1. Security & Privacy First",
-      desc: "Most of our tools process files directly inside your web browser on your own computer, so your files never upload to the internet."
+      desc: "Most of our tools process files directly inside your web browser on your own computer, so your files never upload to the internet. The five tools that need our secure server delete your file immediately after processing."
     },
     {
       icon: <Lucide.Key className="h-6 w-6 text-indigo-500" />,
