@@ -59,7 +59,7 @@ export default function BlogIndex({ navigate }: BlogIndexProps) {
             <div className="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-905 border border-slate-100 dark:border-slate-800/40 max-w-2xl">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Security Index Callout</span>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                👉 <strong>Key Statistic:</strong> {featuredPost.statistic}
+                <Lucide.TrendingUp className="mr-1 inline h-3.5 w-3.5 -mt-0.5 text-indigo-500" aria-hidden="true" /> <strong>Key statistic:</strong> {featuredPost.statistic}
               </p>
             </div>
 

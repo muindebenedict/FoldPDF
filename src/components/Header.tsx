@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type MouseEvent } from 'react';
 import * as Lucide from 'lucide-react';
 import { TOOLS_DATA } from '../toolsData';
+import { ToolIcon } from './ToolIcon';
 import { ToolDefinition } from '../types';
 import { FoldPdfLogo } from './FoldPdfLogo';
 
@@ -65,6 +66,15 @@ export function Header({
     setActiveMenu(null);
   };
 
+  // Real links (so keyboards and search engines can follow them) that still navigate inside the app.
+  // Modified clicks (new tab, new window) keep the browser's default behaviour.
+  const linkClick = (path: string, after?: () => void) => (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    menuNavigate(path);
+    after?.();
+  };
+
   const filteredTools = TOOLS_DATA.filter((tool) =>
     tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     tool.shortDesc.toLowerCase().includes(searchQuery.toLowerCase())
@@ -80,34 +90,39 @@ export function Header({
     <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-905/95 transition-colors duration-200 shadow-premium-sm flex flex-col">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* LOGO */}
-        <div 
-          onClick={() => navigate('/')} 
+        <a
+          href="/"
+          onClick={linkClick('/')}
+          aria-label="FoldPDF home"
           className="flex cursor-pointer items-center space-x-1.5 transition-all duration-200 hover:scale-[1.01]"
           id="hdr-logo-btn"
         >
           <FoldPdfLogo className="h-9 w-9" showText={true} />
-        </div>
+        </a>
 
         {/* NAVIGATION LINKS */}
         <nav className="hidden items-center space-x-5 lg:flex" ref={dropdownRef}>
-          <span 
-            onClick={() => menuNavigate('/merge-pdf')} 
+          <a
+            href="/merge-pdf"
+            onClick={linkClick('/merge-pdf')}
             className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-indigo-650 dark:text-slate-250 dark:hover:text-indigo-400 transition-colors"
           >
             Merge PDF
-          </span>
-          <span 
-            onClick={() => menuNavigate('/split-pdf')} 
+          </a>
+          <a
+            href="/split-pdf"
+            onClick={linkClick('/split-pdf')}
             className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-indigo-650 dark:text-slate-250 dark:hover:text-indigo-400 transition-colors"
           >
             Split PDF
-          </span>
-          <span 
-            onClick={() => menuNavigate('/compress-pdf')} 
+          </a>
+          <a
+            href="/compress-pdf"
+            onClick={linkClick('/compress-pdf')}
             className="cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-indigo-650 dark:text-slate-250 dark:hover:text-indigo-400 transition-colors"
           >
             Compress PDF
-          </span>
+          </a>
 
           {/* CONVERT PDF DROPDOWN TRIGGER */}
           <div className="relative">
@@ -137,13 +152,14 @@ export function Header({
                       { name: 'Excel to PDF', path: '/xlsx-to-pdf' },
                       { name: 'TXT to PDF', path: '/txt-to-pdf' }
                     ].map((item) => (
-                      <button 
-                        key={item.path} 
-                        onClick={() => menuNavigate(item.path)}
-                        className="text-left text-xs font-semibold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={linkClick(item.path)}
+                        className="block text-left text-xs font-semibold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                       >
                         {item.name}
-                      </button>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -161,13 +177,14 @@ export function Header({
                       { name: 'PDF to Excel (XLSX)', path: '/pdf-to-xlsx' },
                       { name: 'PDF to TXT', path: '/pdf-to-txt' }
                     ].map((item) => (
-                      <button 
-                        key={item.path} 
-                        onClick={() => menuNavigate(item.path)}
-                        className="text-left text-xs font-semibold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={linkClick(item.path)}
+                        className="block text-left text-xs font-semibold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                       >
                         {item.name}
-                      </button>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -207,13 +224,14 @@ export function Header({
                         { name: 'Remove PDF Pages', path: '/remove-pages' },
                         { name: 'Rotate PDF', path: '/rotate-pdf' }
                       ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={linkClick(item.path)}
+                          className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                         >
                           {item.name}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -229,13 +247,14 @@ export function Header({
                         { name: 'Repair PDF', path: '/repair-pdf' },
                         { name: 'OCR scanned reader', path: '/ocr-pdf' }
                       ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={linkClick(item.path)}
+                          className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                         >
                           {item.name}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -258,13 +277,14 @@ export function Header({
                       { name: 'Excel to PDF', path: '/xlsx-to-pdf' },
                       { name: 'TXT to PDF', path: '/txt-to-pdf' }
                     ].map((item) => (
-                      <button 
-                        key={item.path} 
-                        onClick={() => menuNavigate(item.path)}
-                        className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={linkClick(item.path)}
+                        className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                       >
                         {item.name}
-                      </button>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -286,13 +306,14 @@ export function Header({
                         { name: 'PDF to Excel (XLSX)', path: '/pdf-to-xlsx' },
                         { name: 'PDF to TXT log file', path: '/pdf-to-txt' }
                       ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={linkClick(item.path)}
+                          className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                         >
                           {item.name}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -307,13 +328,14 @@ export function Header({
                         { name: 'JPEG to PNG', path: '/jpeg-to-png' },
                         { name: 'PNG to JPG', path: '/png-to-jpg' }
                       ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={linkClick(item.path)}
+                          className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                         >
                           {item.name}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -333,13 +355,14 @@ export function Header({
                         { name: 'Add Watermark', path: '/add-watermark' },
                         { name: 'Add Page Numbers', path: '/add-page-numbers' }
                       ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={linkClick(item.path)}
+                          className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                         >
                           {item.name}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -354,13 +377,14 @@ export function Header({
                         { name: 'Protect PDF', path: '/protect-pdf' },
                         { name: 'Unlock PDF', path: '/unlock-pdf' }
                       ].map((item) => (
-                        <button 
-                          key={item.path} 
-                          onClick={() => menuNavigate(item.path)}
-                          className="text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={linkClick(item.path)}
+                          className="block text-left text-xs font-bold text-slate-650 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 pl-1 border-l-2 border-transparent hover:border-indigo-500 transition-all py-0.5"
                         >
                           {item.name}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -377,6 +401,7 @@ export function Header({
             onClick={() => setDarkMode(!darkMode)}
             className="rounded-xl border border-gray-100 bg-white p-2 text-neutral-600 shadow-sm outline-none transition-transform hover:scale-[1.03] dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
             title="Toggle theme mode"
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             id="hdr-theme-toggle"
           >
             {darkMode ? <Lucide.Sun className="h-4.5 w-4.5 text-amber-500" /> : <Lucide.Moon className="h-4.5 w-4.5 text-neutral-600" />}
@@ -421,12 +446,15 @@ export function Header({
         <div className="flex items-center space-x-2 lg:hidden">
           <button
             onClick={() => setDarkMode(!darkMode)}
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             className="rounded-xl p-2 text-neutral-500 dark:text-neutral-400"
           >
             {darkMode ? <Lucide.Sun className="h-4.5 w-4.5" /> : <Lucide.Moon className="h-4.5 w-4.5" />}
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
             className="rounded-xl p-2 text-neutral-600 dark:text-neutral-400"
           >
             {mobileMenuOpen ? <Lucide.X className="h-5 w-5" /> : <Lucide.Menu className="h-5 w-5" />}
@@ -455,6 +483,7 @@ export function Header({
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
                   className="absolute top-2.5 right-3 text-neutral-400 hover:text-neutral-600"
                 >
                   <Lucide.X className="h-4 w-4" />
@@ -471,18 +500,16 @@ export function Header({
                       Suggested PDF Tools
                     </div>
                     {filteredTools.map((tool) => (
-                      <button
+                      <a
                         key={tool.id}
-                        onClick={() => {
-                          navigate(`/${tool.urlPath}`);
+                        href={`/${tool.urlPath}`}
+                        onClick={linkClick(`/${tool.urlPath}`, () => {
                           setSearchQuery('');
                           setShowResults(false);
-                        }}
+                        })}
                         className="flex w-full items-center rounded-xl p-2.5 text-left text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800/60 transition-colors"
                       >
-                        <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
-                          <span className="text-xs font-semibold">★</span>
-                        </div>
+                        <ToolIcon toolId={tool.id} size="sm" className="mr-3" />
                         <div>
                           <div className="text-sm font-semibold text-neutral-900 dark:text-white">
                             {tool.name}
@@ -491,7 +518,7 @@ export function Header({
                             {tool.shortDesc}
                           </div>
                         </div>
-                      </button>
+                      </a>
                     ))}
                   </>
                 ) : (
@@ -524,42 +551,46 @@ export function Header({
             {showResults && searchQuery && (
               <div className="absolute left-0 right-0 mt-2 max-h-48 overflow-y-auto rounded-xl border bg-white p-2 shadow-2xl dark:bg-neutral-850 z-55">
                 {filteredTools.map((tool) => (
-                  <button
+                  <a
                     key={tool.id}
-                    onClick={() => {
-                      navigate(`/${tool.urlPath}`);
+                    href={`/${tool.urlPath}`}
+                    onClick={linkClick(`/${tool.urlPath}`, () => {
                       setSearchQuery('');
                       setShowResults(false);
                       setMobileMenuOpen(false);
-                    }}
-                    className="flex w-full items-center rounded-lg p-2 text-left text-neutral-850 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    })}
+                    className="flex w-full items-center gap-2.5 rounded-lg p-2 text-left text-neutral-850 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   >
+                    <ToolIcon toolId={tool.id} size="sm" />
                     <span className="text-sm font-semibold">{tool.name}</span>
-                  </button>
+                  </a>
                 ))}
               </div>
             )}
           </div>
 
           <div className="flex flex-col space-y-3.5 pt-2">
-            <button
-              onClick={() => { navigate('/blog'); setMobileMenuOpen(false); }}
+            <a
+              href="/blog"
+              onClick={linkClick('/blog', () => setMobileMenuOpen(false))}
               className="text-left font-medium text-neutral-600 hover:text-indigo-600 dark:text-neutral-300"
             >
               Blog Posts
-            </button>
-            <button
-              onClick={() => { navigate('/about'); setMobileMenuOpen(false); }}
+            </a>
+            <a
+              href="/about"
+              onClick={linkClick('/about', () => setMobileMenuOpen(false))}
               className="text-left font-medium text-neutral-600 hover:text-indigo-600 dark:text-neutral-300"
             >
               About Company
-            </button>
-            <button
-              onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }}
+            </a>
+            <a
+              href="/contact"
+              onClick={linkClick('/contact', () => setMobileMenuOpen(false))}
               className="text-left font-medium text-neutral-600 hover:text-indigo-600 dark:text-neutral-300"
             >
               Support Center
-            </button>
+            </a>
 
             <div className="h-px bg-gray-100 dark:bg-neutral-850 my-1" />
 

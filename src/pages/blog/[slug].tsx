@@ -216,7 +216,7 @@ export default function BlogPostPage({ slug, navigate }: BlogPostPageProps) {
                       rel="noopener noreferrer"
                       className="text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-semibold hover:underline flex items-center gap-1"
                     >
-                      🛡️ {link.text} <Lucide.ArrowUpRight className="h-3.5 w-3.5" />
+                      <Lucide.ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {link.text} <Lucide.ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                     </a>
                   </li>
                 ))}

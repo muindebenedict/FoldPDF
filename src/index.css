@@ -51,6 +51,49 @@
     to { stroke-dashoffset: 0; }
   }
 
+  /* In-between shades used across the site. They were never defined, so that text and those borders
+     silently fell back to the inherited colour. Values sit between the neighbouring standard shades;
+     shades used for small text on light backgrounds lean darker to keep 4.5:1 contrast. */
+  --color-slate-55: #f5f7fa;
+  --color-slate-105: #eef2f6;
+  --color-slate-155: #eaeff5;
+  --color-slate-205: #dfe5ec;
+  --color-slate-305: #b0bccb;
+  --color-slate-350: #b0bccb;
+  --color-slate-355: #b0bccb;
+  --color-slate-404: #64748b;
+  --color-slate-450: #64748b;
+  --color-slate-505: #5b6b82;
+  --color-slate-550: #56657a;
+  --color-slate-555: #56657a;
+  --color-slate-605: #475569;
+  --color-slate-750: #283548;
+  --color-slate-805: #1e293b;
+  --color-slate-808: #1e293b;
+  --color-slate-855: #172033;
+  --color-gray-150: #eceef1;
+  --color-gray-155: #eceef1;
+  --color-gray-250: #dcdfe4;
+  --color-neutral-350: #bcbcbc;
+  --color-neutral-401: #737373;
+  --color-neutral-405: #737373;
+  --color-emerald-150: #bcf5da;
+  --color-emerald-450: #22c68d;
+  --color-emerald-555: #0ca678;
+  --color-emerald-850: #05543f;
+  --color-rose-150: #fed7de;
+  --color-rose-750: #af1340;
+  --color-rose-805: #9f1239;
+  --color-red-250: #fdb4b4;
+  --color-indigo-150: #d6dcfd;
+  --color-indigo-555: #5a52ea;
+  --color-indigo-655: #4a3fd6;
+  --color-indigo-850: #34309a;
+  --color-amber-150: #fdecb5;
+  --color-amber-605: #d97706;
+  --color-amber-850: #86400f;
+  --color-teal-605: #0d9488;
+
   --color-slate-50: #f9fafb;
   --color-slate-100: #f1f5f9;
   --color-slate-150: #eef2f6;

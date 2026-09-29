@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Check } from "lucide-react";
 import { readAB, getPdfLib, getPdfJs, getJSZip, renderPage, fmt, dl, getOutputFile } from "./PdfScriptLoader";
-import { Proc, Done, Bar, Err, validateUploadedFiles, DropZone, FileList } from "./SharedComponents";
+import { Proc, Done, Bar, Err, validateUploadedFiles, DropZone, FileList, PRIMARY_BUTTON, DANGER_BUTTON } from "./SharedComponents";
+import { IconArrowMerge, IconArrowsMinimize, IconArrowsSplit2, IconCheck, IconRotate, IconRotateClockwise, IconRotateClockwise2, IconTrash, IconX } from "@tabler/icons-react";
 import { API_BASE, ServerToolError, serverError } from "./serverApi";
 
 interface ToolProps {
@@ -253,7 +254,7 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
       <div className="w-full flex flex-col items-center justify-center py-12 px-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/60 shadow-lg max-w-lg mx-auto">
         <div className="relative flex items-center justify-center mb-6">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-100 border-t-indigo-600 dark:border-indigo-950 dark:border-t-indigo-400"></div>
-          <div className="absolute text-xl">⚡</div>
+          <IconArrowsMinimize size={22} className="absolute text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
         </div>
         <p className="text-sm font-extrabold text-slate-800 dark:text-white text-center font-display mb-2">
           {statusMsg || "Compressing your PDF..."}
@@ -346,9 +347,10 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
             e.stopPropagation();
             startCompression();
           }}
-          className="w-full mt-4 bg-indigo-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-700 shadow-md shadow-indigo-600/15 cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wide"
+          className={`mt-4 ${PRIMARY_BUTTON}`}
         >
-          COMPRESS PDF NOW
+          <IconArrowsMinimize size={18} aria-hidden="true" />
+          Compress PDF
         </button>
       )}
 
@@ -445,8 +447,8 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
 
       {list.length > 0 && (
         <div className="mt-4 space-y-2">
-          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase font-mono tracking-widest">
-            Drag items to reorder compiling order:
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Drag the files to change their order:
           </p>
           {list.map((f, i) => (
             <div
@@ -481,9 +483,10 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
                   e.stopPropagation();
                   rem(i);
                 }}
+                aria-label={`Remove ${f.name}`}
                 className="text-rose-500 hover:text-rose-700 text-xs font-bold p-1"
               >
-                ✕
+                <IconX size={16} aria-hidden="true" />
               </button>
             </div>
           ))}
@@ -493,9 +496,10 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
       {list.length >= 2 && st !== "processing" && (
         <button
           onClick={go}
-          className="w-full mt-4 bg-indigo-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-700 shadow-md cursor-pointer transition"
+          className={`mt-4 ${PRIMARY_BUTTON}`}
         >
-          🔗 Merge {list.length} PDFs
+          <IconArrowMerge size={18} aria-hidden="true" />
+          Merge {list.length} PDFs
         </button>
       )}
       {list.length === 1 && (
@@ -743,7 +747,7 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
                       </div>
                       {isS && (
                         <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-indigo-600 rounded-full flex items-center justify-center text-[8px] text-white font-bold">
-                          ✓
+                          <IconCheck size={10} stroke={3} aria-hidden="true" />
                         </div>
                       )}
                     </div>
@@ -756,9 +760,10 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
           {st !== "processing" && (
             <button
               onClick={go}
-              className="w-full bg-indigo-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-700 shadow-md transition"
+              className={PRIMARY_BUTTON}
             >
-              ✂️ Split PDF Now
+              <IconArrowsSplit2 size={18} aria-hidden="true" />
+              Split PDF
             </button>
           )}
         </div>
@@ -904,7 +909,8 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
                 onClick={() => rotAll(d as number)}
                 className="flex-1 py-1.5 text-xs font-bold font-mono rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100/50 transition dark:text-slate-350"
               >
-                ↻ {l}
+                <IconRotateClockwise size={14} className="mr-1 inline -mt-0.5" aria-hidden="true" />
+                {l}
               </button>
             ))}
           </div>
@@ -932,16 +938,18 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
                     <button
                       type="button"
                       onClick={() => rot(idx, -90)}
+                      aria-label="Rotate page left"
                       className="bg-white border rounded p-0.5 text-[9px] w-5 font-bold cursor-pointer hover:bg-slate-50"
                     >
-                      ↺
+                      <IconRotate size={12} aria-hidden="true" />
                     </button>
                     <button
                       type="button"
                       onClick={() => rot(idx, 90)}
+                      aria-label="Rotate page right"
                       className="bg-white border rounded p-0.5 text-[9px] w-5 font-bold cursor-pointer hover:bg-slate-50"
                     >
-                      ↻
+                      <IconRotateClockwise size={12} aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -952,9 +960,10 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
           {st !== "processing" && (
             <button
               onClick={go}
-              className="w-full bg-indigo-605 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-705 shadow-md cursor-pointer transition"
+              className={PRIMARY_BUTTON}
             >
-              💾 Apply Rotation & Save
+              <IconRotateClockwise2 size={18} aria-hidden="true" />
+              Apply rotation and save
             </button>
           )}
         </div>
@@ -1114,7 +1123,7 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
                   <img src={src} className="w-full h-auto block" alt={`Page ${idx + 1}`} />
                   {isMarked && (
                     <div className="absolute inset-0 bg-rose-500/25 flex items-center justify-center text-xl">
-                      🗑️
+                      <IconTrash size={22} className="text-rose-600" aria-hidden="true" />
                     </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 text-center bg-black/60 text-white text-[9px] font-bold py-0.5">
@@ -1128,9 +1137,10 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
           {marked.length > 0 && st !== "processing" && (
             <button
               onClick={go}
-              className="w-full bg-rose-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-rose-700 shadow-md cursor-pointer transition flex items-center justify-center gap-2"
+              className={DANGER_BUTTON}
             >
-              🗑️ Erase {marked.length} Page{marked.length > 1 ? "s" : ""}
+              <IconTrash size={18} aria-hidden="true" />
+              Remove {marked.length} page{marked.length > 1 ? "s" : ""}
             </button>
           )}
         </div>

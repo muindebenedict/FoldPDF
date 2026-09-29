@@ -90,7 +90,7 @@ export default function HowItWorksPage({ navigate }: HowItWorksProps) {
               Unlike typical SaaS utilities that force uploads onto remote hosts, FoldPDF turns your web browser into an isolated, hyper-secure document workstation. By shifting execution loads to your local hardware, we prevent data leakage and bypass server wait queues.
             </p>
             <div className="border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-955/20 p-4 rounded-r-2xl text-xs text-slate-600 dark:text-slate-350">
-              💡 <strong>Developer audit note:</strong> For our browser-only tools, all file operations run in-memory inside your browser tab. Five tools use our secure processing server: Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF. Their files upload securely, are processed instantly (the Word and PowerPoint conversions by Adobe PDF Services), and are deleted permanently immediately afterwards.
+              <Lucide.Lightbulb className="mr-1 inline h-4 w-4 -mt-0.5 text-indigo-500" aria-hidden="true" /> <strong>Developer audit note:</strong> For our browser-only tools, all file operations run in-memory inside your browser tab. Five tools use our secure processing server: Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF. Their files upload securely, are processed instantly (the Word and PowerPoint conversions by Adobe PDF Services), and are deleted permanently immediately afterwards.
             </div>
           </div>
 
