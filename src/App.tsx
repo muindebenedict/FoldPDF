@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as Lucide from 'lucide-react';
 import { useRouter } from './useRouter';
 import { TOOLS_DATA, BLOG_POSTS } from './toolsData';
+import { getToolMeta } from './toolMeta';
 import { ToolDefinition, RecentFile } from './types';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -225,12 +226,12 @@ const getToolColors = (id: string): { bg: string; icon: string; isAi?: boolean }
 export default function App({ initialPath }: { initialPath?: string } = {}) {
   const { currentPath, navigate } = useRouter(initialPath);
   
-  // Theme Toggle State
+  // Theme Toggle State: dark by default on a first visit; a visitor who picks light keeps it.
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem('theme') === 'dark';
+      return localStorage.getItem('theme') !== 'light';
     }
-    return false;
+    return true;
   });
 
   // Authentication State
@@ -507,9 +508,10 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     // Check if it's a specific tool
     const matchingTool = TOOLS_DATA.find((t) => t.urlPath === path);
     if (matchingTool) {
-      document.title = matchingTool.metaTitle || 'FoldPDF';
+      const { title, description } = getToolMeta(matchingTool);
+      document.title = title;
       const meta = document.querySelector('meta[name="description"]');
-      if (meta) meta.setAttribute('content', matchingTool.metaDesc || 'FoldPDF');
+      if (meta) meta.setAttribute('content', description);
       return;
     }
 
