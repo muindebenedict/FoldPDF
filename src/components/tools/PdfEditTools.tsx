@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Check } from "lucide-react";
 import { readAB, getPdfLib, getPdfJs, getJSZip, renderPage, fmt, dl, getOutputFile } from "./PdfScriptLoader";
-import { Proc, Done, Bar, Err, validateUploadedFiles } from "./SharedComponents";
+import { Proc, Done, Bar, Err, validateUploadedFiles, DropZone, FileList } from "./SharedComponents";
 import { API_BASE, ServerToolError, serverError } from "./serverApi";
 
 interface ToolProps {
@@ -17,10 +17,8 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
   const [statusMsg, setStatusMsg] = useState("");
   const [err, setErr] = useState("");
   const [res, setRes] = useState<{ blob: Blob; name: string; info?: string } | null>(null);
-  const [drag, setDrag] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [retryCountdown, setRetryCountdown] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const elapsedTimerRef = useRef<any>(null);
@@ -275,51 +273,13 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
 
   return (
     <div className="w-full">
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDrag(true);
-        }}
-        onDragLeave={() => setDrag(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDrag(false);
-          pick(e.dataTransfer.files);
-        }}
-        onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition ${
-          drag
-            ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20"
-            : "border-slate-200 hover:border-indigo-400 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40"
-        }`}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf"
-          className="hidden"
-          onChange={(e) => pick(e.target.files)}
-        />
-        <div className="text-3xl mb-3 animate-bounce">📂</div>
-        <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white mb-1">
-          {files.length ? `${files.length} file selected` : "Drag and drop your PDF here"}
-        </p>
-        <p className="text-slate-400 dark:text-slate-500 text-xs">
-          or click to browse local files · Max 50 MB
-        </p>
-        {files.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5 justify-center max-w-md mx-auto">
-            {files.map((f, i) => (
-              <span
-                key={i}
-                className="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 rounded-lg px-2.5 py-1 text-xs font-semibold font-mono whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px]"
-              >
-                {f.name} ({fmt(f.size)})
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      <DropZone
+        accept=".pdf"
+        onFiles={pick}
+        formatLabel="PDF"
+        toolId="compress-pdf"
+      />
+      <FileList files={files} onRemove={(i) => setFiles(files.filter((_, j) => j !== i))} />
 
       <div className="mt-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm">
         <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
@@ -406,7 +366,6 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
   const [pmsg, setPmsg] = useState("");
   const [res, setRes] = useState<{ blob: Blob; name: string; info?: string } | null>(null);
   const [err, setErr] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const add = (fl: FileList | null) => {
     if (!fl) return;
@@ -476,31 +435,13 @@ export const MergeTool = ({ onSuccess, toolName }: ToolProps) => {
 
   return (
     <div className="w-full">
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          add(e.dataTransfer.files);
-        }}
-        onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition"
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".pdf"
-          multiple
-          className="hidden"
-          onChange={(e) => add(e.target.files)}
-        />
-        <div className="text-3xl mb-1.5 animate-bounce">➕</div>
-        <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
-          Add PDF Files
-        </p>
-        <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-          Drop your PDF files here or click to browse
-        </p>
-      </div>
+      <DropZone
+        accept=".pdf"
+        multiple
+        onFiles={add}
+        formatLabel="PDF files"
+        toolId="merge-pdf"
+      />
 
       {list.length > 0 && (
         <div className="mt-4 space-y-2">
@@ -711,50 +652,22 @@ export const SplitTool = ({ onSuccess, toolName }: ToolProps) => {
   return (
     <div className="w-full">
       {!theFile ? (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const filesArray = Array.from(e.dataTransfer.files) as File[];
-            if (filesArray.length > 0) {
-              const vRes = validateUploadedFiles(filesArray, ".pdf");
-              if (!vRes.isValid) {
-                setErr(vRes.error || "Please upload a PDF file.");
-                return;
-              }
-              setErr("");
-              loadThumbs(filesArray[0]);
+        <DropZone
+          accept=".pdf"
+          onFiles={(fl) => {
+            const filesArray = fl ? (Array.from(fl) as File[]).slice(0, 1) : [];
+            if (!filesArray.length) return;
+            const vRes = validateUploadedFiles(filesArray, ".pdf");
+            if (!vRes.isValid) {
+              setErr(vRes.error || "Please upload a PDF file.");
+              return;
             }
+            setErr("");
+            loadThumbs(filesArray[0]);
           }}
-          onClick={() => document.getElementById("split-input-loader")?.click()}
-          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
-        >
-          <input
-            id="split-input-loader"
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                const filesArray = [e.target.files[0]];
-                const vRes = validateUploadedFiles(filesArray, ".pdf");
-                if (!vRes.isValid) {
-                  setErr(vRes.error || "Please upload a PDF file.");
-                  return;
-                }
-                setErr("");
-                loadThumbs(e.target.files[0]);
-              }
-            }}
-          />
-          <div className="text-3xl mb-1.5 animate-bounce">✂️</div>
-          <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
-            Split PDF Pages
-          </p>
-          <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-            Drop your PDF file here to visually sequence and split
-          </p>
-        </div>
+          formatLabel="PDF"
+          toolId="split-pdf"
+        />
       ) : (
         <div className="space-y-4">
           <div className="flex gap-2 flex-wrap">
@@ -961,50 +874,22 @@ export const RotateTool = ({ onSuccess, toolName }: ToolProps) => {
   return (
     <div className="w-full">
       {!loaded ? (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const filesArray = Array.from(e.dataTransfer.files) as File[];
-            if (filesArray.length > 0) {
-              const vRes = validateUploadedFiles(filesArray, ".pdf");
-              if (!vRes.isValid) {
-                setErr(vRes.error || "Please upload a PDF file.");
-                return;
-              }
-              setErr("");
-              load(filesArray[0]);
+        <DropZone
+          accept=".pdf"
+          onFiles={(fl) => {
+            const filesArray = fl ? (Array.from(fl) as File[]).slice(0, 1) : [];
+            if (!filesArray.length) return;
+            const vRes = validateUploadedFiles(filesArray, ".pdf");
+            if (!vRes.isValid) {
+              setErr(vRes.error || "Please upload a PDF file.");
+              return;
             }
+            setErr("");
+            load(filesArray[0]);
           }}
-          onClick={() => document.getElementById("rot-input-loader")?.click()}
-          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
-        >
-          <input
-            id="rot-input-loader"
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                const filesArray = [e.target.files[0]];
-                const vRes = validateUploadedFiles(filesArray, ".pdf");
-                if (!vRes.isValid) {
-                  setErr(vRes.error || "Please upload a PDF file.");
-                  return;
-                }
-                setErr("");
-                load(e.target.files[0]);
-              }
-            }}
-          />
-          <div className="text-3xl mb-1.5 animate-bounce">🔄</div>
-          <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
-            Rotate PDF Pages
-          </p>
-          <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-            Drop your PDF file here to configure rotations visually
-          </p>
-        </div>
+          formatLabel="PDF"
+          toolId="rotate-pdf"
+        />
       ) : (
         <div className="space-y-4">
           <div className="flex gap-2 flex-wrap">
@@ -1175,50 +1060,22 @@ export const RemoveTool = ({ onSuccess, toolName }: ToolProps) => {
   return (
     <div className="w-full">
       {!thumbs.length ? (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const filesArray = Array.from(e.dataTransfer.files) as File[];
-            if (filesArray.length > 0) {
-              const vRes = validateUploadedFiles(filesArray, ".pdf");
-              if (!vRes.isValid) {
-                setErr(vRes.error || "Please upload a PDF file.");
-                return;
-              }
-              setErr("");
-              load(filesArray[0]);
+        <DropZone
+          accept=".pdf"
+          onFiles={(fl) => {
+            const filesArray = fl ? (Array.from(fl) as File[]).slice(0, 1) : [];
+            if (!filesArray.length) return;
+            const vRes = validateUploadedFiles(filesArray, ".pdf");
+            if (!vRes.isValid) {
+              setErr(vRes.error || "Please upload a PDF file.");
+              return;
             }
+            setErr("");
+            load(filesArray[0]);
           }}
-          onClick={() => document.getElementById("rm-input-loader")?.click()}
-          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
-        >
-          <input
-            id="rm-input-loader"
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                const filesArray = [e.target.files[0]];
-                const vRes = validateUploadedFiles(filesArray, ".pdf");
-                if (!vRes.isValid) {
-                  setErr(vRes.error || "Please upload a PDF file.");
-                  return;
-                }
-                setErr("");
-                load(e.target.files[0]);
-              }
-            }}
-          />
-          <div className="text-3xl mb-1.5 animate-bounce">🗑️</div>
-          <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
-            Remove PDF Pages
-          </p>
-          <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-            Drop your PDF file here to visually wipe pages
-          </p>
-        </div>
+          formatLabel="PDF"
+          toolId="remove-pages"
+        />
       ) : (
         <div className="space-y-4">
           <div className="flex justify-between items-center text-xs">

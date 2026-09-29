@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -7,7 +8,49 @@
   --font-body: "Inter Variable", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-display: "Outfit Variable", "Outfit", "Inter Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  
+
+  /* Tool icon colours: one per file format or tool family (see design-system/foldpdf/MASTER.md).
+     White glyphs keep at least 3:1 contrast; the "-strong" shades carry white badge text at 4.5:1. */
+  --color-tool-pdf: #dc2626;
+  --color-tool-word: #2563eb;
+  --color-tool-powerpoint: #ea580c;
+  --color-tool-powerpoint-strong: #c2410c;
+  --color-tool-excel: #15803d;
+  --color-tool-image: #d97706;
+  --color-tool-image-strong: #b45309;
+  --color-tool-text: #475569;
+  --color-tool-optimize: #0d9488;
+  --color-tool-edit: #7c3aed;
+  --color-tool-security: #334155;
+
+  /* Upload and progress motion (all turned off under prefers-reduced-motion below) */
+  --animate-float-up: float-up 1.4s ease-in-out infinite;
+  --animate-soft-ping: soft-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pop-in: pop-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-draw-check: draw-check 420ms 200ms ease-out both;
+
+  @keyframes float-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes soft-ping {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.45); opacity: 0; }
+  }
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes draw-check {
+    from { stroke-dashoffset: 24; }
+    to { stroke-dashoffset: 0; }
+  }
+
   --color-slate-50: #f9fafb;
   --color-slate-100: #f1f5f9;
   --color-slate-150: #eef2f6;
@@ -129,4 +172,14 @@ button,
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
+}
+
+/* Visitors who ask their system for less motion get instant, static states */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { PDFDocument } from "@cantoo/pdf-lib";
 import * as Lucide from "lucide-react";
 import { readAB, getPdfLib, getPdfJs, renderPage, readURL, fmt, dl, getOutputFile } from "./PdfScriptLoader";
-import { Proc, Done, Bar, Err, Spin, validateUploadedFiles } from "./SharedComponents";
+import { Proc, Done, Bar, Err, Spin, validateUploadedFiles, DropZone } from "./SharedComponents";
 
 interface ToolProps {
   onSuccess?: (fileName: string, toolName: string) => void;
@@ -53,7 +53,6 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
     copying: true,
   });
 
-  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   // ─── FILE HANDLER ───
   const handleFile = async (selectedFile: File) => {
@@ -80,12 +79,6 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
       setErrorMsg("Cannot read this PDF. It may be corrupted.");
       setStatus("error");
     }
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const f = e.dataTransfer.files[0];
-    if (f) handleFile(f);
   };
 
   // ─── ENCRYPTION FUNCTION ───
@@ -169,29 +162,12 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
     <div className="w-full">
       {/* UPLOAD AREA */}
       {status === "idle" && !file && (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={onDrop}
-          onClick={() => uploadInputRef.current?.click()}
-          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95 duration-200"
-        >
-          <input
-            ref={uploadInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-            }}
-          />
-          <Lucide.Upload size={32} className="text-indigo-600 dark:text-indigo-400 mx-auto mb-3 animate-bounce" />
-          <p className="font-display font-bold text-sm text-slate-800 dark:text-white">
-            Drop your PDF file here or click to browse
-          </p>
-          <p className="text-slate-400 dark:text-slate-500 text-xs mt-1.5">
-            Maximum 50 MB • Local client-side processing
-          </p>
-        </div>
+        <DropZone
+          accept=".pdf"
+          onFiles={(fl) => { if (fl && fl[0]) handleFile(fl[0]); }}
+          formatLabel="PDF"
+          toolId="protect-pdf"
+        />
       )}
 
       {/* FILE INFO + PASSWORD FORM */}
@@ -360,7 +336,6 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
   const [outputName, setOutputName] = useState("");
 
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // ─── FILE HANDLER ───
   const handleFile = async (selectedFile: File) => {
@@ -400,12 +375,6 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
       setErrorMsg("Cannot read this file. It may be corrupted or signed natively.");
       setStatus("error");
     }
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const f = e.dataTransfer.files[0];
-    if (f) handleFile(f);
   };
 
   // ─── DECRYPTION FUNCTION ───
@@ -468,29 +437,12 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
     <div className="w-full">
       {/* UPLOAD ZONE */}
       {!file && (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={onDrop}
-          onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95 duration-200"
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-            }}
-          />
-          <Lucide.Upload size={32} className="text-indigo-600 dark:text-indigo-400 mx-auto mb-3 animate-bounce" />
-          <p className="font-display font-bold text-sm text-slate-800 dark:text-white">
-            Drop your password-protected PDF file here or click to browse
-          </p>
-          <p className="text-slate-400 dark:text-slate-500 text-xs mt-1.5">
-            We'll remove the password protection so anyone can open and edit it
-          </p>
-        </div>
+        <DropZone
+          accept=".pdf"
+          onFiles={(fl) => { if (fl && fl[0]) handleFile(fl[0]); }}
+          formatLabel="password-protected PDF"
+          toolId="unlock-pdf"
+        />
       )}
 
       {/* RENDER ACTIVE PASSWORD DECRYPTION CARD */}
@@ -629,7 +581,6 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
   const [pmsg, setPmsg] = useState("");
   const [res, setRes] = useState<{ blob: Blob; name: string; info: string } | null>(null);
   const [err, setErr] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const go = async (f: File) => {
     if (f.size > 50 * 1024 * 1024) {
@@ -758,50 +709,22 @@ export const OcrTool = ({ onSuccess, toolName }: ToolProps) => {
 
   return (
     <div className="w-full">
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          const filesArray = Array.from(e.dataTransfer.files) as File[];
-          if (filesArray.length > 0) {
-            const vRes = validateUploadedFiles(filesArray, ".pdf");
-            if (!vRes.isValid) {
-              setErr(vRes.error || "Please upload a PDF file.");
-              return;
-            }
-            setErr("");
-            go(filesArray[0]);
+      <DropZone
+        accept=".pdf"
+        onFiles={(fl) => {
+          const filesArray = fl ? (Array.from(fl) as File[]).slice(0, 1) : [];
+          if (!filesArray.length) return;
+          const vRes = validateUploadedFiles(filesArray, ".pdf");
+          if (!vRes.isValid) {
+            setErr(vRes.error || "Please upload a PDF file.");
+            return;
           }
+          setErr("");
+          go(filesArray[0]);
         }}
-        onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition animate-in zoom-in-95"
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".pdf"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              const filesArray = [e.target.files[0]];
-              const vRes = validateUploadedFiles(filesArray, ".pdf");
-              if (!vRes.isValid) {
-                setErr(vRes.error || "Please upload a PDF file.");
-                return;
-              }
-              setErr("");
-              go(e.target.files[0]);
-            }
-          }}
-        />
-        <div className="text-3xl mb-1.5 animate-bounce">👁️</div>
-        <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
-          OCR Scanned PDF Reader
-        </p>
-        <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-          Drop your scanned, photo-only PDF file here to read text
-        </p>
-      </div>
+        formatLabel="scanned PDF"
+        toolId="ocr-pdf"
+      />
 
       {st === "processing" && <Spin msg={pmsg} />}
       <Err msg={err} onClose={() => setErr("")} />
@@ -1190,12 +1113,11 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
           <div className="bg-emerald-50 border border-emerald-150 p-3 rounded-xl text-center text-xs text-emerald-800 font-semibold shadow-premium-sm">
             ✓ Ink sealed correctly! Next, load your destination PDF:
           </div>
-          <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const filesArray = Array.from(e.dataTransfer.files) as File[];
-            if (filesArray.length > 0) {
+          <DropZone
+            accept=".pdf"
+            onFiles={(fl) => {
+              const filesArray = fl ? (Array.from(fl) as File[]).slice(0, 1) : [];
+              if (!filesArray.length) return;
               const vRes = validateUploadedFiles(filesArray, ".pdf");
               if (!vRes.isValid) {
                 setErr(vRes.error || "Please upload a PDF file.");
@@ -1203,34 +1125,11 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
               }
               setErr("");
               loadPdf(filesArray[0]);
-            }
-          }}
-          onClick={() => document.getElementById("sig-pdf-loader")?.click()}
-          className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center cursor-pointer bg-slate-50/50 hover:border-indigo-400 dark:bg-slate-900/10 transition"
-        >
-          <input
-            id="sig-pdf-loader"
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                const filesArray = [e.target.files[0]];
-                const vRes = validateUploadedFiles(filesArray, ".pdf");
-                if (!vRes.isValid) {
-                  setErr(vRes.error || "Please upload a PDF file.");
-                  return;
-                }
-                setErr("");
-                loadPdf(e.target.files[0]);
-              }
             }}
+            formatLabel="PDF to sign"
+            toolId="sign-pdf"
+            compact
           />
-            <div className="text-3xl mb-1.5 animate-bounce">📄</div>
-            <p className="font-display font-extrabold text-sm text-slate-800 dark:text-white">
-              Drop your PDF file here to sign or click to browse
-            </p>
-          </div>
         </div>
       )}
 

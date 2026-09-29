@@ -6,6 +6,7 @@ import { getToolMeta } from './toolMeta';
 import { ToolDefinition, RecentFile } from './types';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { ToolIcon } from './components/ToolIcon';
 import { FoldPdfLogo } from './components/FoldPdfLogo';
 import { LegalPages } from './components/LegalPages';
 import { BlogSection } from './components/BlogSection';
@@ -90,138 +91,6 @@ import SitemapPage from './pages/sitemap';
 import { ToolSeoContent } from './components/ToolSeoContent';
 
 
-// Dictionary mapping for dynamic icon components to prevent compilation crashes
-const ICON_MAP: Record<string, keyof typeof Lucide> = {
-  Sparkles: 'Sparkles',
-  MessageSquareShare: 'MessageSquareShare',
-  BookOpenText: 'BookOpenText',
-  Scale: 'Scale',
-  UserCheck: 'UserCheck',
-  FileDown: 'FileDown',
-  GitMerge: 'GitMerge',
-  Scissors: 'Scissors',
-  RotateCw: 'RotateCw',
-  Trash2: 'Trash2',
-  Layers: 'Layers',
-  Bookmark: 'Bookmark',
-  Hash: 'Hash',
-  FileText: 'FileText',
-  Image: 'Image',
-  FileImage: 'FileImage',
-  Smartphone: 'Smartphone',
-  FileCode: 'FileCode',
-  Presentation: 'Presentation',
-  Calculator: 'Calculator',
-  FileSpreadsheet: 'FileSpreadsheet',
-  ImagePlay: 'ImagePlay',
-  MonitorDot: 'MonitorDot',
-  FileSlide: 'Presentation',
-  Lock: 'Lock',
-  Unlock: 'Unlock',
-  HeartHandshake: 'HeartHandshake',
-  Cpu: 'Cpu',
-  PencilLine: 'PencilLine'
-};
-
-function SmartIcon({ name, className = "h-5 w-5 text-indigo-600 dark:text-indigo-400" }: { name: string; className?: string }) {
-  const iconKey = ICON_MAP[name] || 'FileText';
-  const IconComponent = (Lucide as any)[iconKey] || Lucide.FileText;
-  return <IconComponent className={className} />;
-}
-
-const getToolColors = (id: string): { bg: string; icon: string; isAi?: boolean } => {
-  const idLower = id.toLowerCase();
-  
-  // OCR Scanned PDF Reader
-  if (idLower === 'ocr-pdf') {
-    return {
-      bg: 'bg-violet-100/80 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 group-hover:bg-violet-600 group-hover:text-white dark:group-hover:bg-violet-600 dark:group-hover:text-white',
-      icon: 'text-violet-600 dark:text-violet-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-  
-  // Compress Tool
-  if (idLower === 'compress-pdf') {
-    return {
-      bg: 'bg-sky-100/80 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400 group-hover:bg-sky-600 group-hover:text-white dark:group-hover:bg-sky-600 dark:group-hover:text-white',
-      icon: 'text-sky-600 dark:text-sky-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Merge / Page actions
-  if (idLower === 'merge-pdf' || idLower === 'add-watermark' || idLower === 'add-page-numbers') {
-    return {
-      bg: 'bg-purple-100/80 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white dark:group-hover:bg-purple-600 dark:group-hover:text-white',
-      icon: 'text-purple-600 dark:text-purple-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Split / Delete
-  if (idLower === 'split-pdf' || idLower === 'remove-pages') {
-    return {
-      bg: 'bg-orange-100/80 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white dark:group-hover:bg-orange-600 dark:group-hover:text-white',
-      icon: 'text-orange-600 dark:text-orange-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Security (Lock/Unlock/Sign)
-  if (idLower === 'protect-pdf') {
-    return {
-      bg: 'bg-rose-100/80 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 group-hover:bg-rose-600 group-hover:text-white dark:group-hover:bg-rose-600 dark:group-hover:text-white',
-      icon: 'text-rose-600 dark:text-rose-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-  if (idLower === 'unlock-pdf') {
-    return {
-      bg: 'bg-emerald-100/80 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white dark:group-hover:bg-emerald-600 dark:group-hover:text-white',
-      icon: 'text-emerald-600 dark:text-emerald-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-  if (idLower === 'sign-pdf') {
-    return {
-      bg: 'bg-pink-100/80 text-pink-600 dark:bg-pink-950/40 dark:text-pink-400 group-hover:bg-pink-600 group-hover:text-white dark:group-hover:bg-pink-600 group-hover:text-white',
-      icon: 'text-pink-600 dark:text-pink-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Image inputs (to PDF)
-  if (['jpg-to-pdf', 'jpeg-to-png', 'webp-to-pdf', 'heic-to-pdf'].includes(idLower)) {
-    return {
-      bg: 'bg-amber-100/80 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600 dark:group-hover:text-white',
-      icon: 'text-amber-600 dark:text-amber-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Image outputs (PDF to)
-  if (['pdf-to-jpg', 'pdf-to-png', 'pdf-to-webp'].includes(idLower)) {
-    return {
-      bg: 'bg-emerald-100/80 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white dark:group-hover:bg-emerald-600 dark:group-hover:text-white',
-      icon: 'text-emerald-600 dark:text-emerald-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Office formats to PDF (*-to-pdf)
-  if (['word-to-pdf', 'pptx-to-pdf', 'xlsx-to-pdf', 'txt-to-pdf'].includes(idLower)) {
-    return {
-      bg: 'bg-indigo-100/80 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-600 dark:group-hover:text-white',
-      icon: 'text-indigo-600 dark:text-indigo-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // PDF to office formats (pdf-to-*)
-  if (['pdf-to-word', 'pdf-to-pptx', 'pdf-to-xlsx', 'pdf-to-txt'].includes(idLower)) {
-    return {
-      bg: 'bg-blue-100/80 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600 dark:group-hover:text-white',
-      icon: 'text-blue-600 dark:text-blue-400 group-hover:text-inherit transition-all duration-300'
-    };
-  }
-
-  // Default fallback
-  return {
-    bg: 'bg-slate-100/80 text-slate-600 dark:bg-slate-950/40 dark:text-slate-400 group-hover:bg-slate-600 group-hover:text-white dark:group-hover:bg-slate-600 dark:group-hover:text-white',
-    icon: 'text-slate-600 dark:text-slate-400 group-hover:text-inherit transition-all duration-300'
-  };
-};
 
 export default function App({ initialPath }: { initialPath?: string } = {}) {
   const { currentPath, navigate } = useRouter(initialPath);
@@ -957,53 +826,53 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                     'ocr-pdf': 'Transcribe graphic-only photo sheets into searchable editable textual nodes.'
                   };
                   const displayedDesc = DESC_OVERWRITE_MAP[tool.id] || tool.shortDesc;
-                  const colors = getToolColors(tool.id);
-
-                  return (
-                    <div
-                      key={tool.id}
-                      className="group relative flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-850/70 bg-white dark:bg-slate-900/40 p-5 shadow-premium-sm hover:-translate-y-1.5 hover:shadow-premium-lg transition-all duration-300 animate-in fade-in"
-                    >
-                      {/* Favorites Toggle Star */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(tool.id); }}
-                        className="absolute top-4.5 right-4.5 text-slate-300 hover:text-amber-400 dark:text-slate-600 transition"
-                        title="Mark as favorite"
+                    return (
+                      <div
+                        key={tool.id}
+                        className="group relative flex flex-col justify-between rounded-2xl border border-slate-150 bg-white p-5 shadow-premium-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-premium-md has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-indigo-500 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-slate-700 motion-reduce:transform-none motion-reduce:transition-none"
                       >
-                        <Lucide.Star className={`h-4.5 w-4.5 ${isFav ? 'fill-amber-400 text-amber-500' : ''}`} />
-                      </button>
-
-                      {/* Icon & Title */}
-                      <div onClick={() => navigate(`/${tool.urlPath}`)} className="cursor-pointer">
-                        <div className={`flex h-11 w-11 items-center justify-center rounded-xl mb-4 transition-all duration-300 shadow-premium-sm ${colors.bg}`}>
-                          <SmartIcon name={tool.iconName} className={`h-5 w-5 ${colors.icon}`} />
-                        </div>
-                        
-                        <div className="flex items-center space-x-1.5">
-                          <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-display group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            {tool.name}
+                        <div>
+                          <ToolIcon toolId={tool.id} className="mb-4 transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none" />
+                          <h3 className="pr-8 text-base font-extrabold text-slate-900 dark:text-white font-display">
+                            {/* The whole card is one real link, so it works from the keyboard and search engines can follow it */}
+                            <a
+                              href={`/${tool.urlPath}`}
+                              onClick={(e) => {
+                                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                                e.preventDefault();
+                                navigate(`/${tool.urlPath}`);
+                              }}
+                              className="outline-none after:absolute after:inset-0 after:rounded-2xl after:content-['']"
+                            >
+                              {tool.name}
+                            </a>
                           </h3>
+                          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            {displayedDesc}
+                          </p>
                         </div>
 
-                        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                          {displayedDesc}
-                        </p>
-                      </div>
+                        <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-semibold">
+                          <span className="text-slate-450 dark:text-slate-500 uppercase tracking-widest text-[9px]">
+                            {getToolCategory(tool).replace('-', ' ')}
+                          </span>
+                          <span className="text-indigo-650 dark:text-indigo-400 flex items-center">
+                            Use Tool <Lucide.ChevronRight className="h-3 w-3 ml-0.5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+                          </span>
+                        </div>
 
-                      {/* Quick access footer CTA */}
-                      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-semibold">
-                        <span className="text-slate-450 dark:text-slate-500 uppercase tracking-widest text-[9px]">
-                          {getToolCategory(tool).replace('-', ' ')}
-                        </span>
-                        <span 
-                          onClick={() => navigate(`/${tool.urlPath}`)} 
-                          className="text-indigo-650 dark:text-indigo-400 group-hover:underline cursor-pointer flex items-center"
+                        {/* Favorites toggle sits above the card link */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(tool.id); }}
+                          className="absolute top-4 right-4 z-10 rounded-md p-1 text-slate-300 hover:text-amber-400 focus-visible:outline-2 focus-visible:outline-indigo-500 dark:text-slate-600 transition"
+                          aria-label={isFav ? `Remove ${tool.name} from favorites` : `Add ${tool.name} to favorites`}
+                          aria-pressed={isFav}
+                          title="Mark as favorite"
                         >
-                          Use Tool <Lucide.ChevronRight className="h-3 w-3 ml-0.5" />
-                        </span>
+                          <Lucide.Star className={`h-4.5 w-4.5 ${isFav ? 'fill-amber-400 text-amber-500' : ''}`} />
+                        </button>
                       </div>
-                    </div>
-                  );
+                    );
                 })}
 
                 {filteredToolsForGrid.length === 0 && (
