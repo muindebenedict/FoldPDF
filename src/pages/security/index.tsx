@@ -182,7 +182,7 @@ export default function SecurityHub({ navigate }: SecurityHubProps) {
             <div className="inline-flex px-2.5 py-1 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-605 text-[10px] uppercase font-bold tracking-wider mb-2">SOC-2 Framework</div>
             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Auditable Security Policy</h4>
             <p className="text-xs text-slate-450 mt-1.5 leading-relaxed">
-              Fully compliant. Since we choose NOT to hold, collect, or store documents, standard audit scopes can quickly confirm that our databases represent zero leak risk.
+              Built with SOC 2 principles in mind. Since we choose NOT to hold, collect, or store documents, our databases carry no document leak risk.
             </p>
           </div>
 

@@ -231,16 +231,16 @@ export function Footer({ navigate }: FooterProps) {
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-premium-sm">
               <Lucide.ShieldCheck className="h-5 w-5 text-emerald-555 shrink-0" />
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-white leading-none">ISO-27001 Metrics</p>
-                <p className="text-[9px] text-slate-400 leading-none mt-1">Conforming RAM Standard</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-white leading-none">ISO 27001 Principles</p>
+                <p className="text-[9px] text-slate-400 leading-none mt-1">Built In by Design</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-premium-sm">
               <Lucide.FileCheck2 className="h-5 w-5 text-indigo-505 shrink-0" />
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-white leading-none">HIPAA Compliant</p>
-                <p className="text-[9px] text-slate-400 leading-none mt-1">Client-Side by Default</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-white leading-none">HIPAA Principles</p>
+                <p className="text-[9px] text-slate-400 leading-none mt-1">Built In by Design</p>
               </div>
             </div>
 

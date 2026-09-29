@@ -1270,31 +1270,31 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                   <div className="lg:col-span-7">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-100/30">
                       <Lucide.ShieldCheck className="h-3.5 w-3.5" />
-                      Compliance Verified
+                      Compliance-Minded Design
                     </span>
                     <h3 className="font-display text-2xl sm:text-3.5xl font-black text-slate-850 dark:text-white mt-4 mb-4 leading-tight">
                       Designed for Regulated Organizations
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-505 dark:text-slate-400 leading-relaxed mb-6 font-body">
-                      We protect healthcare environments, financial advisory offices, and defense counsels from structural data leaks. Since your processing operates natively inside the boundaries of clients, FoldPDF matches the absolute secure requirements listed under major certifications:
+                      We protect healthcare environments, financial advisory offices, and defense counsels from structural data leaks. Most processing happens inside your own browser and no file is ever stored, so FoldPDF is built around the principles behind major privacy and security frameworks:
                     </p>
                     <ul className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
                       <li className="flex items-start gap-2.5">
                         <Lucide.CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong>GDPR Sovereignty:</strong> No tracking scripts, no persistent third-party cookies, and complete personal data deletion by default.
+                          <strong>GDPR Principles:</strong> Minimal personal data, no document storage, and deletion of your personal data on request.
                         </div>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <Lucide.CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong>HIPAA Privacy:</strong> Meets standard Safeguard checklists by never caching Protected Health Information (PHI) onto permanent external targets.
+                          <strong>HIPAA Principles:</strong> Built with HIPAA safeguards in mind. Browser tools never send Protected Health Information (PHI) anywhere, and our server tools never store it.
                         </div>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <Lucide.CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong>SOC-2 Frameworks:</strong> Stateless calculations guarantee absolute data segregation, keeping client assets completely secure.
+                          <strong>SOC 2 Principles:</strong> Built with SOC 2 principles in mind. Stateless processing keeps every client's files separate and never stored.
                         </div>
                       </li>
                     </ul>
