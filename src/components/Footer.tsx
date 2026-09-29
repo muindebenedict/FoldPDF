@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type MouseEvent } from "react";
 import * as Lucide from "lucide-react";
 import { FoldPdfLogo } from "./FoldPdfLogo";
 import { getSupabase, isSupabaseConfigured } from "../lib/supabase";
@@ -15,7 +15,11 @@ export function Footer({ navigate }: FooterProps) {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handleLinkClick = (path: string) => {
+  // Real links (keyboard and search-engine friendly) that still navigate inside the app.
+  // Modified clicks (new tab, new window) keep the browser's default behaviour.
+  const linkClick = (path: string) => (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
     navigate(path);
   };
 
@@ -82,15 +86,15 @@ export function Footer({ navigate }: FooterProps) {
           
           {/* Column 1: About FoldPDF + Mission Statement */}
           <div className="space-y-4">
-            <div className="cursor-pointer inline-block" onClick={() => handleLinkClick("/")}>
+            <a href="/" onClick={linkClick("/")} aria-label="FoldPDF home" className="cursor-pointer inline-block">
               <FoldPdfLogo className="h-6.5 w-6.5" showText={true} showTagline={false} />
-            </div>
+            </a>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
               <strong>Our Mission:</strong> FoldPDF delivers high-speed, secure document conversions. Most tools run directly inside your browser, so your files never leave your device; the few that need our server delete your file right after processing.
             </p>
             {/* Security Verification Link */}
             <div className="pt-2">
-              <a href="/security" onClick={(e) => { e.preventDefault(); handleLinkClick("/security"); }} className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition" aria-label="Security Framework Details">
+              <a href="/security" onClick={linkClick("/security")} className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition" aria-label="Security Framework Details">
                 <Lucide.ShieldCheck className="h-4.5 w-4.5" />
                 <span>How We Protect Your Files</span>
               </a>
@@ -111,9 +115,9 @@ export function Footer({ navigate }: FooterProps) {
                 { name: "Document Protections / Lock", path: "/protect-pdf" }
               ].map((item, i) => (
                 <li key={i}>
-                  <button onClick={() => handleLinkClick(item.path)} className="text-left hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors">
+                  <a href={item.path} onClick={linkClick(item.path)} className="text-left hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors">
                     {item.name}
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -133,9 +137,9 @@ export function Footer({ navigate }: FooterProps) {
                 { name: "View All Blog Articles", path: "/blog" }
               ].map((item, i) => (
                 <li key={i}>
-                  <button onClick={() => handleLinkClick(item.path)} className="text-left font-semibold hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors text-slate-650 dark:text-slate-300">
+                  <a href={item.path} onClick={linkClick(item.path)} className="text-left font-semibold hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors text-slate-650 dark:text-slate-300">
                     {item.name}
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -160,9 +164,9 @@ export function Footer({ navigate }: FooterProps) {
                 { name: "Dynamic HTML Sitemap", path: "/sitemap" }
               ].map((item, i) => (
                 <li key={i}>
-                  <button onClick={() => handleLinkClick(item.path)} className="text-left hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors">
+                  <a href={item.path} onClick={linkClick(item.path)} className="text-left hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors">
                     {item.name}
-                  </button>
+                  </a>
                 </li>
               ))}
               <li>
@@ -172,7 +176,8 @@ export function Footer({ navigate }: FooterProps) {
                   rel="noopener noreferrer" 
                   className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline block pt-1.5"
                 >
-                  🌐 View XML Sitemap Standard
+                  <Lucide.Globe className="inline h-3.5 w-3.5 mr-1 -mt-0.5" aria-hidden="true" />
+                  View XML sitemap
                 </a>
               </li>
             </ul>
@@ -218,7 +223,8 @@ export function Footer({ navigate }: FooterProps) {
                 </form>
                 {errorMsg && (
                   <p className="text-[11px] text-rose-500 font-medium animate-in fade-in-50 duration-200">
-                    ⚠️ {errorMsg}
+                    <Lucide.AlertTriangle className="inline h-3.5 w-3.5 mr-1 -mt-0.5" aria-hidden="true" />
+                    {errorMsg}
                   </p>
                 )}
               </div>

@@ -10,7 +10,7 @@ import { CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTo
 import { ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool } from './tools/PdfSecurityTools';
 import { SERVER_TOOL_IDS } from './tools/serverApi';
 import { ToolIcon } from './ToolIcon';
-import { DropZone } from './tools/SharedComponents';
+import { DropZone, PRIMARY_BUTTON } from './tools/SharedComponents';
 
 // Escapes special characters for PDF text streams: ( ) \ and converts non-ASCII to '_'
 function escapePdfText(text: string): string {
@@ -433,14 +433,6 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
   const [chatMessages, setChatMessages] = useState<{ sender: 'user' | 'ai'; text: string }[]>([]);
   const [userQuery, setUserQuery] = useState('');
   const [rawTextContext, setRawTextContext] = useState('');
-
-  useEffect(() => {
-    if (tool && tool.name) {
-      document.title = `${tool.name} | Free Secure PDF Tools | FoldPDF`;
-    } else {
-      document.title = "FoldPDF | Free Secure PDF Tools";
-    }
-  }, [tool?.name]);
 
   const renderRealTool = () => {
     switch (tool.id) {
@@ -1296,10 +1288,10 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
                     {!isProcessing && !isComplete && (
                       <button
                         onClick={executeAction}
-                        className="w-full flex items-center justify-center rounded-2xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/15 hover:bg-indigo-700 transition"
+                        className={PRIMARY_BUTTON}
                       >
-                        <Lucide.Sparkles className="h-4 w-4 mr-2 animate-pulse" />
-                        Process {tool.name} Now
+                        <Lucide.Sparkles className="h-4 w-4" aria-hidden="true" />
+                        Convert {tool.name.replace(/^.* to /, 'to ')}
                       </button>
                     )}
 
@@ -1384,7 +1376,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <ul className="space-y-2 mb-8 text-sm">
               {tool.benefits.map((b, idx) => (
                 <li key={idx} className="flex items-center text-neutral-600 dark:text-neutral-400">
-                  <span className="mr-2 text-indigo-500 font-bold">✓</span> {b}
+                  <Lucide.Check className="mr-2 h-4 w-4 shrink-0 text-indigo-500" aria-hidden="true" /> {b}
                 </li>
               ))}
             </ul>

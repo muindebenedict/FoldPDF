@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { PDFDocument } from "@cantoo/pdf-lib";
 import * as Lucide from "lucide-react";
 import { readAB, getPdfLib, getPdfJs, renderPage, readURL, fmt, dl, getOutputFile } from "./PdfScriptLoader";
-import { Proc, Done, Bar, Err, Spin, validateUploadedFiles, DropZone } from "./SharedComponents";
+import { Proc, Done, Bar, Err, Spin, validateUploadedFiles, DropZone, PRIMARY_BUTTON } from "./SharedComponents";
+import { IconCircleCheck, IconDownload, IconLock, IconLockOpen, IconSignature, IconX } from "@tabler/icons-react";
 
 interface ToolProps {
   onSuccess?: (fileName: string, toolName: string) => void;
@@ -260,16 +261,17 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
             <div className="bg-rose-50 border border-rose-150 rounded-xl p-3.5 flex gap-3 items-start animate-in zoom-in-95 duration-200">
               <Lucide.AlertTriangle className="text-rose-500 shrink-0 mt-0.5" size={16} />
               <span className="flex-1 text-xs font-bold text-rose-700 leading-relaxed">{errorMsg}</span>
-              <button onClick={() => setErrorMsg("")} className="text-rose-400 hover:text-rose-600 font-bold text-sm">✕</button>
+              <button onClick={() => setErrorMsg("")} aria-label="Dismiss message" className="rounded-md p-0.5 text-rose-400 hover:text-rose-600"><IconX size={16} aria-hidden="true" /></button>
             </div>
           )}
 
           {/* ACTION BUTTON */}
           <button
             onClick={encryptPdf}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl py-3 text-sm shadow-lg shadow-indigo-650/15 hover:shadow-indigo-650/20 transition cursor-pointer"
+            className={PRIMARY_BUTTON}
           >
-            🔒 Protect & Download PDF
+            <IconLock size={18} aria-hidden="true" />
+            Protect and download PDF
           </button>
         </div>
       )}
@@ -287,8 +289,10 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
       {/* DONE STATE */}
       {status === "done" && outputBlob && (
         <div className="text-center py-8 px-4 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl animate-in zoom-in-95 duration-300 space-y-5">
-          <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl shadow-premium-sm">
-            ✓
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 animate-pop-in">
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" strokeDasharray={24} className="animate-draw-check" />
+            </svg>
           </div>
           <div className="space-y-1">
             <h3 className="font-display font-extrabold text-lg text-slate-900 dark:text-white">
@@ -302,9 +306,10 @@ export const ProtectTool = ({ onSuccess, toolName }: ToolProps) => {
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <button
               onClick={() => downloadFile(outputBlob, outputName)}
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition cursor-pointer"
+              className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 sm:w-auto dark:bg-indigo-500 dark:hover:bg-indigo-400"
             >
-              ⬇ Download Protected PDF
+              <IconDownload size={18} aria-hidden="true" />
+              Download protected PDF
             </button>
             <button
               onClick={reset}
@@ -489,16 +494,17 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
             <div className="bg-rose-50 border border-rose-150 rounded-xl p-3.5 flex gap-3 items-start animate-in zoom-in-95 duration-200">
               <Lucide.AlertTriangle className="text-rose-500 shrink-0 mt-0.5" size={16} />
               <span className="flex-1 text-xs font-bold text-rose-750 leading-relaxed">{errorMsg}</span>
-              <button onClick={() => setErrorMsg("")} className="text-rose-400 hover:text-rose-600 font-bold text-sm">✕</button>
+              <button onClick={() => setErrorMsg("")} aria-label="Dismiss message" className="rounded-md p-0.5 text-rose-400 hover:text-rose-600"><IconX size={16} aria-hidden="true" /></button>
             </div>
           )}
 
           {/* ACTION BUTTON */}
           <button
             onClick={decryptPdf}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl py-3 text-sm shadow-lg shadow-indigo-650/15 hover:shadow-indigo-650/20 transition cursor-pointer"
+            className={PRIMARY_BUTTON}
           >
-            🔓 Unlock & Download PDF
+            <IconLockOpen size={18} aria-hidden="true" />
+            Unlock and download PDF
           </button>
         </div>
       )}
@@ -516,8 +522,10 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
       {/* DONE STATE */}
       {status === "done" && outputBlob && (
         <div className="text-center py-8 px-4 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl animate-in zoom-in-95 duration-300 space-y-5">
-          <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl shadow-premium-sm">
-            ✓
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 animate-pop-in">
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" strokeDasharray={24} className="animate-draw-check" />
+            </svg>
           </div>
           <div className="space-y-1">
             <h3 className="font-display font-extrabold text-lg text-slate-900 dark:text-white">
@@ -531,9 +539,10 @@ export const UnlockTool = ({ onSuccess, toolName }: ToolProps) => {
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <button
               onClick={() => downloadFile(outputBlob, outputName)}
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition cursor-pointer"
+              className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 sm:w-auto dark:bg-indigo-500 dark:hover:bg-indigo-400"
             >
-              ⬇ Download Unlocked PDF
+              <IconDownload size={18} aria-hidden="true" />
+              Download unlocked PDF
             </button>
             <button
               onClick={reset}
@@ -1110,8 +1119,9 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
 
       {stage === "draw" && sigData && (
         <div className="mt-4 space-y-4 animate-in slide-in-from-top-2 duration-300">
-          <div className="bg-emerald-50 border border-emerald-150 p-3 rounded-xl text-center text-xs text-emerald-800 font-semibold shadow-premium-sm">
-            ✓ Ink sealed correctly! Next, load your destination PDF:
+          <div className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs font-semibold text-emerald-800 shadow-premium-sm dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <IconCircleCheck size={16} aria-hidden="true" />
+            Signature saved. Next, choose the PDF to sign:
           </div>
           <DropZone
             accept=".pdf"
@@ -1238,9 +1248,10 @@ export const SigTool = ({ onSuccess, toolName }: ToolProps) => {
               <button
                 type="button"
                 onClick={() => apply(false)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center"
+                className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-indigo-600 py-2.5 text-xs font-bold text-white transition hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
               >
-                ✍ Stamp Current Page ({curPg})
+                <IconSignature size={16} aria-hidden="true" />
+                Sign page {curPg}
               </button>
               <button
                 type="button"

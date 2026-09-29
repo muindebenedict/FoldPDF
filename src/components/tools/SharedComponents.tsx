@@ -27,6 +27,10 @@ export const Spin = ({ msg = "" }: { msg?: string }) => (
   </div>
 );
 
+// Shared button styles, so every tool's main action looks and behaves the same.
+export const PRIMARY_BUTTON = "inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:bg-indigo-500 dark:hover:bg-indigo-400";
+export const DANGER_BUTTON = "inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:-translate-y-0.5 hover:bg-rose-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0";
+
 export const Bar = ({ v, msg }: { v: number; msg?: string }) => (
   <div className="mt-5 animate-in fade-in slide-in-from-top-1 duration-300" role="status" aria-live="polite">
     <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -570,9 +574,9 @@ export const Proc = ({ id, label, accept = ".pdf", multi = false, run, opts, onS
       {files.length > 0 && st !== "reading" && st !== "processing" && (
         <button
           onClick={go}
-          className="w-full mt-4 bg-indigo-600 text-white font-bold rounded-xl py-3 text-sm hover:bg-indigo-700 shadow-md shadow-indigo-600/15 cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wide"
+          className={`mt-4 ${PRIMARY_BUTTON}`}
         >
-          {label === "COMPRESS PDF" || id === "compress-pdf" ? "COMPRESS PDF" : `${label} Now`}
+          {id === "compress-pdf" ? "Compress PDF" : label}
         </button>
       )}
       

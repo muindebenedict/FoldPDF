@@ -263,10 +263,10 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
         if (sessionStorage.getItem(OAUTH_PENDING_KEY)) {
           sessionStorage.removeItem(OAUTH_PENDING_KEY);
-          addToast(`Welcome back, ${u.name.split(' ')[0]}! 👋`, 'info');
+          addToast(`Welcome back, ${u.name.split(' ')[0]}`, 'info');
         } else if (announceConfirmation) {
           announceConfirmation = false;
-          addToast('Email confirmed. Welcome to FoldPDF! 🎉', 'success');
+          addToast('Email confirmed. Welcome to FoldPDF', 'success');
         }
       } else {
         setUser(null);
@@ -306,7 +306,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
           setPasswordRecovery(true);
           setAuthModalOpen(true);
         } else {
-          addToast('Email confirmed. Welcome to FoldPDF! 🎉', 'success');
+          addToast('Email confirmed. Welcome to FoldPDF', 'success');
         }
         clearAuthParamsFromUrl();
       });
@@ -565,13 +565,13 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
         // A session only comes back if "Confirm email" is off in Supabase.
         if (data.session) {
-          addToast("Account created! Welcome to FoldPDF 🎉", "success");
+          addToast("Account created. Welcome to FoldPDF", "success");
           setAuthModalOpen(false);
           setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
           return;
         }
 
-        addToast("Account created! Welcome to FoldPDF 🎉", "success");
+        addToast("Account created. Welcome to FoldPDF", "success");
         setVerificationEmail(authForm.email);
 
         // Auto-close modal after 2 seconds
@@ -611,7 +611,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         if (error) throw error;
 
         const firstName = toAppUser(data.user).name.split(' ')[0];
-        addToast(`Welcome back, ${firstName}! 👋`, 'info');
+        addToast(`Welcome back, ${firstName}`, 'info');
 
         setAuthModalOpen(false);
         setAuthForm({ name: '', email: '', password: '', repeatPassword: '', isRegister: false });
