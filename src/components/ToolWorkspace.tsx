@@ -9,6 +9,8 @@ import { PdfToImgTool, ImgToPdfTool } from './tools/ImgConverters';
 import { CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTool, PageNumTool } from './tools/PdfEditTools';
 import { ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool } from './tools/PdfSecurityTools';
 import { SERVER_TOOL_IDS } from './tools/serverApi';
+import { ToolIcon } from './ToolIcon';
+import { DropZone } from './tools/SharedComponents';
 
 // Escapes special characters for PDF text streams: ( ) \ and converts non-ASCII to '_'
 function escapePdfText(text: string): string {
@@ -405,7 +407,6 @@ interface ToolWorkspaceProps {
 
 export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressPhase, setProgressPhase] = useState('');
@@ -515,30 +516,6 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
     setImagePreviewUrl(null);
     setCanvasDims({ width: 450, height: 150 });
   }, [tool.id]);
-
-  // Handle Drag & Drop Upload Events
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelected(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelected(e.target.files[0]);
-    }
-  };
 
   const handleFileSelected = (selectedFile: File) => {
     setFile(selectedFile);
@@ -1108,14 +1085,16 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
           <div className="rounded-2xl border border-slate-150 p-6 sm:p-8 dark:border-slate-800/80 bg-white dark:bg-slate-900/40 shadow-premium-md">
             
             {/* Header of Tool */}
-            <div className="mb-6">
-              <h1 className="mt-2 text-2.5xl font-extrabold tracking-tight text-slate-905 dark:text-white sm:text-3xl font-display">
-                {tool.name}
-              </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                {tool.shortDesc}
-              </p>
-
+            <div className="mb-6 flex items-start gap-4">
+              <ToolIcon toolId={tool.id} size="lg" className="mt-1" />
+              <div>
+                <h1 className="mt-2 text-2.5xl font-extrabold tracking-tight text-slate-905 dark:text-white sm:text-3xl font-display">
+                  {tool.name}
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  {tool.shortDesc}
+                </p>
+              </div>
             </div>
 
             {renderRealTool() ? (
@@ -1124,53 +1103,12 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
               <>
                 {/* STAGE 1: LOCAL DRAG & DROP FILE PICKER */}
                 {!file ? (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center transition-all cursor-pointer dark:border-slate-800 hover:border-indigo-550 dark:hover:border-indigo-500 ${
-                      isDragging ? 'border-indigo-500 bg-indigo-50/20' : 'bg-slate-50/50 dark:bg-slate-950/20'
-                    }`}
-                    onClick={() => document.getElementById('file-picker-trigger')?.click()}
-                    id="workspace-upload-zone"
-                  >
-                    <input
-                       type="file"
-                       id="file-picker-trigger"
-                       className="hidden"
-                       onChange={handleFileChange}
-                    />
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-955 text-indigo-650 dark:text-indigo-400 mb-4 transition-transform group-hover:scale-105 shadow-premium-sm">
-                      <Lucide.FileUp className="h-5.5 w-5.5" />
-                    </div>
-                    <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1.5 font-display">
-                      {(() => {
-                        const idLower = tool.id.toLowerCase();
-                        if (idLower === "heic-to-pdf") return "Drag and drop your HEIC file here";
-                        if (idLower === "png-to-pdf") return "Drag and drop your PNG file here";
-                        if (idLower === "jpg-to-pdf") return "Drag and drop your JPG file here";
-                        if (idLower === "webp-to-pdf") return "Drag and drop your WebP file here";
-                        if (idLower === "word-to-pdf") return "Drag and drop your Word document here";
-                        if (idLower === "excel-to-pdf") return "Drag and drop your Excel spreadsheet here";
-                        if (idLower === "ppt-to-pdf" || idLower === "pptx-to-pdf") return "Drag and drop your PowerPoint file here";
-                        if (idLower === "txt-to-pdf") return "Drag and drop your TXT file here";
-                        if (idLower.includes("pdf")) return "Drag and drop your PDF file here";
-                        return "Drag and drop your document file here";
-                      })()}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
-                      {(() => {
-                        const idLower = tool.id.toLowerCase();
-                        if (idLower === "ppt-to-pdf" || idLower === "pptx-to-pdf") {
-                          return "Supports PPTX and PPT files up to 50MB.";
-                        }
-                        return "or click to browse local files. Supports PDF, DOCX, TXT, Excel, PPTX & flat photos up to 50MB.";
-                      })()}
-                    </p>
-                    <div className="mt-6 rounded-full bg-indigo-600 px-6 py-2.5 text-xs font-semibold text-white shadow-premium-md shadow-indigo-600/20 group-hover:bg-indigo-750 transition duration-200">
-                      Select PDF File
-                    </div>
-                  </div>
+                  <DropZone
+                    accept={tool.id === 'jpeg-to-png' ? '.jpg,.jpeg' : tool.id === 'png-to-jpg' ? '.png' : '.pdf,.docx,.txt,.xlsx,.pptx,.jpg,.jpeg,.png'}
+                    onFiles={(fl) => { if (fl && fl[0]) handleFileSelected(fl[0]); }}
+                    formatLabel={tool.id === 'jpeg-to-png' ? 'JPG image' : tool.id === 'png-to-jpg' ? 'PNG image' : 'file'}
+                    toolId={tool.id}
+                  />
                 ) : (
                   /* STAGE 2: CONFIGURATION & PROGRESS MONITORINGBOARD */
                   <div className="space-y-6">
@@ -1501,9 +1439,7 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
                     className="group cursor-pointer p-3 rounded-xl border border-slate-150 hover:border-indigo-500 dark:border-slate-800 dark:hover:border-indigo-400 transition-all flex items-center bg-slate-50/50 dark:bg-slate-950/20"
                     id={`related-tool-${t.id}`}
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 mr-3 font-display text-xs font-bold">
-                      PDF
-                    </div>
+                    <ToolIcon toolId={t.id} size="sm" className="mr-3" />
                     <div>
                       <p className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white transition-colors">{t.name}</p>
                       <p className="text-[10px] text-slate-400 line-clamp-1">{t.shortDesc}</p>
