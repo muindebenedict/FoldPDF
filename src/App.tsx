@@ -832,6 +832,10 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                   Process medical records, financial files, legal certificates, and personal documents completely inside your browser. Your files stay on your device for absolute privacy and safety.
                 </p>
 
+                <p className="mx-auto mt-3 max-w-2xl text-[11px] sm:text-xs text-slate-500 dark:text-white/85 leading-relaxed font-body" id="hero-server-disclosure">
+                  Only five tools (Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF) use our secure processing server for high-fidelity results. Files sent to it are deleted immediately after processing, and every other tool runs entirely in your browser.
+                </p>
+
 
                 {/* 2 COMPLEMENTARY CTAs */}
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -1126,7 +1130,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                         What Is Secure Browser-Based File Processing?
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Secure browser-based processing means our system cannot see, keep, or access the files you edit. Ordinary online tools force you to upload your files to their servers. This means they can read your file names and private documents. Our website is completely different. All the actions you take run right inside your own internet browser window. We never see your text, sheets, or photos. No logs or backups are ever made. It is a much safer option than public converters that require data uploads. Your files stay perfectly secure on your own computer.
+                        Secure browser-based processing means our system cannot see, keep, or access the files you edit. Ordinary online tools force you to upload your files to their servers. This means they can read your file names and private documents. Our website is completely different. Almost every action you take runs right inside your own internet browser window, so we never see your text, sheets, or photos. Only five tools (Compress PDF, PDF to Word, Word to PDF, PDF to PowerPoint and PowerPoint to PDF) use our secure processing server, which deletes your file immediately after processing. No logs or backups are ever made. It is a much safer option than public converters that keep your uploads.
                       </p>
                     </div>
                   </section>
@@ -1141,7 +1145,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                         PDF Security Best Practices for Businesses
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-555 dark:text-slate-400 leading-relaxed font-body">
-                        Keeping your company files secure is simple if you follow a few guidelines. First, do not upload private tax receipts or contract documents to open-source websites that store files in cloud databases. Second, use friendly utilities like FoldPDF that process files directly inside your browser so nothing is sent over the internet. Third, remove hidden layers and authors from your PDFs before sending them. Fourth, close your browser tabs when you finish editing to completely clear local memory. Finally, avoid using public Wi-Fi networks when editing files on remote server pages. Simple actions like these keep your business data private and compliant.
+                        Keeping your company files secure is simple if you follow a few guidelines. First, do not upload private tax receipts or contract documents to open-source websites that store files in cloud databases. Second, use friendly utilities like FoldPDF that process most files directly inside your browser, so nothing is sent over the internet, and delete any file sent for server processing immediately. Third, remove hidden layers and authors from your PDFs before sending them. Fourth, close your browser tabs when you finish editing to completely clear local memory. Finally, avoid using public Wi-Fi networks when editing files on remote server pages. Simple actions like these keep your business data private and compliant.
                       </p>
                     </div>
                   </section>
@@ -1230,7 +1234,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                         </div>
                         <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2">Local Browser Engine</h4>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Our isolated code runs all formatting calculations directly on your own computer.
+                          Our isolated code runs formatting calculations directly on your own computer; only five tools use our secure server.
                         </p>
                       </div>
                     </div>
@@ -1266,31 +1270,31 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                   <div className="lg:col-span-7">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-100/30">
                       <Lucide.ShieldCheck className="h-3.5 w-3.5" />
-                      Compliance Verified
+                      Compliance-Minded Design
                     </span>
                     <h3 className="font-display text-2xl sm:text-3.5xl font-black text-slate-850 dark:text-white mt-4 mb-4 leading-tight">
                       Designed for Regulated Organizations
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-505 dark:text-slate-400 leading-relaxed mb-6 font-body">
-                      We protect healthcare environments, financial advisory offices, and defense counsels from structural data leaks. Since your processing operates natively inside the boundaries of clients, FoldPDF matches the absolute secure requirements listed under major certifications:
+                      We protect healthcare environments, financial advisory offices, and defense counsels from structural data leaks. Most processing happens inside your own browser and no file is ever stored, so FoldPDF is built around the principles behind major privacy and security frameworks:
                     </p>
                     <ul className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
                       <li className="flex items-start gap-2.5">
                         <Lucide.CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong>GDPR Sovereignty:</strong> No tracking scripts, no persistent third-party cookies, and complete personal data deletion by default.
+                          <strong>GDPR Principles:</strong> Minimal personal data, no document storage, and deletion of your personal data on request.
                         </div>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <Lucide.CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong>HIPAA Privacy:</strong> Meets standard Safeguard checklists by never caching Protected Health Information (PHI) onto permanent external targets.
+                          <strong>HIPAA Principles:</strong> Built with HIPAA safeguards in mind. Browser tools never send Protected Health Information (PHI) anywhere, and our server tools never store it.
                         </div>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <Lucide.CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
-                          <strong>SOC-2 Frameworks:</strong> Stateless calculations guarantee absolute data segregation, keeping client assets completely secure.
+                          <strong>SOC 2 Principles:</strong> Built with SOC 2 principles in mind. Stateless processing keeps every client's files separate and never stored.
                         </div>
                       </li>
                     </ul>

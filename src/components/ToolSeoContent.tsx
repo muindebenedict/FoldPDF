@@ -102,7 +102,7 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
     ? matchedTool.faqs.map(f => ({ q: f.question, a: f.answer }))
     : (SEO_CONTENT_MAP[normalizedId]?.faqs || [
         { q: `Does ${toolId.replace('-', ' ')} require paid account memberships?`, a: "No. Core features are 100% free and open, letting users execute documents endlessly without limits." },
-        { q: "Are temporary file backups kept on our cloud systems?", a: "Absolutely not. Our server-free architecture ensures documents never write to external hard disk databases." },
+        { q: "Are temporary file backups kept on our cloud systems?", a: "Absolutely not. Browser-based tools never upload your file, and our five server-assisted tools delete it immediately after processing. No backups are ever kept." },
         { q: "Can I process documents on mobile browser tabs?", a: "Yes. Our tools are responsive and execute comfortably within modern iOS, Android, and tablet browsers." }
       ]);
 

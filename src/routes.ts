@@ -12,12 +12,12 @@ const STATIC_ROUTES: RouteMetadata[] = [
   {
     path: '/',
     title: 'FoldPDF | Private PDF Tools That Never Upload Your Files',
-    description: 'Free, 100% private PDF tools that process files completely inside your browser. Compress, merge, split, and convert PDF files without uploading them to any cloud server.'
+    description: 'Free, private PDF tools. Merge, split, edit and convert PDF files directly inside your browser; the five tools that need our secure server delete your file immediately after processing.'
   },
   {
     path: '/about',
     title: 'About FoldPDF - Sovereign On-Device PDF Workspace',
-    description: 'Learn about FoldPDF and our mission to provide 100% private, browser-based document utilities that protect your sensitive files and data privacy.'
+    description: 'Learn about FoldPDF and our mission to provide private, browser-first document utilities that protect your sensitive files and data privacy.'
   },
   {
     path: '/security',
@@ -32,7 +32,7 @@ const STATIC_ROUTES: RouteMetadata[] = [
   {
     path: '/how-it-works',
     title: 'How FoldPDF Works - On-Device Browser Processing',
-    description: 'Understand how client-side WebAssembly and modern browser execution engines allow instant PDF editing with zero server file uploads.'
+    description: 'Understand how client-side WebAssembly and modern browser execution engines allow instant PDF editing without uploads, and how our five server-assisted tools handle and delete files.'
   },
   {
     path: '/sitemap',

@@ -18,7 +18,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
   {
     slug: "private-pdf-processing-explained",
     title: "The Technical Inner Workings of Secure PDF Processing",
-    excerpt: "Discover how advanced web sandboxing keeps your personal and legal documents confidential by executing all conversions purely on-device.",
+    excerpt: "Discover how advanced web sandboxing keeps your personal and legal documents confidential by executing most conversions purely on-device.",
     summary: "As document leaks rise, knowing how your PDF platform moves files is essential. Browser-based execution isolates the processing environment directly to your machine, preventing unauthorized access.",
     category: "PDF Security",
     date: "May 20, 2026",
@@ -45,7 +45,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
       <p>Most popular online PDF services operate on an architecture built around upload queues. When a user drags a file into a conversion grid, that file is uploaded to cloud storage buckets. Once uploaded, a background server handles conversion, stores the files, and exports a unique download URL. This poses standard security concerns: files are cached on disk, and databases contain backups.</p>
       
       <h2>How Modern Browser Engines Power Client-Side PDF Operations</h2>
-      <p>Decentralized systems use modern client-side engines. Standard algorithms are converted beautifully to run inside your browser. When you process a document with FoldPDF, our code streams file buffers dynamically within a secure workspace, running conversion steps directly inside your browser's private thread.</p>
+      <p>Decentralized systems use modern client-side engines. Standard algorithms are converted beautifully to run inside your browser. When you process a document with one of FoldPDF's browser-based tools, our code streams file buffers dynamically within a secure workspace, running conversion steps directly inside your browser's private thread. (Five tools, including Compress PDF and the Word and PowerPoint converters, use our secure processing server instead and delete your file immediately afterwards.)</p>
       
       <h2>Memory Isolation vs Permanent Disk Caching</h2>
       <p>By keeping processing completely inside temporary memory, your data never writes to storage files. No logs store text layers, graphic records, or metadata. Once the conversion runs, the browser clears the memory, securing your information before any potential network leaks can occur.</p>
@@ -189,7 +189,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
       <p>The General Data Protection Regulation (GDPR) forces companies to govern precisely where personal information is stored and processed. Many conventional PDF sites route data to non-EU staging areas, creating immediate compliance failures under Data Privacy Framework (DPF) standards.</p>
       
       <h2>The Advantage of Local-First PDF Architectures</h2>
-      <p>By employing client-side processing, FoldPDF processes data strictly on the EU customer's localized device. We maintain no cloud caches, databases, or analytics counters tracking your text. This completely removes the administrative risk of unauthorized global transfer.</p>
+      <p>By employing client-side processing, FoldPDF's browser-based tools process data strictly on the EU customer's localized device. We maintain no cloud caches, databases, or analytics counters tracking your text. This completely removes the administrative risk of unauthorized global transfer. (Five tools, including Compress PDF and the Word and PowerPoint converters, use our secure processing server instead and delete your file immediately afterwards.)</p>
       
       <h2>Regulatory Implementation Best Practices</h2>
       <p>Enterprises must restrict their workforce from utilizing free tools that lack clear data policies or require account creation. Selecting single-page local solutions ensures zero footprints remain.</p>
@@ -405,7 +405,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
       <p>Legacy web technologies like Flash and Java required deep system permissions, exposing user computers to major security issues. Modern client-side engines set a new standard by running inside a highly secure browser session.</p>
       
       <h2>How Browser Sandboxing Protects Your Local Files</h2>
-      <p>FoldPDF uses your modern browser to process PDFs locally. The browser restricts the app from accessing your hard drive directly, meaning all file processing is kept safely within the active tab's temporary memory.</p>
+      <p>FoldPDF uses your modern browser to process PDFs locally. The browser restricts the app from accessing your hard drive directly, meaning file processing in these tools is kept safely within the active tab's temporary memory. (Five tools, including Compress PDF and the Word and PowerPoint converters, use our secure processing server instead and delete your file immediately afterwards.)</p>
       
       <h2>Volatile Memory: Secure Data Destruction on Tab Close</h2>
       <p>Because all file data is processed in temporary browser memory, closing the browser tab instantly wipes the memory clean, leaving no trace of your documents behind.</p>
@@ -693,7 +693,7 @@ export const DETAILED_BLOG_POSTS: DetailedBlogPost[] = [
       <p>Relying on slow cloud servers to convert files wastes time. When multiple team members upload large documents, server wait times drag down overall productivity.</p>
       
       <h2>Deploying Browser-Based Client Utilities Efficiently</h2>
-      <p>FoldPDF runs locally on user devices. This edge-based design speeds up workflows by bypassing slow uploads and processing files instantly.</p>
+      <p>Most FoldPDF tools run locally on user devices. This edge-based design speeds up workflows by bypassing slow uploads and processing files instantly. (Five tools, including Compress PDF and the Word and PowerPoint converters, use our secure processing server instead and delete your file immediately afterwards.)</p>
       
       <h2>Ensuring High Performance and Clean Code Practices</h2>
       <p>By using optimized WebAssembly, FoldPDF delivers extremely high performance with very low hardware strain, saving server costs and protecting your data.</p>

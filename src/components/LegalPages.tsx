@@ -275,7 +275,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
           Privacy Policy
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: May 31, 2026</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: September 29, 2026</p>
 
         <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
           <p>
@@ -291,8 +291,24 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.Server className="h-5 w-5 text-indigo-500" />
+            2. Our Processing Server
+          </h2>
+          <p>
+            When you use one of the five server-assisted tools, your file travels over an encrypted HTTPS connection to our processing server, hosted by Render. It is held only in memory or a temporary folder for the few seconds processing takes, and deleted as soon as your result is sent back. Adobe PDF Services (and ComPDF, only if Adobe's monthly capacity is reached) receive the file solely to perform the conversion, and we delete it from their storage right after. To keep the free service fair and protect it from abuse, the server keeps your IP address in memory for up to one day to apply hourly and daily usage limits; it is never written to disk, logged, or shared.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Lucide.UserCheck className="h-5 w-5 text-indigo-500" />
+            3. Accounts, Newsletter and Contact Messages
+          </h2>
+          <p>
+            Creating an account is optional. If you sign up, your name and email address are stored with our authentication provider, Supabase, so you can sign in. If you subscribe to our newsletter or send us a message through the contact form, we store the details you provide there so we can reply; contact messages are also delivered to our inbox through the FormSubmit email service. Your documents are never linked to your account; the list of recent files shown in your workspace is kept only in your own browser. To have your data deleted, email us at the address below.
+          </p>
+
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Lucide.Cookie className="h-5 w-5 text-indigo-500" />
-            2. Cookies and Ads
+            4. Cookies and Ads
           </h2>
           <p>
             To help support this free service, we display advertisements via Google AdSense and use Google Analytics to learn how visitors use our site. These helper services use cookies (tiny text files) to show ads that match your interests and help us understand website traffic.
@@ -300,7 +316,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Lucide.Settings className="h-5 w-5 text-indigo-500" />
-            3. Disabling Cookies
+            5. Disabling Cookies
           </h2>
           <p>
             You are fully in charge of cookies. If you prefer not to use them, you can block or turn cookies off in your browser settings whenever you want.
@@ -308,7 +324,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Lucide.Mail className="h-5 w-5 text-indigo-500" />
-            4. Contact Us
+            6. Contact Us
           </h2>
           <p>
             If you ever have any questions about how we look after your privacy, please send Benedict an email at:{" "}
@@ -331,7 +347,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
           Terms of Service
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: May 31, 2026</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: September 29, 2026</p>
 
         <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
           <p>
