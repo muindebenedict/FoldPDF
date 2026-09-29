@@ -457,14 +457,6 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     };
   }, []);
 
-  // Cookie Consent State for AdSense compliance
-  const [cookieConsentAccepted, setCookieConsentAccepted] = useState<boolean>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem('cookie-consent') === 'true';
-    }
-    return false;
-  });
-
   // Active Tools Categorization State
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -530,7 +522,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       '/': 'FoldPDF | Free Secure PDF Tools',
       '/about': 'About Our Workspace & Mission | FoldPDF',
       '/contact': 'Contact FoldPDF Support | FoldPDF',
-      '/privacy': 'Privacy, AdSense & Cookies Policy | FoldPDF',
+      '/privacy': 'Privacy & Cookie Policy | FoldPDF',
       '/terms': 'Terms of Service Policies | FoldPDF',
       '/dmca': 'DMCA Policy & Procedure | FoldPDF',
       '/blog': 'Document Architecture Learning Blog | FoldPDF'
@@ -1825,38 +1817,6 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
               </button>
             </div>
 
-          </div>
-        </div>
-      )}
-
-      {/* Dynamic Cookie Consent Banner */}
-      {!cookieConsentAccepted && (
-        <div className="fixed bottom-5 right-5 z-50 max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-bottom-5 duration-300 text-left font-body">
-          <div className="flex items-start gap-3">
-            <Lucide.Cookie className="h-6 w-6 text-indigo-500 mt-0.5 shrink-0 animate-bounce" />
-            <div>
-              <p className="text-xs font-bold text-slate-850 dark:text-white">Cookie & Privacy Consent</p>
-              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                FoldPDF uses cookies and Google AdSense to deliver personalized ads and analyze secure traffic patterns. By continuing, you agree to our <span onClick={() => navigate('/privacy')} className="text-indigo-600 underline font-bold cursor-pointer hover:text-indigo-750">Privacy & Cookie Policies</span>.
-              </p>
-              <div className="mt-3.5 flex gap-2">
-                <button
-                  onClick={() => {
-                    localStorage.setItem('cookie-consent', 'true');
-                    setCookieConsentAccepted(true);
-                  }}
-                  className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-750 transition cursor-pointer"
-                >
-                  Accept Consent
-                </button>
-                <button
-                  onClick={() => setCookieConsentAccepted(true)}
-                  className="rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 px-3 py-1.5 text-[10px] font-semibold transition cursor-pointer"
-                >
-                  Decline
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

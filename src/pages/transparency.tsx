@@ -30,7 +30,7 @@ export default function TransparencyPage({ navigate }: TransparencyProps) {
   const subProcessors = [
     {
       name: "Vercel",
-      role: "Website hosting (serves the FoldPDF pages; never receives your files)",
+      role: "Website hosting and cookieless page-view analytics (never receives your files)",
       dataStored: "None",
       location: "United States (Vercel Inc.)"
     },

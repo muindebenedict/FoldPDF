@@ -134,7 +134,7 @@ export default function AboutPage({ navigate }: AboutProps) {
                 How We Make Money
               </h2>
               <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed">
-                We display quiet, non-intrusive advertisements sponsored by Google AdSense to pay for hosting and keep all 25+ tools free. We do not sell your personal files or telemetry history, and we may offer premium feature plans in the future.
+                We plan to show quiet, non-intrusive advertisements (Google AdSense) to pay for hosting and keep all 25+ tools free, and we will ask for your permission before any advertising cookies are used. We do not sell your personal files or telemetry history, and we may offer premium feature plans in the future.
               </p>
             </div>
           </div>

@@ -275,7 +275,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
         <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-display mb-6">
           Privacy Policy
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: September 29, 2026</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Last Updated: September 30, 2026</p>
 
         <div className="space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-sm text-slate-600 dark:text-slate-300">
           <p>
@@ -308,18 +308,26 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Lucide.Cookie className="h-5 w-5 text-indigo-500" />
-            4. Cookies and Ads
+            4. Cookies and Browser Storage
           </h2>
           <p>
-            To help support this free service, we display advertisements via Google AdSense and use Google Analytics to learn how visitors use our site. These helper services use cookies (tiny text files) to show ads that match your interests and help us understand website traffic.
+            FoldPDF does not use cookies. To make the site work, your browser keeps a few small items on your own device, and they never leave it:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>your dark or light mode choice;</li>
+            <li>the list of recent files shown in your workspace (file names only);</li>
+            <li>your login session, only if you sign in.</li>
+          </ul>
+          <p>
+            You can clear these at any time in your browser settings. Our fonts are served from our own website, so loading a page does not contact Google or any other font service.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Lucide.Settings className="h-5 w-5 text-indigo-500" />
-            5. Disabling Cookies
+            <Lucide.BarChart3 className="h-5 w-5 text-indigo-500" />
+            5. Analytics and Advertising
           </h2>
           <p>
-            You are fully in charge of cookies. If you prefer not to use them, you can block or turn cookies off in your browser settings whenever you want.
+            We count page visits with Vercel Web Analytics, which uses no cookies. It recognises a visit only through a temporary code that is discarded after 24 hours, and we see anonymous totals only. We do not currently show advertisements. If we start showing ads (for example through Google AdSense), we will ask for your permission before any advertising cookies are used, and you will be able to change your choice at any time.
           </p>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
