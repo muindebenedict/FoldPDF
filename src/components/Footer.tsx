@@ -153,7 +153,7 @@ export function Footer({ navigate }: FooterProps) {
                 { name: "Zero-Knowledge Security Hub", path: "/security" },
                 { name: "Zero-Knowledge Transparency", path: "/transparency" },
                 { name: "How Browser Core Works", path: "/how-it-works" },
-                { name: "Privacy & AdSense Policies", path: "/privacy" },
+                { name: "Privacy & Cookie Policy", path: "/privacy" },
                 { name: "Terms of Service Conditions", path: "/terms" },
                 { name: "DMCA Intellectual Procedures", path: "/dmca" },
                 { name: "Contact FoldPDF Support", path: "/contact" },

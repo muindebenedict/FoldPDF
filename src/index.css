@@ -1,12 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;850&display=swap');
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-body: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-display: "Outfit", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: "Inter Variable", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Inter Variable", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Outfit Variable", "Outfit", "Inter Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   
   --color-slate-50: #f9fafb;
@@ -49,7 +48,7 @@
 }
 
 body {
-  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Inter Variable", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #f9fafb;
   color: #333;
   -webkit-font-smoothing: antialiased;

@@ -21,7 +21,7 @@ export default function SitemapPage({ navigate }: SitemapProps) {
   ];
 
   const complianceRoutes = [
-    { name: "General Privacy Policy (AdSense Configured)", path: "/privacy" },
+    { name: "Privacy & Cookie Policy", path: "/privacy" },
     { name: "Standard Terms of Service Use", path: "/terms" },
     { name: "DMCA Intellectual Claim Policies", path: "/dmca" },
     { name: "Sitemap Index (HTML Manual)", path: "/sitemap" }
