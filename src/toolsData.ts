@@ -226,7 +226,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'PDF to Word (DOCX)',
     category: 'document-conversions',
     shortDesc: 'Turn secure PDF files back into editable Microsoft Word documents.',
-    longDesc: 'Stop copying and pasting by hand. This tool analyzes your PDF sheets and turns them back into a normal Microsoft Word (.docx) file that you can type in, adjust columns, and style freely. We are completely upfront about how this works: files are sent to our secure server, processed, and deleted immediately after you download. Nothing is stored or logged.',
+    longDesc: 'Stop copying and pasting by hand. This tool analyzes your PDF sheets and turns them back into a normal Microsoft Word (.docx) file that you can type in, adjust columns, and style freely. We are completely upfront about how this works: files are sent to our secure server and converted by Adobe PDF Services (or ComPDF as a backup), then deleted from our server and theirs as soon as your download is ready. Nothing is stored or logged.',
     iconName: 'FileText',
     isPopular: true,
     stepInstructions: [
@@ -235,7 +235,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your editable Word document.'
     ],
     faqs: [
-      { question: 'Is it safe to convert my private files here?', answer: 'Yes. While this tool sends your file to our secure server for conversion, we delete it instantly after you download the Word file.' },
+      { question: 'Is it safe to convert my private files here?', answer: 'Yes. This tool sends your file to our secure server, which has it converted by Adobe PDF Services (or ComPDF as a backup). The file is deleted from our server and theirs right after conversion.' },
       { question: 'Will my layout look messy after converting?', answer: 'We try our best to keep your paragraphs, columns, and lists exactly where they belong in the Word document.' },
       { question: 'What happens to the graphics inside my PDF?', answer: 'They get extracted and placed inside the Word document as images that you can easily resize or move.' },
       { question: 'Do I need to register or create an account?', answer: 'No. You don\'t need to sign up or input any contact details.' },
@@ -250,7 +250,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'Word to PDF',
     category: 'document-conversions',
     shortDesc: 'Convert your Microsoft Word documents into official PDF files.',
-    longDesc: 'Do you want to make sure your Word formatting, fonts, and photos do not look different on someone else\'s computer? Lock your DOCX or DOC files into a standard PDF format so it looks perfect everywhere. Since everything runs inside your browser, your file never leaves your device at any point.',
+    longDesc: 'Do you want to make sure your Word formatting, fonts, and photos do not look different on someone else\'s computer? Lock your DOCX or DOC files into a standard PDF format so it looks perfect everywhere. We are completely upfront about how this works: files are sent to our secure server and converted by Adobe PDF Services (or ComPDF as a backup), then deleted from our server and theirs as soon as your PDF is ready. Nothing is stored or logged.',
     iconName: 'FileText',
     isPopular: true,
     stepInstructions: [
@@ -259,14 +259,14 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Save your perfect PDF file.'
     ],
     faqs: [
-      { question: 'Do you store a copy of my Word files?', answer: 'No. The conversion happens strictly in your browser. We never see or store your documents.' },
+      { question: 'Do you store a copy of my Word files?', answer: 'No. Your file is sent to our secure server and converted by Adobe PDF Services (or ComPDF as a backup), then deleted from our server and theirs right after. If the converter is unavailable, the PDF is made in your browser instead.' },
       { question: 'Can I convert old .doc files along with .docx?', answer: 'Yes. We support both old and new Word document formats cleanly.' },
       { question: 'Will web links inside my Word file still work in the PDF?', answer: 'Yes. Any hyperlinks or email addresses will remain completely clickable.' },
       { question: 'Do I need to install Microsoft Office or Word?', answer: 'No. You do not need any office tools installed for this page to convert your files.' },
       { question: 'Does this work on all browsers?', answer: 'Yes. It works great on Chrome, Safari, Firefox, and Edge on phone and computer.' },
-      { question: 'Is there a limit on how many files I can convert?', answer: 'No limits at all. Use it as many times as you want.' }
+      { question: 'Is there a limit on how many files I can convert?', answer: 'To keep the service free, each visitor can convert up to 10 documents an hour (30 a day) across our Word and PowerPoint converters.' }
     ],
-    benefits: ['Locks standard page margins and fonts', 'Ensures resume files look correct', 'Fast local creation']
+    benefits: ['Locks standard page margins and fonts', 'Ensures resume files look correct', 'Selectable text, powered by Adobe']
   },
   {
     id: 'pdf-to-pptx',
@@ -274,7 +274,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'PDF to PowerPoint (PPTX)',
     category: 'document-conversions',
     shortDesc: 'Convert PDF slides back into editable PowerPoint files.',
-    longDesc: 'Found a nice PDF presentation but need to change a template page or swap some bullet points? Turn your PDF sheets into editable PowerPoint slides where you can drag text boxes, change titles, and move images around. Since everything runs inside your browser, your file never leaves your device at any point.',
+    longDesc: 'Found a nice PDF presentation but need to change a template page or swap some bullet points? Turn your PDF sheets into editable PowerPoint slides where you can drag text boxes, change titles, and move images around. We are completely upfront about how this works: files are sent to our secure server and converted by Adobe PDF Services (or ComPDF as a backup), then deleted from our server and theirs as soon as your download is ready. Nothing is stored or logged.',
     iconName: 'Presentation',
     stepInstructions: [
       'Open up your PDF pages.',
@@ -282,12 +282,12 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Download your PPTX file.'
     ],
     faqs: [
-      { question: 'Are my slide documents private?', answer: 'Yes. Everything is processed locally in your browser, so your presentation never leaves your computer.' },
+      { question: 'Are my slide documents private?', answer: 'Yes. Your file is sent to our secure server and converted by Adobe PDF Services (or ComPDF as a backup), then deleted from our server and theirs right after. Nothing is stored or logged.' },
       { question: 'Does each page become a separate slide?', answer: 'Yes. Every single page in your PDF gets turned into its own slide in the new PowerPoint presentation.' },
       { question: 'Can I edit the text and text boxes in PowerPoint?', answer: 'Yes. We extract the text so you can click, delete, or rewrite sections in PowerPoint easily.' },
       { question: 'Do I need to log in to download my presentation?', answer: 'No accounts are needed. You can use it instantly and completely anonymously.' },
       { question: 'Will it run on mobile phone browsers?', answer: 'Yes. It works on iOS and Android browsers without any separate apps.' },
-      { question: 'Is there any daily usage limit?', answer: 'No. Convert as many presentation files as you need, entirely free.' }
+      { question: 'Is there any daily usage limit?', answer: 'To keep the service free, each visitor can convert up to 10 documents an hour (30 a day) across our Word and PowerPoint converters.' }
     ],
     benefits: ['Fixes layout clutter on slide imports', 'Keep pages in proper separate slides', 'Easy to customize templates']
   },
@@ -297,7 +297,7 @@ export const TOOLS_DATA: ToolDefinition[] = [
     name: 'PowerPoint to PDF',
     category: 'document-conversions',
     shortDesc: 'Convert your PowerPoint slide decks to standard PDF files.',
-    longDesc: 'Do you have a big presentation pitch or school paper ready? Lock your slides as a PDF so that the presentation displays exactly how you wanted on any screen, without messy font or alignment changes. Since everything runs inside your browser, your file never leaves your device at any point.',
+    longDesc: 'Do you have a big presentation pitch or school paper ready? Lock your slides as a PDF so that the presentation displays exactly how you wanted on any screen, without messy font or alignment changes. We are completely upfront about how this works: files are sent to our secure server, converted, and deleted immediately after you download. Nothing is stored or logged.',
     iconName: 'Presentation',
     stepInstructions: [
       'Add your slide files.',
@@ -305,10 +305,10 @@ export const TOOLS_DATA: ToolDefinition[] = [
       'Get your high-quality PDF slides.'
     ],
     faqs: [
-      { question: 'Does this upload my presentation to a server?', answer: 'No. The file is converted entirely on your local device. Nothing is saved or shared.' },
+      { question: 'Does this upload my presentation to a server?', answer: 'Yes. The file is sent to our own secure server, converted, and deleted immediately after you download. Nothing is saved or shared.' },
       { question: 'Will my speaker notes show up in the PDF?', answer: 'No. We only convert the slides themselves so that your presenter notes stay private.' },
       { question: 'Will it keep my original widescreen slide layout?', answer: 'Yes. The output PDF will match the modern high-definition widescreen format of your slides.' },
-      { question: 'Do I have to pay to use this presentation tool?', answer: 'No, it is completely free to use without any limitations or watermarks.' },
+      { question: 'Do I have to pay to use this presentation tool?', answer: 'No, it is completely free to use, with no watermarks.' },
       { question: 'Does it work on Mac and Windows?', answer: 'Yes. It runs on any operating system as long as you have a modern web browser.' },
       { question: 'Do I need a Microsoft account?', answer: 'No, no Office or Microsoft logins are required.' }
     ],

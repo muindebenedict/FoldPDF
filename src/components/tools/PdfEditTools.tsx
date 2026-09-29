@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Check } from "lucide-react";
 import { readAB, getPdfLib, getPdfJs, getJSZip, renderPage, fmt, dl, getOutputFile } from "./PdfScriptLoader";
 import { Proc, Done, Bar, Err, validateUploadedFiles } from "./SharedComponents";
+import { API_BASE, ServerToolError, serverError } from "./serverApi";
 
 interface ToolProps {
   onSuccess?: (fileName: string, toolName: string) => void;
@@ -117,7 +118,7 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     }, 60000);
 
     try {
-      const response = await fetch("https://foldpdf-api-1.onrender.com/api/compress", {
+      const response = await fetch(`${API_BASE}/api/compress`, {
         method: "POST",
         body: formData,
         signal: controller.signal,
@@ -130,6 +131,10 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
       }
 
       if (response.status === 429) {
+        // Our per-visitor limit replies with JSON. Retrying in 15 seconds won't help, so say when to come back.
+        if (response.headers.get("Content-Type")?.includes("application/json")) {
+          throw await serverError(response);
+        }
         if (retryAttempt < 3) {
           setRetryCount(retryAttempt + 1);
           let count = 15;
@@ -164,8 +169,7 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
       }
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || `Server error during compression (HTTP ${response.status})`);
+        throw await serverError(response);
       }
 
       const blobData = await response.blob();
@@ -212,7 +216,9 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
       const errMsg = e.message || String(e);
       let friendly = "Compression failed. Please check your network and try again.";
 
-      if (errMsg === "SERVER_500") {
+      if (e instanceof ServerToolError) {
+        friendly = e.message;
+      } else if (errMsg === "SERVER_500") {
         friendly = "Compression failed. Please try a smaller file or try again.";
       } else if (errMsg === "PROX_MORE_429") {
         friendly = "Please try again in a few minutes.";

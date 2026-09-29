@@ -8,6 +8,7 @@ import { PdfToTxtTool, TxtToPdfTool, PdfToWordTool, WordToPdfTool, PdfToExcelToo
 import { PdfToImgTool, ImgToPdfTool } from './tools/ImgConverters';
 import { CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTool, PageNumTool } from './tools/PdfEditTools';
 import { ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool } from './tools/PdfSecurityTools';
+import { SERVER_TOOL_IDS } from './tools/serverApi';
 
 // Escapes special characters for PDF text streams: ( ) \ and converts non-ASCII to '_'
 function escapePdfText(text: string): string {
@@ -1520,18 +1521,18 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3">
               <Lucide.ShieldCheck className="h-5 w-5" />
             </div>
-            {tool.id === 'compress-pdf' ? (
+            {SERVER_TOOL_IDS.includes(tool.id) ? (
               <>
                 <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">Secure Processing</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
-                  Your file is sent to our server, compressed, and deleted immediately after download. Nothing is stored.
+                  Your file is sent to our server, {tool.id === 'compress-pdf' ? 'compressed' : 'converted'}, and deleted immediately after download. Nothing is stored.
                 </p>
               </>
             ) : (
               <>
                 <span className="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block mb-1">RAM-Only Processing</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed my-2">
-                  All files process strictly in memory and are deleted automatically off our servers instantly.
+                  All files are processed in your browser's memory and never leave your device.
                 </p>
               </>
             )}

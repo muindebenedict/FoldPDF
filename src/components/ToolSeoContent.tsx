@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import * as Lucide from "lucide-react";
 import { TOOLS_DATA } from "../toolsData";
+import { SERVER_TOOL_IDS } from "./tools/serverApi";
 
 interface ToolSeoData {
   title: string;
@@ -77,8 +78,7 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
   
   // Use fallback values if selected tool is not mapped to prevent black screens
   const normalizedId = toolId.toLowerCase();
-  const SERVER_TOOLS = ["compress-pdf", "pdf-to-word", "pdf-to-powerpoint", "powerpoint-to-pdf"];
-  const isServerTool = SERVER_TOOLS.includes(normalizedId);
+  const isServerTool = SERVER_TOOL_IDS.includes(normalizedId);
   
   const selectedData = SEO_CONTENT_MAP[normalizedId] || {
     title: `${toolId.split('-').map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' ')} - Secure Workspace Options`,
