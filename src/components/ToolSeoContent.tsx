@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import * as Lucide from "lucide-react";
+import { BookOpen, CloudOff, Cpu, EyeOff, FileText, Gauge, Lock, ServerOff, Shield, Unlock } from "lucide-react";
 import { TOOLS_DATA } from "../toolsData";
 import { SERVER_TOOL_IDS } from "./tools/serverApi";
+
+// Named one by one: looking icons up by a string name would make the bundler
+// ship every Lucide icon (about 900 KB) with every page.
+const FEATURE_ICONS = { BookOpen, CloudOff, Cpu, EyeOff, FileText, Gauge, Lock, ServerOff, Shield, Unlock };
 
 interface ToolSeoData {
   title: string;
   description: string;
-  features: { icon: keyof typeof Lucide; title: string; desc: string }[];
+  features: { icon: keyof typeof FEATURE_ICONS; title: string; desc: string }[];
   faqs: { q: string; a: string }[];
 }
 
@@ -123,8 +127,7 @@ export function ToolSeoContent({ toolId }: ToolSeoContentProps) {
       {/* Feature visual cards */}
       <div className="grid gap-6 sm:grid-cols-3">
         {selectedData.features.map((feat, idx) => {
-          // Resolve icon safely
-          const IconComponent = (Lucide as any)[feat.icon] || Lucide.Shield;
+          const IconComponent = FEATURE_ICONS[feat.icon] ?? Shield;
           return (
             <div key={idx} className="bg-slate-50 dark:bg-slate-905 p-5 border border-slate-100 dark:border-slate-850 rounded-2xl flex flex-col items-start font-body">
               <div className="h-9 w-9 bg-white dark:bg-slate-850 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shadow-sm mb-3">

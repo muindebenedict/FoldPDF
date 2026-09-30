@@ -13,8 +13,8 @@ import { BlogSection } from './components/BlogSection';
 import { ToolWorkspace } from './components/ToolWorkspace';
 
 // Supabase auth
-import { getSupabase, isSupabaseConfigured } from './lib/supabase';
-import type { EmailOtpType, User as SupabaseUser } from '@supabase/supabase-js';
+import { hasStoredSession, isSupabaseConfigured, loadSupabase, whenSupabaseLoaded } from './lib/supabase';
+import type { EmailOtpType, SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
 
 // Set just before the Google redirect so the welcome toast fires only when the
 // user actually comes back from Google, not on every page load with a session.
@@ -224,7 +224,6 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       localStorage.removeItem('user');
       return;
     }
-    const supabase = getSupabase();
 
     // Read before subscribing: INITIAL_SESSION strips these from the URL.
     const params = readAuthParams();
@@ -240,52 +239,10 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     // earlier session in place, and that one must not be mistaken for a reset.
     const recoveryAccessToken = linkType === 'recovery' ? params.get('access_token') : null;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === 'PASSWORD_RECOVERY' || (recoveryAccessToken && session.access_token === recoveryAccessToken))) {
-        localStorage.setItem(RECOVERY_PENDING_KEY, '1');
-      }
-      if (!session) localStorage.removeItem(RECOVERY_PENDING_KEY);
-      const recovering = !!session && localStorage.getItem(RECOVERY_PENDING_KEY) === '1';
-      if (recovering) {
-        setPasswordRecovery(true);
-        setAuthModalOpen(true);
-      }
-
-      // During a reset the temporary session exists, but the app shows the
-      // user as signed out until they sign in with the new password.
-      const sessionUser = recovering ? undefined : session?.user;
-      // Kept from the Firebase version: an unconfirmed email/password account is
-      // not signed in, even if "Confirm email" is ever switched off in Supabase.
-      const unconfirmed = sessionUser?.app_metadata?.provider === 'email' && !sessionUser.email_confirmed_at;
-      if (sessionUser && !unconfirmed) {
-        const u = toAppUser(sessionUser);
-        setUser(u);
-        localStorage.setItem('user', JSON.stringify(u));
-
-        if (sessionStorage.getItem(OAUTH_PENDING_KEY)) {
-          sessionStorage.removeItem(OAUTH_PENDING_KEY);
-          addToast(`Welcome back, ${u.name.split(' ')[0]}`, 'info');
-        } else if (announceConfirmation) {
-          announceConfirmation = false;
-          addToast('Email confirmed. Welcome to FoldPDF', 'success');
-        }
-      } else {
-        setUser(null);
-        localStorage.removeItem('user');
-      }
-
-      // By INITIAL_SESSION the Supabase client has read any session out of the
-      // URL (from Google or an email link), so the parameters are safe to drop.
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
-        clearAuthParamsFromUrl();
-      }
-    });
-
-    const linkKey = tokenHash ?? (linkError ? `error:${linkError}` : null);
-    const firstVisit = linkKey !== null && !handledAuthLinks.has(linkKey);
-    if (linkKey) handledAuthLinks.add(linkKey);
-
-    if (linkError && firstVisit) {
+    // An error link needs no Supabase: say what went wrong and tidy the URL.
+    const errorKey = linkError ? `error:${linkError}` : null;
+    if (errorKey && !handledAuthLinks.has(errorKey)) {
+      handledAuthLinks.add(errorKey);
       sessionStorage.removeItem(OAUTH_PENDING_KEY);
       addToast(
         params.get('error_code') === 'otp_expired'
@@ -294,27 +251,100 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         'error'
       );
       clearAuthParamsFromUrl();
-    } else if (tokenHash && linkType && firstVisit) {
-      // token_hash links come from the optional custom email templates in
-      // supabase/README.md; the default links are handled by the Supabase client.
-      supabase.auth.verifyOtp({ token_hash: tokenHash, type: linkType }).then(({ error }) => {
-        if (error) {
-          addToast('That link has expired or was already used. Please request a new one.', 'error');
-        } else if (linkType === 'recovery') {
-          localStorage.setItem(RECOVERY_PENDING_KEY, '1');
-          setUser(null);
-          localStorage.removeItem('user');
-          setPasswordRecovery(true);
-          setAuthModalOpen(true);
-        } else {
-          addToast('Email confirmed. Welcome to FoldPDF', 'success');
-        }
-        clearAuthParamsFromUrl();
-      });
     }
 
-    return () => subscription.unsubscribe();
+    let cancelled = false;
+    let unsubscribe = () => {};
+    const listen = (supabase: SupabaseClient) => {
+      if (cancelled) return;
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session && (event === 'PASSWORD_RECOVERY' || (recoveryAccessToken && session.access_token === recoveryAccessToken))) {
+          localStorage.setItem(RECOVERY_PENDING_KEY, '1');
+        }
+        if (!session) localStorage.removeItem(RECOVERY_PENDING_KEY);
+        const recovering = !!session && localStorage.getItem(RECOVERY_PENDING_KEY) === '1';
+        if (recovering) {
+          setPasswordRecovery(true);
+          setAuthModalOpen(true);
+        }
+
+        // During a reset the temporary session exists, but the app shows the
+        // user as signed out until they sign in with the new password.
+        const sessionUser = recovering ? undefined : session?.user;
+        // Kept from the Firebase version: an unconfirmed email/password account is
+        // not signed in, even if "Confirm email" is ever switched off in Supabase.
+        const unconfirmed = sessionUser?.app_metadata?.provider === 'email' && !sessionUser.email_confirmed_at;
+        if (sessionUser && !unconfirmed) {
+          const u = toAppUser(sessionUser);
+          setUser(u);
+          localStorage.setItem('user', JSON.stringify(u));
+
+          if (sessionStorage.getItem(OAUTH_PENDING_KEY)) {
+            sessionStorage.removeItem(OAUTH_PENDING_KEY);
+            addToast(`Welcome back, ${u.name.split(' ')[0]}`, 'info');
+          } else if (announceConfirmation) {
+            announceConfirmation = false;
+            addToast('Email confirmed. Welcome to FoldPDF', 'success');
+          }
+        } else {
+          setUser(null);
+          localStorage.removeItem('user');
+        }
+
+        // By INITIAL_SESSION the Supabase client has read any session out of the
+        // URL (from Google or an email link), so the parameters are safe to drop.
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
+          clearAuthParamsFromUrl();
+        }
+      });
+      unsubscribe = () => subscription.unsubscribe();
+
+      // token_hash links come from the optional custom email templates in
+      // supabase/README.md; the default links are handled by the Supabase client.
+      // Claimed here, not up front: StrictMode's first run is cancelled before it
+      // gets this far, so the link is still verified exactly once.
+      if (tokenHash && linkType && !linkError && !handledAuthLinks.has(tokenHash)) {
+        handledAuthLinks.add(tokenHash);
+        supabase.auth.verifyOtp({ token_hash: tokenHash, type: linkType }).then(({ error }) => {
+          if (error) {
+            addToast('That link has expired or was already used. Please request a new one.', 'error');
+          } else if (linkType === 'recovery') {
+            localStorage.setItem(RECOVERY_PENDING_KEY, '1');
+            setUser(null);
+            localStorage.removeItem('user');
+            setPasswordRecovery(true);
+            setAuthModalOpen(true);
+          } else {
+            addToast('Email confirmed. Welcome to FoldPDF', 'success');
+          }
+          clearAuthParamsFromUrl();
+        });
+      }
+    };
+
+    // Supabase is only downloaded when this visit needs it: a stored session, or
+    // a sign-in link in the URL. Everyone else gets it when they open sign-in.
+    const needsNow = hasStoredSession() || AUTH_URL_PARAMS.some((key) => params.has(key));
+    if (!needsNow) {
+      // What INITIAL_SESSION would report: no session, so nobody is signed in.
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem(RECOVERY_PENDING_KEY);
+    }
+    (needsNow ? loadSupabase() : whenSupabaseLoaded())
+      .then(listen)
+      .catch((err) => console.error('Could not load sign-in:', err));
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [addToast]);
+
+  // Start downloading Supabase as soon as the sign-in dialog opens.
+  useEffect(() => {
+    if (authModalOpen && isSupabaseConfigured) loadSupabase().catch(() => {});
+  }, [authModalOpen]);
 
   // Reset stuck Google sign-in loading state if user returns focus to this parent window (e.g. cancelled/closed popup)
   useEffect(() => {
@@ -417,7 +447,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     try {
       // Supabase reports success for unknown addresses too, so nobody can use
       // this form to find out who has an account.
-      const { error } = await getSupabase().auth.resetPasswordForEmail(authForm.email, {
+      const { error } = await (await loadSupabase()).auth.resetPasswordForEmail(authForm.email, {
         redirectTo: `${window.location.origin}/`,
       });
       if (error) throw error;
@@ -448,7 +478,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
     setEmailLoading(true);
     try {
-      const supabase = getSupabase();
+      const supabase = await loadSupabase();
       const { data, error } = await supabase.auth.updateUser({ password: authForm.password });
       if (error) throw error;
 
@@ -481,7 +511,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       sessionStorage.setItem(OAUTH_PENDING_KEY, '1');
       // Full-page redirect to Google and back; the session is picked up by the
       // onAuthStateChange listener when this page loads again.
-      const { error } = await getSupabase().auth.signInWithOAuth({
+      const { error } = await (await loadSupabase()).auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: `${window.location.origin}${window.location.pathname}` },
       });
@@ -504,15 +534,13 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
       return;
     }
 
-    const supabase = (() => {
-      try {
-        return getSupabase();
-      } catch (err) {
-        setAuthError(mapAuthError(err));
-        return null;
-      }
-    })();
-    if (!supabase) return;
+    let supabase: SupabaseClient;
+    try {
+      supabase = await loadSupabase();
+    } catch (err) {
+      setAuthError(mapAuthError(err));
+      return;
+    }
 
     if (authForm.isRegister) {
       try {
@@ -598,7 +626,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
 
   const handleLogout = async () => {
     try {
-      const { error } = await getSupabase().auth.signOut();
+      const { error } = await (await loadSupabase()).auth.signOut();
       if (error) throw error;
       setUser(null);
       localStorage.removeItem('user');
@@ -1215,7 +1243,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
                   // Abandoning a reset: drop its temporary session so the link
                   // can't be used to sign in.
                   localStorage.removeItem(RECOVERY_PENDING_KEY);
-                  getSupabase().auth.signOut({ scope: 'local' }).catch(() => {});
+                  loadSupabase().then((supabase) => supabase.auth.signOut({ scope: 'local' })).catch(() => {});
                 }
                 setAuthError('');
                 setVerificationEmail(null);

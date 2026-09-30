@@ -85,7 +85,9 @@ async function buildPrerender() {
   });
 
   try {
-    const { render } = await vite.ssrLoadModule('/src/entry-server.tsx');
+    const { render, preloadAllTools } = await vite.ssrLoadModule('/src/entry-server.tsx');
+    // Tools are loaded on demand in the browser; here every one must be in the HTML.
+    await preloadAllTools();
     const { getAllRoutes } = await vite.ssrLoadModule('/src/routes.ts');
 
     const routes = [
