@@ -1,15 +1,10 @@
 {
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/blog/zero-knowledge-pdf-processing-explained",
       "destination": "/blog/private-pdf-processing-explained",
       "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }

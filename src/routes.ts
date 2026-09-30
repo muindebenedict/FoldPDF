@@ -6,11 +6,54 @@ export interface RouteMetadata {
   path: string;
   title: string;
   description: string;
+  /** schema.org objects the prerender writes as JSON-LD, so search engines know what each page is. */
+  structuredData?: Record<string, unknown>[];
+}
+
+const SITE = 'https://www.foldpdf.online';
+const ORGANIZATION_ID = `${SITE}/#organization`;
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': ORGANIZATION_ID,
+  name: 'FoldPDF',
+  url: `${SITE}/`,
+  logo: `${SITE}/FOLDPDF_icon_crisp.png`,
+};
+
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE}/#website`,
+  name: 'FoldPDF',
+  url: `${SITE}/`,
+  publisher: { '@id': ORGANIZATION_ID },
+};
+
+function breadcrumbs(items: { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${SITE}${item.path}`,
+    })),
+  };
+}
+
+// "May 20, 2026" -> "2026-05-20"
+function isoDate(date: string): string | undefined {
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString().slice(0, 10);
 }
 
 const STATIC_ROUTES: RouteMetadata[] = [
   {
     path: '/',
+    structuredData: [website, organization],
     title: 'FoldPDF | Private PDF Tools That Never Upload Your Files',
     description: 'Free, private PDF tools. Merge, split, edit and convert PDF files directly inside your browser; the five tools that need our secure server delete your file immediately after processing.'
   },
@@ -74,10 +117,38 @@ export function getAllRoutes(): RouteMetadata[] {
     const routePath = `/${tool.urlPath}`;
     const { title, description } = getToolMeta(tool);
 
+    const structuredData: Record<string, unknown>[] = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: tool.name,
+        url: `${SITE}${routePath}`,
+        description: tool.shortDesc,
+        applicationCategory: 'UtilitiesApplication',
+        operatingSystem: 'Any',
+        browserRequirements: 'Requires a modern web browser',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        publisher: { '@id': ORGANIZATION_ID },
+      },
+      breadcrumbs([{ name: 'Home', path: '/' }, { name: tool.name, path: routePath }]),
+    ];
+    if (tool.faqs?.length) {
+      structuredData.push({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: tool.faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+        })),
+      });
+    }
+
     routes.push({
       path: routePath,
       title,
-      description
+      description,
+      structuredData,
     });
   });
 
@@ -90,9 +161,48 @@ export function getAllRoutes(): RouteMetadata[] {
     routes.push({
       path: routePath,
       title,
-      description
+      description,
+      structuredData: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: post.title,
+          description,
+          url: `${SITE}${routePath}`,
+          mainEntityOfPage: `${SITE}${routePath}`,
+          datePublished: isoDate(post.date),
+          dateModified: isoDate(post.lastUpdated || post.date),
+          author: { '@type': 'Organization', name: post.author || 'FoldPDF Team', url: `${SITE}/` },
+          publisher: { '@id': ORGANIZATION_ID },
+        },
+        breadcrumbs([
+          { name: 'Home', path: '/' },
+          { name: 'Blog', path: '/blog' },
+          { name: post.title, path: routePath },
+        ]),
+        ...(post.faqs?.length
+          ? [{
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: post.faqs.map((faq) => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+              })),
+            }]
+          : []),
+      ],
     });
   });
 
   return routes;
+}
+
+let routeIndex: Map<string, RouteMetadata> | null = null;
+
+/** Title, description and structured data for a path, or undefined when the page doesn't exist. */
+export function getRouteMeta(pathname: string): RouteMetadata | undefined {
+  if (!routeIndex) routeIndex = new Map(getAllRoutes().map((r) => [r.path, r]));
+  const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  return routeIndex.get(normalized);
 }
