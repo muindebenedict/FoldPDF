@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as Lucide from "lucide-react";
 import { DETAILED_BLOG_POSTS, DetailedBlogPost } from "./blogPostsData";
-import { generateMetaTags, generateStructuredData } from "../../utils/seo";
 
 interface BlogPostPageProps {
   slug: string;
@@ -28,32 +27,6 @@ export default function BlogPostPage({ slug, navigate }: BlogPostPageProps) {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Update dynamic metadata whenever active post loads
-  useEffect(() => {
-    if (activePost) {
-      // 1. Meta / OpenGraph Tags
-      generateMetaTags({
-        title: `${activePost.title} | FoldPDF Security Blog`,
-        description: activePost.excerpt,
-        path: `/blog/${activePost.slug}`,
-        type: "article",
-        publishDate: activePost.date,
-        modifyDate: activePost.lastUpdated,
-        authorName: activePost.author
-      });
-
-      // 2. Structured JSON-LD Data for Search Engines
-      generateStructuredData("Article", {
-        slug: activePost.slug,
-        title: activePost.title,
-        excerpt: activePost.excerpt,
-        publishDate: activePost.date,
-        modifyDate: activePost.lastUpdated,
-        faqs: activePost.faqs
-      });
-    }
-  }, [activePost]);
 
   if (!activePost) {
     return (
