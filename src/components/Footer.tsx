@@ -2,7 +2,7 @@ import React, { useState, type MouseEvent } from "react";
 import * as Lucide from "lucide-react";
 import { FoldPdfLogo } from "./FoldPdfLogo";
 import { TOOLS_DATA } from "../toolsData";
-import { getSupabase, isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured, loadSupabase } from "../lib/supabase";
 
 interface FooterProps {
   navigate: (path: string) => void;
@@ -43,7 +43,7 @@ export function Footer({ navigate }: FooterProps) {
     setSubscribing(true);
 
     try {
-      const supabase = getSupabase();
+      const supabase = await loadSupabase();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setErrorMsg("Please sign in to subscribe to policy updates.");

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as Lucide from 'lucide-react';
-import { getSupabase } from '../lib/supabase';
+import { loadSupabase } from '../lib/supabase';
 
 interface LegalPagesProps {
   page: 'about' | 'contact' | 'privacy' | 'terms' | 'dmca';
@@ -81,7 +81,7 @@ export function LegalPages({ page, navigate }: LegalPagesProps) {
 
       // 2. Also log inside the database
       try {
-        const { error } = await getSupabase().from('support_tickets').insert(ticketData);
+        const { error } = await (await loadSupabase()).from('support_tickets').insert(ticketData);
         if (error) throw error;
         deliverySuccessful = true;
       } catch (dbErr) {
