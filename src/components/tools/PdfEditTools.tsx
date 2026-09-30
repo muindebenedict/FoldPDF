@@ -11,8 +11,13 @@ interface ToolProps {
 }
 
 /* COMPRESS PDF */
+const formatTarget = (kb: number) => (kb >= 1024 ? `${+(kb / 1024).toFixed(1)} MB` : `${kb} KB`);
+const clampTarget = (kb: number) => Math.min(20480, Math.max(20, Math.round(kb) || 100));
+
 export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
-  const [lvl, setLvl] = useState<"light" | "medium" | "strong">("medium");
+  const [lvl, setLvl] = useState<"light" | "medium" | "strong" | "target">("medium");
+  // Maximum size for the "Target file size" option.
+  const [targetKb, setTargetKb] = useState<number>(100);
   const [files, setFiles] = useState<File[]>([]);
   const [st, setSt] = useState<"idle" | "processing" | "done">("idle");
   const [statusMsg, setStatusMsg] = useState("");
@@ -106,15 +111,18 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
     }, 1000);
 
     const file = files[0];
-    const mode = lvl === "strong" ? "ultra" : lvl === "medium" ? "smart" : "quality";
+    const mode = lvl === "target" ? "target" : lvl === "strong" ? "ultra" : lvl === "medium" ? "smart" : "quality";
+    const target = clampTarget(targetKb);
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("mode", mode);
+    if (lvl === "target") formData.append("target_kb", String(target));
 
+    // Reaching a target size can take a few compression passes on the server.
     const fetchTimeoutId = setTimeout(() => {
       controller.abort();
-    }, 60000);
+    }, lvl === "target" ? 115000 : 60000);
 
     try {
       const response = await fetch(`${API_BASE}/api/compress`, {
@@ -175,7 +183,8 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
       const pdfBlob = new Blob([blobData], { type: "application/pdf" });
 
       const xOriginalSize = response.headers.get("X-Original-Size") || response.headers.get("x-original-size");
-      const xNewSize = response.headers.get("X-New-Size") || response.headers.get("x-new-size");
+      const xNewSize = response.headers.get("X-Compressed-Size") || response.headers.get("X-New-Size");
+      const targetMet = response.headers.get("X-Target-Met");
 
       const finalOriginalSize = xOriginalSize ? parseInt(xOriginalSize, 10) : file.size;
       const finalNewSize = xNewSize ? parseInt(xNewSize, 10) : pdfBlob.size;
@@ -188,7 +197,12 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
       setRes({
         blob: pdfBlob,
         name: finalFilename,
-        info: `Successfully compressed your PDF by ${savedPercent}% (${fmt(finalOriginalSize)} → ${fmt(finalNewSize)})`,
+        info:
+          targetMet === "true"
+            ? `Your PDF is now ${fmt(finalNewSize)}, under your ${formatTarget(target)} limit (it was ${fmt(finalOriginalSize)}).`
+            : targetMet === "false"
+              ? `We got it down to ${fmt(finalNewSize)}, the smallest it can go while staying readable, but that's still above ${formatTarget(target)}. Remove some pages or images and try again.`
+              : `Successfully compressed your PDF by ${savedPercent}% (${fmt(finalOriginalSize)} → ${fmt(finalNewSize)})`,
       });
       setSt("done");
 
@@ -284,7 +298,7 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
 
       <div className="mt-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm">
         <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
-          Compression Quality Target
+          Compression level
         </p>
         <div className="flex flex-col gap-3">
           {[
@@ -303,16 +317,23 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
               l: "Quality Compression",
               d: "Preserves more detail with lighter compression",
             },
+            {
+              v: "target",
+              l: "Target file size",
+              d: "Get it under a size limit you choose, like 200 KB or 1 MB",
+            },
           ].map(({ v, l, d }) => {
             const active = lvl === v;
             return (
-              <div
+              <button
+                type="button"
                 key={v}
+                aria-pressed={active}
                 onClick={(e) => {
                   e.stopPropagation();
                   setLvl(v as any);
                 }}
-                className={`relative cursor-pointer rounded-xl border p-4 transition-all duration-300 flex items-center justify-between select-none hover:scale-[1.01] hover:border-indigo-400 active:scale-[0.99] ${
+                className={`relative w-full cursor-pointer rounded-xl border p-4 transition-all duration-300 flex items-center justify-between select-none hover:scale-[1.01] hover:border-indigo-400 active:scale-[0.99] ${
                   active
                     ? "border-indigo-600 bg-indigo-50/15 dark:bg-indigo-950/20 ring-1 ring-indigo-500 dark:ring-indigo-400/50 shadow-md shadow-indigo-600/10"
                     : "border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/25 hover:bg-slate-100/50 dark:hover:bg-slate-900/40"
@@ -335,10 +356,51 @@ export const CompressTool = ({ onSuccess, toolName }: ToolProps) => {
                     <Check className="h-3 w-3 stroke-[3]" />
                   </div>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
+
+        {lvl === "target" && (
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 animate-in fade-in slide-in-from-top-1 duration-200 dark:border-indigo-900/60 dark:bg-indigo-950/20">
+            <p className="mb-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200">Maximum file size</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {[100, 200, 500, 1024].map((kb) => (
+                <button
+                  key={kb}
+                  type="button"
+                  aria-pressed={targetKb === kb}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTargetKb(kb);
+                  }}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ring-1 transition ${
+                    targetKb === kb
+                      ? "bg-indigo-600 text-white ring-indigo-600 dark:bg-indigo-500 dark:ring-indigo-500"
+                      : "bg-white text-slate-700 ring-slate-200 hover:ring-indigo-400 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700"
+                  }`}
+                >
+                  {formatTarget(kb)}
+                </button>
+              ))}
+              <label className="ml-1 flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                or
+                <input
+                  type="number"
+                  min={20}
+                  max={20480}
+                  value={targetKb}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setTargetKb(Number(e.target.value))}
+                  onBlur={() => setTargetKb(clampTarget(targetKb))}
+                  aria-label="Custom maximum size in KB"
+                  className="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                KB
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       {files.length > 0 && (
