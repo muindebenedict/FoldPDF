@@ -1,13 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { Suspense, useState, useRef, useEffect } from 'react';
 import * as Lucide from 'lucide-react';
 import { ToolDefinition } from '../types';
 import { TOOLS_DATA } from '../toolsData';
 
-// Import local real document conversion tools
-import { PdfToTxtTool, TxtToPdfTool, PdfToWordTool, WordToPdfTool, PdfToExcelTool, ExcelToPdfTool, PdfToPptTool, PptToPdfTool } from './tools/PdfDocConverters';
-import { PdfToImgTool, ImgToPdfTool } from './tools/ImgConverters';
-import { CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTool, PageNumTool } from './tools/PdfEditTools';
-import { ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool } from './tools/PdfSecurityTools';
+// The real tools, each downloaded when its page is opened
+import {
+  PdfToTxtTool, TxtToPdfTool, PdfToWordTool, WordToPdfTool, PdfToExcelTool, ExcelToPdfTool, PdfToPptTool, PptToPdfTool,
+  PdfToImgTool, ImgToPdfTool,
+  CompressTool, MergeTool, SplitTool, RotateTool, RemoveTool, WatermarkTool, PageNumTool,
+  ProtectTool, UnlockTool, RepairTool, OcrTool, SigTool,
+  ToolLoadBoundary, ToolLoading,
+} from './tools/lazyTools';
 import { SERVER_TOOL_IDS } from './tools/serverApi';
 import { ToolIcon } from './ToolIcon';
 import { DropZone, PRIMARY_BUTTON } from './tools/SharedComponents';
@@ -1090,7 +1093,9 @@ export function ToolWorkspace({ tool, navigate, onActionLogged }: ToolWorkspaceP
             </div>
 
             {renderRealTool() ? (
-              renderRealTool()
+              <ToolLoadBoundary key={tool.id}>
+                <Suspense fallback={<ToolLoading />}>{renderRealTool()}</Suspense>
+              </ToolLoadBoundary>
             ) : (
               <>
                 {/* STAGE 1: LOCAL DRAG & DROP FILE PICKER */}
