@@ -6,6 +6,9 @@ import { createServer } from 'vite';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
+const OG_IMAGE = 'https://www.foldpdf.online/og-image.png';
+// Any path the app doesn't know renders the not-found page; it is saved as dist/404.html.
+const NOT_FOUND_PATH = '/404';
 
 // Mock browser globals for Node SSR environment
 if (typeof globalThis.window === 'undefined') {
@@ -85,11 +88,18 @@ async function buildPrerender() {
     const { render } = await vite.ssrLoadModule('/src/entry-server.tsx');
     const { getAllRoutes } = await vite.ssrLoadModule('/src/routes.ts');
 
-    const routes = getAllRoutes();
+    const routes = [
+      ...getAllRoutes(),
+      {
+        path: NOT_FOUND_PATH,
+        title: 'Page not found | FoldPDF',
+        description: "The page you're looking for doesn't exist. Try FoldPDF's free PDF tools instead.",
+      },
+    ];
     console.log(`📦 Found ${routes.length} total routes to pre-render.`);
 
     for (const routeInfo of routes) {
-      const { path: routePath, title, description } = routeInfo;
+      const { path: routePath, title, description, structuredData } = routeInfo;
 
       // Update mock location for route context
       if (globalThis.window) {
@@ -124,15 +134,27 @@ async function buildPrerender() {
 
       // Add Open Graph, Canonical URL, and Twitter Card tags
       const canonicalUrl = `https://www.foldpdf.online${routePath === '/' ? '' : routePath}`;
-      const seoMetaBlock = `
-    <link rel="canonical" href="${canonicalUrl}" />
+      const isNotFound = routePath === NOT_FOUND_PATH;
+      const seoMetaBlock = `${isNotFound ? `
+    <meta name="robots" content="noindex" />` : `
+    <link rel="canonical" href="${canonicalUrl}" />`}
+    <meta property="og:site_name" content="FoldPDF" />
     <meta property="og:title" content="${safeTitle}" />
     <meta property="og:description" content="${safeDesc}" />
     <meta property="og:url" content="${canonicalUrl}" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="${routePath.startsWith('/blog/') ? 'article' : 'website'}" />
+    <meta property="og:image" content="${OG_IMAGE}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="FoldPDF: free PDF tools, no signup" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
     <meta name="twitter:description" content="${safeDesc}" />
+    <meta name="twitter:image" content="${OG_IMAGE}" />
+${(structuredData ?? [])
+  // "<" is escaped so the JSON can never close the script tag early
+  .map((item) => `    <script type="application/ld+json">${JSON.stringify(item).replace(/</g, '\\u003c')}</script>`)
+  .join('\n')}
 `;
 
       // Clean up previous meta tags if present in template, then append
@@ -149,7 +171,9 @@ async function buildPrerender() {
 
       // Save pre-rendered HTML file to output path
       let outputFile: string;
-      if (routePath === '/' || routePath === '') {
+      if (isNotFound) {
+        outputFile = path.resolve(distDir, '404.html');
+      } else if (routePath === '/' || routePath === '') {
         outputFile = path.resolve(distDir, 'index.html');
       } else {
         const cleanPath = routePath.startsWith('/') ? routePath.slice(1) : routePath;
@@ -161,7 +185,7 @@ async function buildPrerender() {
       fs.writeFileSync(outputFile, html, 'utf-8');
     }
 
-    console.log(`✨ Successfully pre-rendered all ${routes.length} pages into dist/!`);
+    console.log(`✨ Successfully pre-rendered all ${routes.length - 1} pages and 404.html into dist/!`);
   } finally {
     await vite.close();
   }

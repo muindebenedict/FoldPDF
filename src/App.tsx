@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as Lucide from 'lucide-react';
 import { useRouter } from './useRouter';
 import { TOOLS_DATA, BLOG_POSTS } from './toolsData';
-import { getToolMeta } from './toolMeta';
+import { getRouteMeta } from './routes';
 import { ToolDefinition, RecentFile } from './types';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -88,6 +88,7 @@ import AboutPage from './pages/about';
 import TransparencyPage from './pages/transparency';
 import HowItWorksPage from './pages/how-it-works';
 import SitemapPage from './pages/sitemap';
+import NotFoundPage from './pages/not-found';
 import { ToolSeoContent } from './components/ToolSeoContent';
 
 
@@ -362,42 +363,13 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
     }
   }, [darkMode]);
 
-  // Update dynamic page headers (SEO parameters) based on paths
+  // Page title and description come from the same route list the prerender uses (src/routes.ts),
+  // so what search engines read in the HTML and what the tab shows never drift apart.
   useEffect(() => {
-    const path = currentPath.replace('/', '');
-    
-    // Check if it's a specific tool
-    const matchingTool = TOOLS_DATA.find((t) => t.urlPath === path);
-    if (matchingTool) {
-      const { title, description } = getToolMeta(matchingTool);
-      document.title = title;
-      const meta = document.querySelector('meta[name="description"]');
-      if (meta) meta.setAttribute('content', description);
-      return;
-    }
-
-    // Check if it's a blog post
-    if (currentPath.startsWith('/blog/')) {
-      const slug = currentPath.split('/blog/')[1];
-      const matchingPost = BLOG_POSTS.find((p) => p.slug === slug);
-      if (matchingPost) {
-        document.title = `${matchingPost.title || 'FoldPDF'} | FoldPDF Blog`;
-        return;
-      }
-    }
-
-    // Standard static routes
-    const titles: Record<string, string> = {
-      '/': 'FoldPDF | Free Secure PDF Tools',
-      '/about': 'About Our Workspace & Mission | FoldPDF',
-      '/contact': 'Contact FoldPDF Support | FoldPDF',
-      '/privacy': 'Privacy & Cookie Policy | FoldPDF',
-      '/terms': 'Terms of Service Policies | FoldPDF',
-      '/dmca': 'DMCA Policy & Procedure | FoldPDF',
-      '/blog': 'Document Architecture Learning Blog | FoldPDF'
-    };
-
-    document.title = titles[currentPath] || 'FoldPDF';
+    const meta = getRouteMeta(currentPath);
+    document.title = meta?.title ?? 'Page not found | FoldPDF';
+    const description = document.querySelector('meta[name="description"]');
+    if (description && meta) description.setAttribute('content', meta.description);
   }, [currentPath]);
 
   // Handle Dynamic Upload Action Log histories
@@ -1205,7 +1177,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         {currentPath === '/blog' && (
           <BlogIndex navigate={navigate} />
         )}
-        {currentPath.startsWith('/blog/') && (
+        {currentPath.startsWith('/blog/') && getRouteMeta(currentPath) && (
           <BlogPostPage 
             slug={currentPath.split('/blog/')[1]} 
             navigate={navigate} 
@@ -1222,6 +1194,7 @@ export default function App({ initialPath }: { initialPath?: string } = {}) {
         {currentPath === '/privacy' && <LegalPages page="privacy" navigate={navigate} />}
         {currentPath === '/terms' && <LegalPages page="terms" navigate={navigate} />}
         {currentPath === '/dmca' && <LegalPages page="dmca" navigate={navigate} />}
+        {!getRouteMeta(currentPath) && <NotFoundPage navigate={navigate} />}
 
 
 

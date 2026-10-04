@@ -1,6 +1,7 @@
 import React, { useState, type MouseEvent } from "react";
 import * as Lucide from "lucide-react";
 import { FoldPdfLogo } from "./FoldPdfLogo";
+import { TOOLS_DATA } from "../toolsData";
 import { getSupabase, isSupabaseConfigured } from "../lib/supabase";
 
 interface FooterProps {
@@ -261,6 +262,26 @@ export function Footer({ navigate }: FooterProps) {
           </div>
 
         </div>
+
+        {/* Every tool, linked from every page, so visitors and search engines can reach them all */}
+        <nav aria-label="All PDF tools" className="py-10 border-b border-slate-150 dark:border-slate-800/60">
+          <h4 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white font-display">
+            All PDF tools
+          </h4>
+          <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-xs sm:grid-cols-3 lg:grid-cols-5">
+            {TOOLS_DATA.map((tool) => (
+              <li key={tool.id}>
+                <a
+                  href={`/${tool.urlPath}`}
+                  onClick={linkClick(`/${tool.urlPath}`)}
+                  className="transition-colors hover:text-indigo-650 dark:hover:text-indigo-400"
+                >
+                  {tool.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         {/* Footer Base Copyright information */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-8 text-xs text-slate-400">
